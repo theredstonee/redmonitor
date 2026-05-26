@@ -60,6 +60,7 @@ fun SettingsScreen() {
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
+                    Haptic.perform(context, HapticType.CONFIRM)
                     val intent = Intent(Intent.ACTION_VIEW, Uri.parse("redmonitor://update"))
                         .setPackage(context.packageName)
                     runCatching { context.startActivity(intent) }
@@ -152,6 +153,7 @@ fun SettingsScreen() {
             Spacer(Modifier.height(8.dp))
             Button(
                 onClick = {
+                    Haptic.perform(context, HapticType.CONFIRM)
                     val intent = Intent(
                         Intent.ACTION_VIEW,
                         Uri.parse("https://github.com/theredstonee/redmonitor/issues/new")
@@ -163,6 +165,7 @@ fun SettingsScreen() {
             Spacer(Modifier.height(6.dp))
             OutlinedButton(
                 onClick = {
+                    Haptic.perform(context, HapticType.TAP)
                     val intent = Intent(
                         Intent.ACTION_VIEW,
                         Uri.parse("https://github.com/theredstonee/redmonitor")
@@ -182,6 +185,7 @@ fun SettingsScreen() {
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = {
+                    Haptic.perform(context, HapticType.TAP)
                     val intent = Intent(
                         Intent.ACTION_VIEW,
                         Uri.parse("https://www.theredstonee.de")
@@ -201,6 +205,7 @@ private fun ToggleRow(
     checked: Boolean,
     onChange: (Boolean) -> Unit
 ) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -212,7 +217,11 @@ private fun ToggleRow(
             }
         }
         Switch(
-            checked = checked, onCheckedChange = onChange,
+            checked = checked,
+            onCheckedChange = {
+                haptic(HapticType.TOGGLE)
+                onChange(it)
+            },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = androidx.compose.ui.graphics.Color.White,
                 checkedTrackColor = Accent

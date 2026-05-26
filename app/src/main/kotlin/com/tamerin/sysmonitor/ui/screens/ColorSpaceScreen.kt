@@ -136,7 +136,9 @@ fun ColorSpaceScreen() {
                 steps = 13
             )
             Spacer(Modifier.height(4.dp))
+            val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             Button(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 paused = false
                 index = 0
             }) { Text("Demo starten") }

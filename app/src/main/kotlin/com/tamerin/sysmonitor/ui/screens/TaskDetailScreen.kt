@@ -395,6 +395,7 @@ fun TaskDetailScreen(pkg: String) {
                         Switch(
                             checked = enabled,
                             onCheckedChange = { newEnabled ->
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.TOGGLE)
                                 enabled = newEnabled
                                 runAction(
                                     if (newEnabled) "Receiver enable" else "Receiver disable"

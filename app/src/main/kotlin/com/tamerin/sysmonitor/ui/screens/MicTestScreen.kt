@@ -53,6 +53,7 @@ fun MicTestScreen() {
     val history = remember { mutableStateListOf<Float>() }
     val scope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     DisposableEffect(Unit) {
         onDispose { job?.cancel() }
@@ -161,8 +162,20 @@ fun MicTestScreen() {
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Button(onClick = { start() }, enabled = !listening) { Text("Aufnahme starten") }
-            OutlinedButton(onClick = { stop() }, enabled = listening) { Text("Stop") }
+            Button(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                    start()
+                },
+                enabled = !listening
+            ) { Text("Aufnahme starten") }
+            OutlinedButton(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    stop()
+                },
+                enabled = listening
+            ) { Text("Stop") }
         }
 
         Text(

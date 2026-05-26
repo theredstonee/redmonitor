@@ -94,7 +94,11 @@ fun BluetoothScreen() {
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = { launcher.launch(perm) }) { Text("Berechtigung erteilen") }
+                val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+                Button(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    launcher.launch(perm)
+                }) { Text("Berechtigung erteilen") }
             }
             return@Column
         }

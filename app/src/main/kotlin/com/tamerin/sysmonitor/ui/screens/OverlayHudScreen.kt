@@ -25,6 +25,7 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
     val context = LocalContext.current
     var hasPerm by remember { mutableStateOf(checkPerm(context)) }
     var running by remember { mutableStateOf(false) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     LaunchedEffect(Unit) {
         hasPerm = checkPerm(context)
@@ -56,6 +57,7 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     val intent = Intent(
                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                         Uri.parse("package:${context.packageName}")
@@ -65,7 +67,10 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                     Text("Berechtigung in Einstellungen erteilen")
                 }
                 Spacer(Modifier.height(6.dp))
-                OutlinedButton(onClick = { hasPerm = checkPerm(context) }) {
+                OutlinedButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    hasPerm = checkPerm(context)
+                }) {
                     Text("Status neu prüfen")
                 }
             }
@@ -73,10 +78,12 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
             StatCard("Steuerung") {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         OverlayService.start(context)
                         running = true
                     }, modifier = Modifier.weight(1f)) { Text("HUD starten") }
                     OutlinedButton(onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         OverlayService.stop(context)
                         running = false
                     }, modifier = Modifier.weight(1f)) { Text("Stopp") }
@@ -97,7 +104,10 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(
-                    onClick = onCustomize,
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        onCustomize()
+                    },
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("HUD anpassen") }
             }

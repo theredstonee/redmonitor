@@ -24,6 +24,7 @@ fun RandomIOScreen() {
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<RandomIOResult?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -38,6 +39,7 @@ fun RandomIOScreen() {
             Button(
                 enabled = !running,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     running = true
                     result = null
                     scope.launch {

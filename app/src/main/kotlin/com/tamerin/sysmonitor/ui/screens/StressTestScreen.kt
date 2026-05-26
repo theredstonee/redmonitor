@@ -90,7 +90,9 @@ fun StressTestScreen() {
                 fontSize = 13.sp
             )
             Spacer(Modifier.height(12.dp))
+            val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             Button(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                 if (running) {
                     engine.stop()
                     running = false

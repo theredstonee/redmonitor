@@ -176,16 +176,20 @@ fun FullscreenDisplayTestScreen() {
                 steps = 13
             )
             Spacer(Modifier.height(8.dp))
+            val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             Button(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 paused = false
                 index = 0
             }) { Text("Auto-Sequenz starten") }
         }
 
         StatCard("Einzeln testen") {
+            val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             PATTERNS.forEachIndexed { i, p ->
                 OutlinedButton(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         paused = true
                         index = i
                     },

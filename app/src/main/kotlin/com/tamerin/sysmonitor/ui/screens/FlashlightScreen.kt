@@ -28,6 +28,7 @@ fun FlashlightScreen() {
     }
     var on by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     DisposableEffect(Unit) {
         onDispose {
@@ -49,6 +50,7 @@ fun FlashlightScreen() {
             Button(
                 enabled = torchId != null,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TOGGLE)
                     val id = torchId ?: return@Button
                     try {
                         cm.setTorchMode(id, !on)

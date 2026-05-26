@@ -106,7 +106,10 @@ fun DisplayTweaksScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(320, 380, 420, 480, 540).forEach { dpi ->
                     OutlinedButton(
-                        onClick = { act("DPI → $dpi") { SystemTweaks.setDpi(context, dpi) } },
+                        onClick = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                            act("DPI → $dpi") { SystemTweaks.setDpi(context, dpi) }
+                        },
                         contentPadding = PaddingValues(4.dp),
                         modifier = Modifier.weight(1f)
                     ) { Text("$dpi", fontSize = 11.sp) }
@@ -124,6 +127,7 @@ fun DisplayTweaksScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         dpiInput.toIntOrNull()?.let { dpi ->
                             act("DPI → $dpi") { SystemTweaks.setDpi(context, dpi) }
                         }
@@ -131,7 +135,10 @@ fun DisplayTweaksScreen() {
                     modifier = Modifier.weight(1f)
                 ) { Text("Setzen") }
                 OutlinedButton(
-                    onClick = { act("DPI reset") { SystemTweaks.resetDpi(context) } },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        act("DPI reset") { SystemTweaks.resetDpi(context) }
+                    },
                     modifier = Modifier.weight(1f)
                 ) { Text("Zurücksetzen") }
             }
@@ -155,6 +162,7 @@ fun DisplayTweaksScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         if (sizeInput.matches(Regex("""\d+x\d+"""))) {
                             act("Size → $sizeInput") { SystemTweaks.setSize(context, sizeInput) }
                         }
@@ -162,7 +170,10 @@ fun DisplayTweaksScreen() {
                     modifier = Modifier.weight(1f)
                 ) { Text("Setzen") }
                 OutlinedButton(
-                    onClick = { act("Size reset") { SystemTweaks.resetSize(context) } },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        act("Size reset") { SystemTweaks.resetSize(context) }
+                    },
                     modifier = Modifier.weight(1f)
                 ) { Text("Zurücksetzen") }
             }
@@ -201,6 +212,7 @@ fun DisplayTweaksScreen() {
             )
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     animScale = 0f
                     scope.launch {
                         withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, 0f) }
@@ -212,6 +224,7 @@ fun DisplayTweaksScreen() {
                     Text("Aus (0×)", fontSize = 12.sp)
                 }
                 OutlinedButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     animScale = 1f
                     scope.launch {
                         withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, 1f) }
@@ -256,6 +269,7 @@ fun DisplayTweaksScreen() {
 
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -263,7 +277,10 @@ private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
         Text(label, modifier = Modifier.weight(1f), fontSize = 13.sp)
         Switch(
             checked = checked,
-            onCheckedChange = onChange,
+            onCheckedChange = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TOGGLE)
+                onChange(it)
+            },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = androidx.compose.ui.graphics.Color.White,
                 checkedTrackColor = Accent

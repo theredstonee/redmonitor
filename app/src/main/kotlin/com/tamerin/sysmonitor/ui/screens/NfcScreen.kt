@@ -35,7 +35,9 @@ fun NfcScreen() {
             KeyValueRow("Aktiviert", if (adapter.isEnabled) "Ja" else "Nein")
             if (!adapter.isEnabled) {
                 Spacer(Modifier.height(8.dp))
+                val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
                 Button(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     val intent = Intent(Settings.ACTION_NFC_SETTINGS)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)

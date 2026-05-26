@@ -270,6 +270,8 @@ private fun SysMonitorApp() {
         com.tamerin.sysmonitor.update.UpdatePrefs.setLastCheckMs(context, System.currentTimeMillis())
     }
 
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -292,7 +294,10 @@ private fun SysMonitorApp() {
                 },
                 navigationIcon = {
                     if (!isTopLevel) {
-                        IconButton(onClick = { navController.popBackStack() }) {
+                        IconButton(onClick = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                            navController.popBackStack()
+                        }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
                         }
                     }
@@ -315,6 +320,7 @@ private fun SysMonitorApp() {
                     NavigationBarItem(
                         selected = selected,
                         onClick = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                             if (selected && currentRoute != tab.route) {
                                 navController.popBackStack(tab.route, inclusive = false)
                             } else {
@@ -432,12 +438,14 @@ private fun SysMonitorApp() {
             },
             confirmButton = {
                 androidx.compose.material3.TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     startupUpdate = null
                     navController.navigate(Routes.UPDATE)
                 }) { Text("Details / Installieren") }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     com.tamerin.sysmonitor.update.UpdatePrefs.dismissVersion(context, pending.versionName)
                     startupUpdate = null
                 }) { Text("Ignorieren") }

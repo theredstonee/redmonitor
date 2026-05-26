@@ -22,6 +22,7 @@ fun RamBenchmarkScreen() {
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<RamBenchmarkResult?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     Column(
         modifier = Modifier
@@ -40,6 +41,7 @@ fun RamBenchmarkScreen() {
             Button(
                 enabled = !running,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     running = true
                     result = null
                     scope.launch {

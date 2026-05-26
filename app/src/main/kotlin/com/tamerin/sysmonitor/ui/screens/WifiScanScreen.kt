@@ -43,6 +43,7 @@ fun WifiScanScreen() {
 
     var results by remember { mutableStateOf<List<ScanResult>>(emptyList()) }
     var scanning by remember { mutableStateOf(false) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     DisposableEffect(Unit) {
         val receiver = object : BroadcastReceiver() {
@@ -76,6 +77,7 @@ fun WifiScanScreen() {
         }
         StatCard("Steuerung") {
             Button(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 scanning = true
                 @Suppress("DEPRECATION")
                 wm.startScan()

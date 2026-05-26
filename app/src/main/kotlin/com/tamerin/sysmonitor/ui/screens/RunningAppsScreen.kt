@@ -73,7 +73,9 @@ fun RunningAppsScreen() {
                         fontSize = 12.sp
                     )
                     Spacer(Modifier.height(8.dp))
+                    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
                     Button(onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS)
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         context.startActivity(intent)

@@ -29,6 +29,7 @@ fun GpuBenchmarkScreen() {
     var fpsMax by remember { mutableIntStateOf(0) }
     var running by remember { mutableStateOf(false) }
     var elapsed by remember { mutableIntStateOf(0) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     val renderer = remember {
         BenchmarkRenderer { current, avg, mn, mx, sec ->
@@ -49,6 +50,7 @@ fun GpuBenchmarkScreen() {
             )
             Spacer(Modifier.height(12.dp))
             Button(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 running = !running
                 if (running) {
                     renderer.reset()

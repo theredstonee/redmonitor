@@ -42,6 +42,7 @@ fun UpdateScreen() {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val df = remember { SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMANY) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     var includePre by remember { mutableStateOf(UpdatePrefs.includePrerelease(context)) }
     var notify by remember { mutableStateOf(UpdatePrefs.notificationsEnabled(context)) }
@@ -51,6 +52,7 @@ fun UpdateScreen() {
     var progress by remember { mutableStateOf(0f to 0f) }
     var installing by remember { mutableStateOf(false) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
+    var installSuccess by remember { mutableStateOf(false) }
 
     fun runCheck() {
         checking = true
@@ -137,6 +139,7 @@ fun UpdateScreen() {
                             if (shizukuReady) {
                                 Button(
                                     onClick = {
+                                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                                         downloading = true
                                         scope.launch {
                                             val dl = UpdateInstaller.downloadApk(context, s.latest.apkUrl) { d, t ->
@@ -148,7 +151,14 @@ fun UpdateScreen() {
                                                     installing = true
                                                     val (ok, msg) = UpdateInstaller.installViaShizuku(context, dl.file)
                                                     installing = false
-                                                    statusMessage = if (ok) "✓ Update installiert!" else "✗ $msg"
+                                                    if (ok) {
+                                                        statusMessage = "✓ Installation OK — App startet neu …"
+                                                        installSuccess = true
+                                                        kotlinx.coroutines.delay(800)
+                                                        UpdateInstaller.restartApp(context)
+                                                    } else {
+                                                        statusMessage = "✗ $msg"
+                                                    }
                                                 }
                                                 is UpdateInstaller.DownloadResult.Error ->
                                                     statusMessage = "✗ Download: ${dl.message}"
@@ -162,6 +172,7 @@ fun UpdateScreen() {
                             }
                             OutlinedButton(
                                 onClick = {
+                                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                                     downloading = true
                                     scope.launch {
                                         val dl = UpdateInstaller.downloadApk(context, s.latest.apkUrl) { d, t ->
@@ -181,12 +192,16 @@ fun UpdateScreen() {
                             Spacer(Modifier.height(6.dp))
                         }
                         OutlinedButton(
-                            onClick = { UpdateInstaller.openGithubRelease(context, s.latest.htmlUrl) },
+                            onClick = {
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                                UpdateInstaller.openGithubRelease(context, s.latest.htmlUrl)
+                            },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text("Release-Seite öffnen") }
                         Spacer(Modifier.height(6.dp))
                         OutlinedButton(
                             onClick = {
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                                 UpdatePrefs.dismissVersion(context, s.latest.versionName)
                                 statusMessage = "Diese Version wird nicht mehr beworben"
                             },
@@ -201,6 +216,22 @@ fun UpdateScreen() {
                             fontSize = 12.sp, fontWeight = FontWeight.Medium
                         )
                     }
+                    if (installSuccess) {
+                        Spacer(Modifier.height(8.dp))
+                        Button(
+                            onClick = {
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                                UpdateInstaller.restartApp(context)
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(containerColor = Accent)
+                        ) { Text("App jetzt neu starten") }
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            "Wichtig: ohne Neustart zeigt der Update-Checker noch die alte Version, weil der laufende Prozess die alte VERSION_NAME im Speicher hat. Nach Neustart greift die neue APK.",
+                            color = OnSurfaceMuted, fontSize = 11.sp
+                        )
+                    }
                 }
                 else -> StatCard("Aktuell") {
                     Text(
@@ -213,7 +244,10 @@ fun UpdateScreen() {
 
         StatCard("Steuerung") {
             Button(
-                onClick = { runCheck() },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                    runCheck()
+                },
                 enabled = !checking && !downloading && !installing,
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Jetzt auf Update prüfen") }

@@ -46,6 +46,7 @@ fun HudSettingsScreen() {
         )
     }
     var hudRunning by remember { mutableStateOf(false) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     fun apply(newConfig: HudConfig) {
         config = newConfig
@@ -67,6 +68,7 @@ fun HudSettingsScreen() {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         OverlayService.start(context)
                         hudRunning = true
                     },
@@ -75,6 +77,7 @@ fun HudSettingsScreen() {
                 ) { Text("HUD starten") }
                 OutlinedButton(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         OverlayService.stop(context)
                         hudRunning = false
                     },
@@ -116,7 +119,10 @@ fun HudSettingsScreen() {
                 HudSize.values().forEach { size ->
                     val selected = config.size == size
                     OutlinedButton(
-                        onClick = { apply(config.copy(size = size)) },
+                        onClick = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                            apply(config.copy(size = size))
+                        },
                         modifier = Modifier.weight(1f),
                         border = if (selected) BorderStroke(2.dp, Accent) else null
                     ) {
@@ -135,7 +141,12 @@ fun HudSettingsScreen() {
             KeyValueRow("Deckkraft", "${(config.opacity * 100).toInt()} %")
             Slider(
                 value = config.opacity,
-                onValueChange = { apply(config.copy(opacity = it)) },
+                onValueChange = {
+                    if (kotlin.math.abs(config.opacity - it) >= 0.1f) {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.SLIDER_TICK)
+                    }
+                    apply(config.copy(opacity = it))
+                },
                 valueRange = 0.3f..1.0f
             )
         }
@@ -159,7 +170,10 @@ fun HudSettingsScreen() {
                             .height(44.dp)
                             .clip(RoundedCornerShape(10.dp))
                             .background(c.composeColor())
-                            .clickable { apply(config.copy(color = c)) },
+                            .clickable {
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                                apply(config.copy(color = c))
+                            },
                         contentAlignment = Alignment.Center
                     ) {
                         if (selected) {
@@ -187,7 +201,10 @@ fun HudSettingsScreen() {
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = { apply(HudConfig.DEFAULT) }) {
+            OutlinedButton(onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                apply(HudConfig.DEFAULT)
+            }) {
                 Text("Auf Standard zurücksetzen")
             }
         }
@@ -196,10 +213,14 @@ fun HudSettingsScreen() {
 
 @Composable
 private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onChange(!checked) }
+            .clickable {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TOGGLE)
+                onChange(!checked)
+            }
             .padding(vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -207,7 +228,10 @@ private fun ToggleRow(label: String, checked: Boolean, onChange: (Boolean) -> Un
         Text(label, fontSize = 14.sp)
         Switch(
             checked = checked,
-            onCheckedChange = onChange,
+            onCheckedChange = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TOGGLE)
+                onChange(it)
+            },
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
                 checkedTrackColor = Accent

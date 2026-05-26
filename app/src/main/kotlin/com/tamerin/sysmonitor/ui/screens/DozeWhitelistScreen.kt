@@ -38,6 +38,7 @@ fun DozeWhitelistScreen() {
     var query by remember { mutableStateOf("") }
     var lastAction by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     suspend fun refresh() {
         list = withContext(Dispatchers.IO) { SystemTweaks.listDozeWhitelist(context) }
@@ -127,7 +128,10 @@ fun DozeWhitelistScreen() {
                         }
                     }
                     OutlinedButton(
-                        onClick = { act("Entfernt: ${entry.pkg}") { SystemTweaks.removeFromWhitelist(context, entry.pkg) } },
+                        onClick = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                            act("Entfernt: ${entry.pkg}") { SystemTweaks.removeFromWhitelist(context, entry.pkg) }
+                        },
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
                     ) { Text("Entfernen", fontSize = 11.sp) }
                 }

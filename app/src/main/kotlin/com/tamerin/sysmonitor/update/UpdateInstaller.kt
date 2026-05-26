@@ -90,4 +90,17 @@ object UpdateInstaller {
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(intent)
     }
+
+    /**
+     * Restarts the app completely so BuildConfig.VERSION_NAME etc. reload from the new APK.
+     * Without this, the running process keeps the OLD constants in memory even after install.
+     */
+    fun restartApp(context: Context) {
+        val launcher = context.packageManager
+            .getLaunchIntentForPackage(context.packageName) ?: return
+        val restart = Intent.makeRestartActivityTask(launcher.component)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        context.startActivity(restart)
+        Runtime.getRuntime().exit(0)
+    }
 }

@@ -36,6 +36,7 @@ fun SpeakerTestScreen() {
     var track by remember { mutableStateOf<AudioTrack?>(null) }
     var job by remember { mutableStateOf<Job?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     DisposableEffect(Unit) {
         onDispose {
@@ -155,8 +156,20 @@ fun SpeakerTestScreen() {
 
         StatCard("Steuerung") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { start() }, enabled = !playing) { Text("Ton starten") }
-                OutlinedButton(onClick = { stop() }, enabled = playing) { Text("Stop") }
+                Button(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        start()
+                    },
+                    enabled = !playing
+                ) { Text("Ton starten") }
+                OutlinedButton(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        stop()
+                    },
+                    enabled = playing
+                ) { Text("Stop") }
             }
             Spacer(Modifier.height(8.dp))
             QuickFreq("440 Hz (A4)") { freq = 440f; if (playing) start() }

@@ -71,9 +71,13 @@ fun InstalledAppsScreen() {
                 fontSize = 14.sp
             )
             Spacer(Modifier.weight(1f))
+            val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             FilterChip(
                 selected = showSystem,
-                onClick = { showSystem = !showSystem },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    showSystem = !showSystem
+                },
                 label = { Text("System-Apps anzeigen") }
             )
         }

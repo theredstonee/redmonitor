@@ -110,13 +110,19 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
         ) {
             FilterChip(
                 selected = showSystem,
-                onClick = { showSystem = !showSystem },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    showSystem = !showSystem
+                },
                 label = { Text("System", fontSize = 11.sp) }
             )
             SortMode.values().forEach { mode ->
                 FilterChip(
                     selected = sortMode == mode,
-                    onClick = { sortMode = mode },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        sortMode = mode
+                    },
                     label = { Text(mode.label, fontSize = 11.sp) }
                 )
             }

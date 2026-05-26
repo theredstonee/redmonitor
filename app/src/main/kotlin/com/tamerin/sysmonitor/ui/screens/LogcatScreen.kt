@@ -46,6 +46,7 @@ fun LogcatScreen() {
     var autoScroll by remember { mutableStateOf(true) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     fun fetchOnce() {
         scope.launch {
@@ -102,17 +103,29 @@ fun LogcatScreen() {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Button(onClick = { fetchOnce() }, modifier = Modifier.weight(1f)) {
-                Text("Aktualisieren", fontSize = 12.sp)
-            }
+            Button(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    fetchOnce()
+                },
+                modifier = Modifier.weight(1f)
+            ) { Text("Aktualisieren", fontSize = 12.sp) }
             if (!streaming) {
-                Button(onClick = { startStream() }, modifier = Modifier.weight(1f)) {
-                    Text("Live ein", fontSize = 12.sp)
-                }
+                Button(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        startStream()
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("Live ein", fontSize = 12.sp) }
             } else {
-                OutlinedButton(onClick = { streaming = false }, modifier = Modifier.weight(1f)) {
-                    Text("Live aus", fontSize = 12.sp)
-                }
+                OutlinedButton(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        streaming = false
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("Live aus", fontSize = 12.sp) }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -128,14 +141,20 @@ fun LogcatScreen() {
             LogLevel.values().forEach { lv ->
                 FilterChip(
                     selected = minLevel == lv,
-                    onClick = { minLevel = lv },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        minLevel = lv
+                    },
                     label = { Text(lv.short, fontSize = 11.sp) }
                 )
             }
             Spacer(Modifier.weight(1f))
             FilterChip(
                 selected = autoScroll,
-                onClick = { autoScroll = !autoScroll },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    autoScroll = !autoScroll
+                },
                 label = { Text("Auto-Scroll", fontSize = 11.sp) }
             )
         }

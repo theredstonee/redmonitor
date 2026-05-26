@@ -36,11 +36,21 @@ fun CodecsScreen() {
         }
     }
 
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(showEncoders, { showEncoders = !showEncoders }, label = { Text("Encoder") })
-            FilterChip(showDecoders, { showDecoders = !showDecoders }, label = { Text("Decoder") })
-            FilterChip(hwOnly, { hwOnly = !hwOnly }, label = { Text("Nur HW") })
+            FilterChip(showEncoders, {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                showEncoders = !showEncoders
+            }, label = { Text("Encoder") })
+            FilterChip(showDecoders, {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                showDecoders = !showDecoders
+            }, label = { Text("Decoder") })
+            FilterChip(hwOnly, {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                hwOnly = !hwOnly
+            }, label = { Text("Nur HW") })
         }
         Spacer(Modifier.height(8.dp))
         Text("${filtered.size} Codecs", color = OnSurfaceMuted, fontSize = 12.sp)

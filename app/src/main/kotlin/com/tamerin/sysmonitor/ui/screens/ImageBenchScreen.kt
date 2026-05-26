@@ -25,6 +25,7 @@ fun ImageBenchScreen() {
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<ImageBenchResult?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -39,6 +40,7 @@ fun ImageBenchScreen() {
             Button(
                 enabled = !running,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     running = true
                     result = null
                     scope.launch {

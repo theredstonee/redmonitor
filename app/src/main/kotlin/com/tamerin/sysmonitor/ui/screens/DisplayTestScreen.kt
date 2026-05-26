@@ -28,6 +28,7 @@ private val COLORS = listOf(
 @Composable
 fun DisplayTestScreen() {
     var fullscreen by remember { mutableIntStateOf(-1) }
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     if (fullscreen >= 0) {
         val c = COLORS[fullscreen]
@@ -36,6 +37,7 @@ fun DisplayTestScreen() {
                 .fillMaxSize()
                 .background(c.color)
                 .clickable {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     fullscreen = if (fullscreen + 1 < COLORS.size) fullscreen + 1 else -1
                 }
         ) {
@@ -69,7 +71,10 @@ fun DisplayTestScreen() {
                     .fillMaxWidth()
                     .height(56.dp)
                     .background(c.color)
-                    .clickable { fullscreen = idx },
+                    .clickable {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        fullscreen = idx
+                    },
                 contentAlignment = Alignment.Center
             ) {
                 Text(

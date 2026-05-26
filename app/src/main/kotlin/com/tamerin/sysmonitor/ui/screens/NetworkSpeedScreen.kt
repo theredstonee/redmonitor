@@ -27,6 +27,7 @@ fun NetworkSpeedScreen() {
     var progressMb by remember { mutableDoubleStateOf(0.0) }
     var error by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -41,6 +42,7 @@ fun NetworkSpeedScreen() {
             Button(
                 enabled = !running,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     running = true
                     result = null
                     error = null

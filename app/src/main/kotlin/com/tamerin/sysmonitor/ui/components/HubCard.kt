@@ -43,6 +43,7 @@ fun HubGrid(
     onClick: (HubEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier
@@ -53,7 +54,10 @@ fun HubGrid(
         contentPadding = PaddingValues(4.dp)
     ) {
         items(entries, key = { it.route }) { entry ->
-            HubCard(entry = entry, onClick = { onClick(entry) })
+            HubCard(entry = entry, onClick = {
+                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                onClick(entry)
+            })
         }
     }
 }

@@ -25,6 +25,7 @@ fun CpuBenchmarkScreen() {
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<CpuBenchmarkResult?>(null) }
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     Column(
         modifier = Modifier
@@ -43,6 +44,7 @@ fun CpuBenchmarkScreen() {
             Button(
                 enabled = !running,
                 onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     running = true
                     result = null
                     scope.launch {
