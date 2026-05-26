@@ -21,7 +21,7 @@ import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 
 @Composable
-fun OverlayHudScreen() {
+fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
     val context = LocalContext.current
     var hasPerm by remember { mutableStateOf(checkPerm(context)) }
     var running by remember { mutableStateOf(false) }
@@ -39,7 +39,7 @@ fun OverlayHudScreen() {
     ) {
         StatCard("Floating-HUD") {
             Text(
-                "Zeigt eine kleine Live-Anzeige (CPU, RAM, Akku, Temp, Ladewatt) über allen anderen Apps. Drag = verschieben, Tap = App öffnen.",
+                "Zeigt eine kleine Live-Anzeige (CPU, RAM, Akku, Temp, FPS, Netz und mehr) über allen anderen Apps. Drag = verschieben, Tap = App öffnen.",
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
@@ -75,18 +75,31 @@ fun OverlayHudScreen() {
                     Button(onClick = {
                         OverlayService.start(context)
                         running = true
-                    }) { Text("HUD starten") }
+                    }, modifier = Modifier.weight(1f)) { Text("HUD starten") }
                     OutlinedButton(onClick = {
                         OverlayService.stop(context)
                         running = false
-                    }) { Text("HUD stoppen") }
+                    }, modifier = Modifier.weight(1f)) { Text("Stopp") }
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Das HUD läuft als Foreground-Service mit dauerhafter Benachrichtigung — Android verlangt das. Über die Benachrichtigung kannst du es auch beenden.",
+                    "Das HUD läuft als Foreground-Service mit dauerhafter Benachrichtigung — Android verlangt das.",
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
+            }
+
+            StatCard("Anpassen") {
+                Text(
+                    "Welche Werte angezeigt werden, Größe, Farbe, Transparenz und Edge-Snapping.",
+                    color = OnSurfaceMuted,
+                    fontSize = 12.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = onCustomize,
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("HUD anpassen") }
             }
         }
     }
