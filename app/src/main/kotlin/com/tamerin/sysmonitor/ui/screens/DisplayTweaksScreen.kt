@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 fun DisplayTweaksScreen() {
     val context = LocalContext.current
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     var displayState by remember { mutableStateOf<SystemTweaks.DisplayState?>(null) }
     var anim by remember { mutableStateOf<SystemTweaks.AnimScales?>(null) }
     var showTouches by remember { mutableStateOf(false) }
@@ -179,7 +180,13 @@ fun DisplayTweaksScreen() {
                 color = Accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             Slider(
                 value = animScale,
-                onValueChange = { animScale = it },
+                onValueChange = {
+                    val before = animScale
+                    animScale = it
+                    if (kotlin.math.abs(before - it) >= 0.25f) {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.SLIDER_TICK)
+                    }
+                },
                 onValueChangeFinished = {
                     scope.launch {
                         val r = withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, animScale) }

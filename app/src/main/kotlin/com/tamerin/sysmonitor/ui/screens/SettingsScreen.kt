@@ -18,6 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.BuildConfig
 import com.tamerin.sysmonitor.settings.AppPrefs
+import com.tamerin.sysmonitor.settings.Haptic
+import com.tamerin.sysmonitor.settings.HapticIntensity
+import com.tamerin.sysmonitor.settings.HapticType
 import com.tamerin.sysmonitor.update.UpdatePrefs
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -31,6 +34,7 @@ fun SettingsScreen() {
     var includePre by remember { mutableStateOf(UpdatePrefs.includePrerelease(context)) }
     var notify by remember { mutableStateOf(UpdatePrefs.notificationsEnabled(context)) }
     var haptics by remember { mutableStateOf(AppPrefs.hapticFeedbackEnabled(context)) }
+    var hapticIntensity by remember { mutableStateOf(AppPrefs.hapticIntensity(context)) }
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -64,14 +68,79 @@ fun SettingsScreen() {
             ) { Text("Auf Update prüfen") }
         }
 
-        StatCard("Bedienung") {
+        StatCard("Haptisches Feedback") {
             ToggleRow(
-                label = "Haptisches Feedback bei Aktionen",
-                description = "Leichte Vibration bei Tasten/Toggles (in Vorbereitung — Wirkung folgt im nächsten Update)",
+                label = "Haptik bei Aktionen",
+                description = "Leichte Vibration bei Tap, kräftigere bei destruktiven Aktionen (Force-Stop, Delete, Drain)",
                 checked = haptics
             ) {
                 haptics = it
                 AppPrefs.setHapticFeedbackEnabled(context, it)
+                if (it) Haptic.perform(context, HapticType.CONFIRM)
+            }
+
+            if (haptics) {
+                Spacer(Modifier.height(8.dp))
+                Text("Intensität", color = OnSurfaceMuted, fontSize = 12.sp)
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    HapticIntensity.values().forEach { lvl ->
+                        val selected = hapticIntensity == lvl
+                        OutlinedButton(
+                            onClick = {
+                                hapticIntensity = lvl
+                                AppPrefs.setHapticIntensity(context, lvl)
+                                Haptic.perform(context, HapticType.TAP)
+                            },
+                            modifier = Modifier.weight(1f),
+                            border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, Accent) else null
+                        ) {
+                            Text(
+                                lvl.label,
+                                color = if (selected) Accent else androidx.compose.ui.graphics.Color.Unspecified,
+                                fontSize = 12.sp
+                            )
+                        }
+                    }
+                }
+                Spacer(Modifier.height(10.dp))
+                Text("Tester:", color = OnSurfaceMuted, fontSize = 11.sp)
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.TAP) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Tap", fontSize = 11.sp) }
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.TOGGLE) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Toggle", fontSize = 11.sp) }
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.DESTRUCTIVE) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Destruktiv", fontSize = 11.sp) }
+                }
+                Spacer(Modifier.height(4.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.CONFIRM) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Confirm", fontSize = 11.sp) }
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.ERROR) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Error", fontSize = 11.sp) }
+                    OutlinedButton(
+                        onClick = { Haptic.perform(context, HapticType.SLIDER_TICK) },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(4.dp)
+                    ) { Text("Slider", fontSize = 11.sp) }
+                }
             }
         }
 

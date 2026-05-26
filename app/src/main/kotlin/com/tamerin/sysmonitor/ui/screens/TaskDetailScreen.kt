@@ -83,6 +83,7 @@ fun TaskDetailScreen(pkg: String) {
         }
     }
 
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -125,12 +126,18 @@ fun TaskDetailScreen(pkg: String) {
         StatCard("Sofort-Aktionen") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
-                    onClick = { runAction("Force-Stop") { AppActions.forceStop(context, pkg) } },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                        runAction("Force-Stop") { AppActions.forceStop(context, pkg) }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                     modifier = Modifier.weight(1f)
                 ) { Text("Force-Stop", fontSize = 13.sp) }
                 OutlinedButton(
-                    onClick = { runAction("Soft-Kill") { AppActions.softKill(context, pkg) } },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        runAction("Soft-Kill") { AppActions.softKill(context, pkg) }
+                    },
                     modifier = Modifier.weight(1f)
                 ) { Text("Soft-Kill", fontSize = 13.sp) }
             }
@@ -143,12 +150,18 @@ fun TaskDetailScreen(pkg: String) {
 
         StatCard("Speicher-Aktionen") {
             OutlinedButton(
-                onClick = { runAction("Cache geleert") { AppActions.clearCache(context, pkg) } },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    runAction("Cache geleert") { AppActions.clearCache(context, pkg) }
+                },
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Nur Cache leeren (safe)", fontSize = 13.sp) }
             Spacer(Modifier.height(6.dp))
             Button(
-                onClick = { confirmDialog = ConfirmAction.ClearData },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                    confirmDialog = ConfirmAction.ClearData
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                 modifier = Modifier.fillMaxWidth()
             ) { Text("App-Daten komplett zurücksetzen", fontSize = 13.sp) }
@@ -161,7 +174,10 @@ fun TaskDetailScreen(pkg: String) {
 
         StatCard("Deinstallieren") {
             Button(
-                onClick = { confirmDialog = ConfirmAction.Uninstall(isSystemApp) },
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                    confirmDialog = ConfirmAction.Uninstall(isSystemApp)
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -242,6 +258,7 @@ fun TaskDetailScreen(pkg: String) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         scope.launch {
                             val r = withContext(Dispatchers.IO) { AppActions.deepFreeze(context, pkg) }
                             runMulti("Deep-Freeze", r)
@@ -252,6 +269,7 @@ fun TaskDetailScreen(pkg: String) {
                 ) { Text("🥶 Einfrieren", fontSize = 13.sp) }
                 OutlinedButton(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         scope.launch {
                             val r = withContext(Dispatchers.IO) { AppActions.unfreeze(context, pkg) }
                             runMulti("Auftauen", r)
@@ -409,6 +427,7 @@ fun TaskDetailScreen(pkg: String) {
             confirmButton = {
                 TextButton(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         confirmDialog = null
                         runAction(action.label) {
                             when (action) {
@@ -420,7 +439,10 @@ fun TaskDetailScreen(pkg: String) {
                 ) { Text("Bestätigen", color = GaugeRed) }
             },
             dismissButton = {
-                TextButton(onClick = { confirmDialog = null }) { Text("Abbrechen") }
+                TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    confirmDialog = null
+                }) { Text("Abbrechen") }
             }
         )
     }

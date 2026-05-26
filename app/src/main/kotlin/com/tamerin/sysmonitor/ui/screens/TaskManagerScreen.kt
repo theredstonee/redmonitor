@@ -56,6 +56,7 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
     var sortMode by remember { mutableStateOf(SortMode.RAM_DESC) }
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
     val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     LaunchedEffect(Unit) {
         while (true) {
@@ -132,8 +133,12 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
                 AppRow(
                     app = app,
                     canStop = shizukuReady,
-                    onClick = { onSelect(app.pkg) },
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        onSelect(app.pkg)
+                    },
                     onStop = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         scope.launch(Dispatchers.IO) {
                             AppActions.forceStop(context, app.pkg)
                         }

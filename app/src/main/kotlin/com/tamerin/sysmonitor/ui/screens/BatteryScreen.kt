@@ -96,6 +96,7 @@ fun BatteryScreen() {
         }
     }
 
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -130,6 +131,7 @@ fun BatteryScreen() {
             if (drainActive) {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         drainEngine.stop(context, activity)
                         drainActive = false
                     },
@@ -166,6 +168,7 @@ fun BatteryScreen() {
             } else {
                 Button(
                     onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         drainStartPct = snap.percent
                         drainStartMs = System.currentTimeMillis()
                         drainRatePctPerHour = 0f
