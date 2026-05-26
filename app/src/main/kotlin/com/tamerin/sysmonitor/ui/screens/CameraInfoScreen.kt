@@ -78,7 +78,7 @@ fun CameraInfoScreen() {
                 KeyValueRow("Logische Kameras", logical.toString())
                 if (physical > 0) KeyValueRow("Physische Sub-Kameras", physical.toString())
                 Text(
-                    "Tippe auf eine Karte, um Details zu sehen. Auf Multi-Kamera-Geräten zeigt Android meistens nur die „logische" Hauptkamera. Die physischen Sub-Sensoren (Ultraweitwinkel/Tele/Tiefe) findest du unter ihren Parent-IDs.",
+                    "Tippe auf eine Karte, um Details zu sehen. Auf Multi-Kamera-Geräten zeigt Android meistens nur die logische Hauptkamera. Die physischen Sub-Sensoren (Ultraweitwinkel/Tele/Tiefe) findest du unter ihren Parent-IDs.",
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
