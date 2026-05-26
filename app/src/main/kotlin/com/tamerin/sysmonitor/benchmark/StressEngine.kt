@@ -43,6 +43,11 @@ class StressEngine {
                 wakeLock = wl
             }
         }
+        // Boost scheduler priority via Shizuku if available
+        if (context != null) {
+            runCatching { PerformanceBooster.boost(context) }
+        }
+
         val cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         repeat(cores) { idx ->
             val t = Thread({
@@ -53,8 +58,9 @@ class StressEngine {
                 var x = 1.0
                 var n = 0L
                 while (running) {
+                    // No volatile-read in inner loop — that's a 10× perf hit
                     var i = 0
-                    while (i < 50_000 && running) {
+                    while (i < 50_000) {
                         x = sqrt(x + i.toDouble() + 1.0) * 1.000001
                         n += (i.toLong() * 17L) xor (n shr 5)
                         i++

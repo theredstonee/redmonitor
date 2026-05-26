@@ -35,6 +35,7 @@ object CpuBenchmark {
                 it.setReferenceCounted(false)
                 runCatching { it.acquire(60_000L) }
             }
+        if (context != null) runCatching { PerformanceBooster.boost(context) }
 
         val totalStart = System.currentTimeMillis()
         try {

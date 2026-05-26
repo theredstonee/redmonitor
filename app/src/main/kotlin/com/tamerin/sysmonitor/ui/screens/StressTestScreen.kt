@@ -41,8 +41,17 @@ fun StressTestScreen() {
     val tempHistory = remember { mutableStateListOf<Float>() }
     val cpuHistory = remember { mutableStateListOf<Float>() }
 
-    DisposableEffect(Unit) {
-        onDispose { engine.stop() }
+    val activity = context as? android.app.Activity
+    DisposableEffect(running) {
+        if (running) {
+            activity?.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        } else {
+            activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        }
+        onDispose {
+            activity?.window?.clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            engine.stop()
+        }
     }
 
     LaunchedEffect(Unit) {
