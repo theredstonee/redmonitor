@@ -2,6 +2,7 @@ package com.tamerin.sysmonitor.ui.screens.info
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
+import androidx.compose.material.icons.filled.BatteryAlert
 import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Nfc
@@ -30,7 +31,8 @@ private val INFO_ENTRIES = listOf(
     HubEntry(Routes.INFO_INSTALLED, "Installierte Apps", "Pakete + Größe", Icons.Filled.Apps),
     HubEntry(Routes.INFO_FEATURES, "Hardware-Features", "Was hat das Gerät", Icons.Filled.DeviceHub),
     HubEntry(Routes.INFO_PROPS, "System-Properties", "Alle Build-Props", Icons.Filled.Storage),
-    HubEntry(Routes.INFO_LOGCAT, "Logcat", "Live System-Logs (Shizuku)", Icons.Filled.ListAlt)
+    HubEntry(Routes.INFO_LOGCAT, "Logcat", "Live System-Logs (Shizuku)", Icons.Filled.ListAlt),
+    HubEntry(Routes.INFO_DOZE, "Doze-Whitelist", "Akku-Optimierung verwalten", Icons.Filled.BatteryAlert)
 )
 
 @Composable

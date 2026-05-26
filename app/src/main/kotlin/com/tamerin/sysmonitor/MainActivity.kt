@@ -53,6 +53,8 @@ import com.tamerin.sysmonitor.ui.screens.CpuBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.CpuScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayTestScreen
+import com.tamerin.sysmonitor.ui.screens.DisplayTweaksScreen
+import com.tamerin.sysmonitor.ui.screens.DozeWhitelistScreen
 import com.tamerin.sysmonitor.ui.screens.FeaturesScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
 import com.tamerin.sysmonitor.ui.screens.FullscreenDisplayTestScreen
@@ -159,6 +161,8 @@ object Routes {
     const val INFO_BLUETOOTH = "info/bluetooth"
     const val INFO_NFC = "info/nfc"
     const val INFO_LOGCAT = "info/logcat"
+    const val INFO_DOZE = "info/doze"
+    const val SYSTEM_TWEAKS = "system/tweaks"
 }
 
 private data class TopTab(val route: String, val label: String, val icon: ImageVector)
@@ -225,6 +229,8 @@ private fun titleFor(route: String?): String = when {
     route == Routes.INFO_BLUETOOTH -> "Bluetooth"
     route == Routes.INFO_NFC -> "NFC"
     route == Routes.INFO_LOGCAT -> "Logcat"
+    route == Routes.INFO_DOZE -> "Doze-Whitelist"
+    route == Routes.SYSTEM_TWEAKS -> "Display-Tweaks"
     else -> "SysMonitor"
 }
 
@@ -375,6 +381,8 @@ private fun SysMonitorApp() {
             composable(Routes.INFO_BLUETOOTH) { BluetoothScreen() }
             composable(Routes.INFO_NFC) { NfcScreen() }
             composable(Routes.INFO_LOGCAT) { LogcatScreen() }
+            composable(Routes.INFO_DOZE) { DozeWhitelistScreen() }
+            composable(Routes.SYSTEM_TWEAKS) { DisplayTweaksScreen() }
         }
     }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.NetworkCheck
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
 import com.tamerin.sysmonitor.ui.components.HubEntry
@@ -22,7 +23,8 @@ private val SYSTEM_ENTRIES = listOf(
     HubEntry(Routes.GPU, "GPU", "Renderer, OpenGL, GLSL", Icons.Filled.DeveloperBoard),
     HubEntry(Routes.NETWORK, "Netzwerk", "WLAN, Signal, IP, Traffic", Icons.Filled.NetworkCheck),
     HubEntry(Routes.DISPLAY, "Display & Gerät", "Build, Uptime, Display", Icons.Filled.PhoneAndroid),
-    HubEntry(Routes.HUD, "Floating HUD", "Live-Overlay über allen Apps", Icons.Filled.Layers)
+    HubEntry(Routes.HUD, "Floating HUD", "Live-Overlay über allen Apps", Icons.Filled.Layers),
+    HubEntry(Routes.SYSTEM_TWEAKS, "Display-Tweaks", "DPI, Auflösung, Animationen", Icons.Filled.Tune)
 )
 
 @Composable

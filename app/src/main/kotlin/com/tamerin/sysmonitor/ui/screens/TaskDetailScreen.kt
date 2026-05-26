@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.data.AppActions
 import com.tamerin.sysmonitor.data.ShizukuHelper
+import com.tamerin.sysmonitor.data.SystemTweaks
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -47,6 +48,7 @@ fun TaskDetailScreen(pkg: String) {
     var lastAction by remember { mutableStateOf<String?>(null) }
     var disabled by remember { mutableStateOf(false) }
     var suspended by remember { mutableStateOf(false) }
+    var dozeWhitelisted by remember { mutableStateOf(false) }
     var bgState by remember { mutableStateOf<AppActions.AppOpsState?>(null) }
     var receivers by remember { mutableStateOf<List<AppActions.Receiver>>(emptyList()) }
     var confirmDialog by remember { mutableStateOf<ConfirmAction?>(null) }
@@ -56,6 +58,7 @@ fun TaskDetailScreen(pkg: String) {
         if (shizukuReady) {
             disabled = withContext(Dispatchers.IO) { AppActions.isAppDisabled(context, pkg) }
             suspended = withContext(Dispatchers.IO) { AppActions.isAppSuspended(context, pkg) }
+            dozeWhitelisted = withContext(Dispatchers.IO) { SystemTweaks.isWhitelisted(context, pkg) }
             bgState = withContext(Dispatchers.IO) { AppActions.getAppOpsState(context, pkg) }
             receivers = withContext(Dispatchers.IO) { AppActions.listBootReceivers(context, pkg) }
         }
@@ -256,6 +259,40 @@ fun TaskDetailScreen(pkg: String) {
                     },
                     modifier = Modifier.weight(1f)
                 ) { Text("☀ Auftauen", fontSize = 13.sp) }
+            }
+        }
+
+        StatCard("Akku-Optimierung (Doze-Whitelist)") {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Auf Whitelist", fontSize = 14.sp)
+                    Text(
+                        if (dozeWhitelisted) "Darf in Doze laufen — frisst mehr Akku"
+                        else "Wird in Doze gedrosselt — spart Akku",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                }
+                Switch(
+                    checked = dozeWhitelisted,
+                    onCheckedChange = { wantOn ->
+                        runAction(if (wantOn) "Whitelist + $pkg" else "Whitelist - $pkg") {
+                            if (wantOn) SystemTweaks.addToWhitelist(context, pkg)
+                            else SystemTweaks.removeFromWhitelist(context, pkg)
+                        }
+                        scope.launch {
+                            dozeWhitelisted = withContext(Dispatchers.IO) {
+                                SystemTweaks.isWhitelisted(context, pkg)
+                            }
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+                        checkedTrackColor = Accent
+                    )
+                )
             }
         }
 
