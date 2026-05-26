@@ -3,11 +3,17 @@ package com.tamerin.sysmonitor.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.data.CpuSnapshot
+import com.tamerin.sysmonitor.data.SocIdentifier
 import com.tamerin.sysmonitor.ui.components.CircularGauge
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.PercentBar
@@ -16,6 +22,7 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun CpuScreen() {
+    val soc = remember { SocIdentifier.identify() }
     var snap by remember {
         mutableStateOf(
             CpuSnapshot(0f, emptyList(), emptyList(), emptyList(), emptyList(), "?", 0, "", emptyList(), "", "—")
@@ -37,6 +44,16 @@ fun CpuScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        StatCard("Prozessor") {
+            Text(
+                soc.fullLabel,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                fontSize = 20.sp
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(soc.manufacturer, color = OnSurfaceMuted, fontSize = 13.sp)
+        }
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
             CircularGauge(percent = snap.totalPercent, label = "Gesamt-Last", size = 180.dp)
         }

@@ -39,7 +39,7 @@ object BatteryReader {
     private var lastChargeUah: Long = Long.MIN_VALUE
     private var lastChargeSampleMs: Long = 0L
     private var emaCurrentMa: Float = 0f
-    private const val MIN_SAMPLE_GAP_MS = 2_000L
+    private const val MIN_SAMPLE_GAP_MS = 5_000L
 
     fun read(context: Context): BatterySnapshot {
         val filter = IntentFilter(Intent.ACTION_BATTERY_CHANGED)
@@ -116,12 +116,19 @@ object BatteryReader {
         val deltaCurrentMa = computeDeltaCurrentMa(capacityRaw.toLong())
 
         // ---- Pick best current source ----
-        // Priority: delta-derived (most accurate) > CURRENT_NOW > CURRENT_AVERAGE
-        val bestCurrentMa = when {
-            deltaCurrentMa != 0L -> deltaCurrentMa
-            bmCurrentMa != 0L -> bmCurrentMa
-            avgMa != 0L -> avgMa
-            else -> 0L
+        // When charging: use the LARGER absolute of (Δ, AVG, CURRENT_NOW) — they're all under-estimates
+        //   because Samsung samples at different intervals
+        // When discharging: prefer AVG (smoother) over CURRENT_NOW
+        val bestCurrentMa = if (charging) {
+            listOf(deltaCurrentMa, avgMa, bmCurrentMa)
+                .maxByOrNull { abs(it) } ?: 0L
+        } else {
+            when {
+                avgMa != 0L -> avgMa
+                bmCurrentMa != 0L -> bmCurrentMa
+                deltaCurrentMa != 0L -> deltaCurrentMa
+                else -> 0L
+            }
         }
 
         // ---- USB / Input-side (true wall-power if not blocked) ----
@@ -140,7 +147,11 @@ object BatteryReader {
             "/sys/class/power_supply/charger/current_now",
             "/sys/class/power_supply/ac/current_now",
             "/sys/class/power_supply/main/current_now",
-            "/sys/class/power_supply/battery/input_current_now"
+            "/sys/class/power_supply/battery/input_current_now",
+            // Samsung-specific
+            "/sys/class/power_supply/sec-charger/current_now",
+            "/sys/class/power_supply/sec-direct-charger/current_now",
+            "/sys/class/power_supply/battery/input_current_settled"
         )?.let { normalizeToMa(it.toInt()) } ?: 0L
 
         // Samsung blocks USB-sysfs even via Shizuku — but `dumpsys battery` works as shell user

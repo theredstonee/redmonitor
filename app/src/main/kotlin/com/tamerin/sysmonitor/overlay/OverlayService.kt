@@ -11,11 +11,18 @@ import android.content.pm.ServiceInfo
 import android.graphics.Color as AndroidColor
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
+import android.net.TrafficStats
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.os.SystemClock
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
+import android.util.DisplayMetrics
 import android.util.TypedValue
+import android.view.Choreographer
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -28,12 +35,16 @@ import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.data.MemoryReader
 import com.tamerin.sysmonitor.data.ThermalReader
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class OverlayService : Service() {
 
     companion object {
         const val ACTION_START = "com.tamerin.sysmonitor.overlay.START"
         const val ACTION_STOP = "com.tamerin.sysmonitor.overlay.STOP"
+        const val ACTION_RELOAD = "com.tamerin.sysmonitor.overlay.RELOAD"
         private const val CHANNEL_ID = "sysmonitor_overlay"
         private const val NOTIFICATION_ID = 4242
 
@@ -46,12 +57,45 @@ class OverlayService : Service() {
             val i = Intent(context, OverlayService::class.java).setAction(ACTION_STOP)
             context.startService(i)
         }
+
+        fun reload(context: Context) {
+            val i = Intent(context, OverlayService::class.java).setAction(ACTION_RELOAD)
+            context.startService(i)
+        }
     }
 
     private var view: View? = null
     private var windowManager: WindowManager? = null
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var textView: TextView
+    private lateinit var background: GradientDrawable
+    private lateinit var params: WindowManager.LayoutParams
+    private var config: HudConfig = HudConfig.DEFAULT
+
+    // FPS counter
+    private var frames = 0
+    private var lastFpsSnapshot = 0L
+    private var currentFps = 0
+    private val frameCallback = object : Choreographer.FrameCallback {
+        override fun doFrame(frameTimeNanos: Long) {
+            frames++
+            val now = SystemClock.elapsedRealtime()
+            if (lastFpsSnapshot == 0L) lastFpsSnapshot = now
+            if (now - lastFpsSnapshot >= 1000) {
+                currentFps = (frames * 1000 / (now - lastFpsSnapshot)).toInt()
+                frames = 0
+                lastFpsSnapshot = now
+            }
+            if (view != null) Choreographer.getInstance().postFrameCallback(this)
+        }
+    }
+
+    // Network speed tracking
+    private var lastRx = 0L
+    private var lastTx = 0L
+    private var lastNetMs = 0L
+    private var downKbps = 0
+    private var upKbps = 0
 
     private val tick = object : Runnable {
         override fun run() {
@@ -69,6 +113,7 @@ class OverlayService : Service() {
                 stopSelf()
                 return START_NOT_STICKY
             }
+            ACTION_RELOAD -> reloadConfig()
             else -> startOverlay()
         }
         return START_STICKY
@@ -78,26 +123,30 @@ class OverlayService : Service() {
         ensureChannel()
         startForeground(NOTIFICATION_ID, buildNotification(), foregroundType())
 
+        config = HudPrefs.load(this)
         if (view != null) return
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
         val density = resources.displayMetrics.density
         fun Int.px(): Int = (this * density).toInt()
 
+        background = GradientDrawable().apply {
+            setColor(AndroidColor.parseColor("#0A0A0A"))
+            cornerRadius = 14f * density
+            setStroke(1, config.color.hex.toInt())
+            alpha = (config.opacity * 255).toInt()
+        }
         val container = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            background = GradientDrawable().apply {
-                setColor(AndroidColor.parseColor("#CC0B0F14"))
-                cornerRadius = 14f * density
-                setStroke(1, AndroidColor.parseColor("#4FC3F7"))
-            }
+            background = this@OverlayService.background
             setPadding(10.px(), 8.px(), 10.px(), 8.px())
         }
         textView = TextView(this).apply {
-            setTextColor(AndroidColor.parseColor("#E6ECF2"))
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+            setTextColor(AndroidColor.parseColor("#F3F4F6"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f * config.size.scale)
             typeface = android.graphics.Typeface.MONOSPACE
             text = "starte…"
+            lineSpacingExtra = 2f
         }
         container.addView(textView)
         view = container
@@ -107,7 +156,7 @@ class OverlayService : Service() {
         else
             @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
 
-        val params = WindowManager.LayoutParams(
+        params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
             WindowManager.LayoutParams.WRAP_CONTENT,
             type,
@@ -117,8 +166,8 @@ class OverlayService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.START
-            x = 16.px()
-            y = 80.px()
+            x = config.x.px()
+            y = config.y.px()
         }
 
         var initialX = 0
@@ -129,10 +178,8 @@ class OverlayService : Service() {
         container.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
-                    initialX = params.x
-                    initialY = params.y
-                    touchX = event.rawX
-                    touchY = event.rawY
+                    initialX = params.x; initialY = params.y
+                    touchX = event.rawX; touchY = event.rawY
                     downTime = System.currentTimeMillis()
                     true
                 }
@@ -147,11 +194,14 @@ class OverlayService : Service() {
                     val dy = kotlin.math.abs(event.rawY - touchY)
                     val held = System.currentTimeMillis() - downTime
                     if (dx < 10 && dy < 10 && held < 500) {
-                        // Tap = open main app
                         val open = Intent(this, MainActivity::class.java)
                             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         startActivity(open)
+                    } else if (config.edgeSnap) {
+                        snapToEdge()
                     }
+                    // Persist position
+                    HudPrefs.savePosition(this, (params.x / density).toInt(), (params.y / density).toInt())
                     true
                 }
                 else -> false
@@ -159,32 +209,117 @@ class OverlayService : Service() {
         }
 
         runCatching { windowManager?.addView(container, params) }
-        CpuReader.read() // prime
+        CpuReader.read()
+        lastRx = TrafficStats.getTotalRxBytes()
+        lastTx = TrafficStats.getTotalTxBytes()
+        lastNetMs = SystemClock.elapsedRealtime()
+        Choreographer.getInstance().postFrameCallback(frameCallback)
         handler.post(tick)
     }
 
-    private fun updateText() {
-        val cpu = CpuReader.read()
-        val ram = MemoryReader.readRam(this)
-        val batt = BatteryReader.read(this)
-        val zones = ThermalReader.read()
-        val hot = ThermalReader.hottestCpuZone(zones)
-        val tempText = if (hot != null && !hot.tempCelsius.isNaN())
-            "${"%.0f".format(hot.tempCelsius)}°C" else "${"%.0f".format(batt.temperatureC)}°C"
-        val line = buildString {
-            append("CPU ").append("%2d".format(cpu.totalPercent.toInt())).append("%  ")
-            append("RAM ").append("%2d".format(ram.percent.toInt())).append("%\n")
-            append("Akku ").append(batt.percent.toInt()).append("%  ")
-            append(tempText)
-            if (batt.isCharging && batt.wattsNow > 0) {
-                append("  ⚡").append("%.1f".format(batt.wattsNow)).append("W")
-            }
+    private fun reloadConfig() {
+        if (view == null) return
+        config = HudPrefs.load(this)
+        background.alpha = (config.opacity * 255).toInt()
+        background.setStroke(1, config.color.hex.toInt())
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f * config.size.scale)
+        updateText()
+    }
+
+    private fun snapToEdge() {
+        val dm = DisplayMetrics()
+        @Suppress("DEPRECATION")
+        windowManager?.defaultDisplay?.getMetrics(dm)
+        val screenW = dm.widthPixels
+        val viewW = view?.width ?: 0
+        params.x = if (params.x + viewW / 2 < screenW / 2) {
+            0
+        } else {
+            screenW - viewW
         }
-        textView.text = line
+        runCatching { view?.let { windowManager?.updateViewLayout(it, params) } }
+    }
+
+    private fun updateText() {
+        val metrics = config.enabledMetrics
+        val cpu = if (HudMetric.CPU_PERCENT in metrics || HudMetric.PER_CORE in metrics) CpuReader.read() else null
+        val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
+        val batt = if (HudMetric.BATTERY in metrics) BatteryReader.read(this) else null
+        val cpuTemp = if (HudMetric.CPU_TEMP in metrics) {
+            val zones = ThermalReader.read()
+            ThermalReader.hottestCpuZone(zones)?.tempCelsius
+        } else null
+
+        if (HudMetric.NETWORK in metrics) {
+            val now = SystemClock.elapsedRealtime()
+            val rx = TrafficStats.getTotalRxBytes().coerceAtLeast(0)
+            val tx = TrafficStats.getTotalTxBytes().coerceAtLeast(0)
+            val dt = (now - lastNetMs).coerceAtLeast(1).toFloat() / 1000f
+            downKbps = ((rx - lastRx) / 1024 / dt).toInt().coerceAtLeast(0)
+            upKbps = ((tx - lastTx) / 1024 / dt).toInt().coerceAtLeast(0)
+            lastRx = rx; lastTx = tx; lastNetMs = now
+        }
+
+        val accentInt = config.color.hex.toInt()
+        val sb = SpannableStringBuilder()
+        var first = true
+        fun appendLine(label: String, value: String) {
+            if (!first) sb.append("\n")
+            first = false
+            val labelStart = sb.length
+            sb.append("$label ")
+            sb.setSpan(ForegroundColorSpan(accentInt), labelStart, sb.length,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sb.append(value)
+        }
+
+        if (cpu != null && HudMetric.CPU_PERCENT in metrics) {
+            appendLine("CPU", "${"%2d".format(cpu.totalPercent.toInt())}%")
+        }
+        if (cpu != null && HudMetric.PER_CORE in metrics && cpu.perCorePercent.isNotEmpty()) {
+            val bars = cpu.perCorePercent.joinToString("") { p ->
+                val blocks = "▁▂▃▄▅▆▇█"
+                val idx = (p / 12.5f).toInt().coerceIn(0, 7)
+                blocks[idx].toString()
+            }
+            appendLine("•", bars)
+        }
+        if (cpuTemp != null && !cpuTemp.isNaN()) {
+            appendLine("T", "${"%.0f".format(cpuTemp)}°C")
+        }
+        if (ram != null) {
+            appendLine("RAM", "${"%2d".format(ram.percent.toInt())}%")
+        }
+        if (batt != null) {
+            val w = if (batt.isCharging && batt.wattsNow > 0)
+                " ⚡${"%.1f".format(batt.wattsNow)}W" else ""
+            appendLine("Akku", "${batt.percent.toInt()}%$w")
+        }
+        if (HudMetric.NETWORK in metrics) {
+            val downStr = if (downKbps >= 1024) "${"%.1f".format(downKbps / 1024f)}MB/s"
+                          else "${downKbps}KB/s"
+            val upStr = if (upKbps >= 1024) "${"%.1f".format(upKbps / 1024f)}MB/s"
+                        else "${upKbps}KB/s"
+            appendLine("↓", downStr)
+            appendLine("↑", upStr)
+        }
+        if (HudMetric.FPS in metrics) {
+            appendLine("FPS", currentFps.toString())
+        }
+        if (HudMetric.CLOCK in metrics) {
+            val time = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+            val upMin = SystemClock.elapsedRealtime() / 60_000L
+            val upH = upMin / 60; val upM = upMin % 60
+            appendLine("⌚", "$time  ${upH}h${upM}m")
+        }
+
+        if (sb.isEmpty()) sb.append("(keine Metriken aktiv)")
+        textView.text = sb
     }
 
     override fun onDestroy() {
         handler.removeCallbacks(tick)
+        Choreographer.getInstance().removeFrameCallback(frameCallback)
         view?.let { v -> runCatching { windowManager?.removeView(v) } }
         view = null
         super.onDestroy()
@@ -216,14 +351,14 @@ class OverlayService : Service() {
             Intent(this, OverlayService::class.java).setAction(ACTION_STOP),
             PendingIntent.FLAG_IMMUTABLE
         )
-        val builder = Notification.Builder(this, CHANNEL_ID)
+        return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("SysMonitor-HUD aktiv")
-            .setContentText("Tippen zum Öffnen, im HUD auf X für Stopp")
+            .setContentTitle("RedMonitor-HUD aktiv")
+            .setContentText("Tippen zum Öffnen")
             .setContentIntent(openIntent)
             .setOngoing(true)
             .addAction(Notification.Action.Builder(null, "HUD beenden", stopIntent).build())
-        return builder.build()
+            .build()
     }
 
     private fun foregroundType(): Int {
@@ -231,5 +366,4 @@ class OverlayService : Service() {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
         } else 0
     }
-
 }

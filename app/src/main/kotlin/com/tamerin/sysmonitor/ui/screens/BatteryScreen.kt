@@ -295,8 +295,6 @@ fun BatteryScreen() {
 
         ShizukuCard()
 
-        SysfsProbeCard()
-
         StatCard("Diagnose (Mess-Methoden)") {
             Text(
                 "Falls die angezeigte Watt-Zahl nicht zu deinem Ladegerät passt — hier siehst du was jede einzelne Sensor-Quelle liefert. Auf manchen OEMs (Samsung, Xiaomi) liefert nur eine davon zuverlässige Werte.",
