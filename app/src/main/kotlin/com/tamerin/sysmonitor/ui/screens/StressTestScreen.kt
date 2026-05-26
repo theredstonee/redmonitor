@@ -55,9 +55,9 @@ fun StressTestScreen() {
     }
 
     LaunchedEffect(Unit) {
-        CpuReader.read()
+        CpuReader.read(context, "stress")
         while (true) {
-            val cpu = CpuReader.read()
+            val cpu = CpuReader.read(context, "stress")
             val batt = BatteryReader.read(context)
             val zones = ThermalReader.read()
             val hottest = ThermalReader.hottestCpuZone(zones)

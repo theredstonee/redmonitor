@@ -246,7 +246,7 @@ class OverlayService : Service() {
             HudMetric.PER_CORE in metrics ||
             HudMetric.PER_CORE_DETAIL in metrics ||
             HudMetric.CPU_FREQ_AVG in metrics
-        val cpu = if (needsCpu) CpuReader.read(this) else null
+        val cpu = if (needsCpu) CpuReader.read(this, "hud") else null
         val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
         val batt = if (HudMetric.BATTERY in metrics) BatteryReader.read(this) else null
         val cpuTemp = if (HudMetric.CPU_TEMP in metrics) {

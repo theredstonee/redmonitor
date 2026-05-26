@@ -40,13 +40,13 @@ fun CpuScreen() {
 
     LaunchedEffect(Unit) {
         // Prime the delta sampler
-        withContext(Dispatchers.IO) { CpuReader.read(context) }
+        withContext(Dispatchers.IO) { CpuReader.read(context, "cpu-screen") }
         var tick = 0
         while (true) {
-            snap = withContext(Dispatchers.IO) { CpuReader.read(context) }
+            snap = withContext(Dispatchers.IO) { CpuReader.read(context, "cpu-screen") }
             // Adaptive refresh: every 3rd tick (~3s) refresh top processes — dumpsys is heavier
             if (tick % 3 == 0) {
-                topProcs = withContext(Dispatchers.IO) { TopCpuReader.read(context) }
+                topProcs = withContext(Dispatchers.IO) { TopCpuReader.read(context, "cpu-screen") }
             }
             tick++
             // 500ms if CPU > 30%, else 1s

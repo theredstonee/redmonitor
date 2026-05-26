@@ -67,9 +67,9 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
     val displaySnap = remember(activity) { activity?.let { DeviceInfo.readDisplay(it) } }
 
     LaunchedEffect(Unit) {
-        CpuReader.read()
+        CpuReader.read(context, "overview")
         while (true) {
-            val cpu = CpuReader.read()
+            val cpu = CpuReader.read(context, "overview")
             val ram = MemoryReader.readRam(context)
             val batt = BatteryReader.read(context)
             val storage = MemoryReader.readStorage()

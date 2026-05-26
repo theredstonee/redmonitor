@@ -17,20 +17,23 @@ data class CpuSnapshot(
     val abi: String,
     val supportedAbis: List<String>,
     val hardware: String,
-    /** Datenquelle für totalPercent: "system" (/proc/stat) oder "process" (own process) */
     val source: String
 )
 
 private data class CoreTimes(val idle: Long, val total: Long)
 
-object CpuReader {
-    private var lastTotal: CoreTimes? = null
-    private var lastPerCore: List<CoreTimes> = emptyList()
+/** Per-caller state. Multiple readers (HUD, Stress, Bench) need independent state so they
+ *  don't stomp on each other's "last sample" timestamps. */
+private class SamplerState {
+    var lastTotal: CoreTimes? = null
+    var lastPerCore: List<CoreTimes> = emptyList()
+    var lastProcCpuMs: Long = -1L
+    var lastWallClockMs: Long = -1L
+    var systemStatBroken: Boolean? = null
+}
 
-    // Process-level fallback state
-    private var lastProcCpuMs: Long = -1L
-    private var lastWallClockMs: Long = -1L
-    private var systemStatBroken: Boolean? = null
+object CpuReader {
+    private val states = mutableMapOf<String, SamplerState>()
 
     private val coreCount: Int by lazy {
         runCatching {
@@ -40,20 +43,23 @@ object CpuReader {
         }.getOrDefault(Runtime.getRuntime().availableProcessors())
     }
 
-    /** Backward-compatible read without context — falls back to direct file reads only. */
-    fun read(): CpuSnapshot = readImpl(procStatLines = directReadProcStat(),
-        directFreqs = directReadFreqs(), source = "direct")
+    /** Backward-compatible read without context; uses "default" bucket. */
+    fun read(): CpuSnapshot = read(null, "default")
 
-    /** Preferred: uses Shizuku for /proc/stat + per-core freqs when available. */
-    fun read(context: Context): CpuSnapshot {
-        if (ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
+    /** Uses Shizuku when available; bucket defaults to "default". */
+    fun read(context: Context): CpuSnapshot = read(context, "default")
+
+    /** Independent state per [samplerKey]. Each consumer (HUD, Stress, Bench, CPU-Screen)
+     *  should pick its own so they don't trample each other. */
+    fun read(context: Context?, samplerKey: String): CpuSnapshot {
+        val state = synchronized(states) { states.getOrPut(samplerKey) { SamplerState() } }
+        if (context != null && ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
             val (lines, freqs) = readBatchViaShizuku(context)
             if (lines.isNotEmpty()) {
-                return readImpl(procStatLines = lines, directFreqs = freqs, source = "shizuku")
+                return readImpl(state, lines, freqs, "shizuku")
             }
         }
-        return readImpl(procStatLines = directReadProcStat(),
-            directFreqs = directReadFreqs(), source = "direct")
+        return readImpl(state, directReadProcStat(), directReadFreqs(), "direct")
     }
 
     private fun directReadProcStat(): List<String> =
@@ -68,7 +74,6 @@ object CpuReader {
         }
 
     private fun readBatchViaShizuku(context: Context): Pair<List<String>, List<Long>> {
-        // Single shell invocation gets both /proc/stat and all freqs at once — much faster than per-core spawn
         val cmd = "cat /proc/stat; echo '---FREQS---'; " +
             "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq; do " +
             "cat \$i 2>/dev/null || echo 0; done"
@@ -82,7 +87,12 @@ object CpuReader {
         return Pair(statLines, freqs)
     }
 
-    private fun readImpl(procStatLines: List<String>, directFreqs: List<Long>, source: String): CpuSnapshot {
+    private fun readImpl(
+        state: SamplerState,
+        procStatLines: List<String>,
+        directFreqs: List<Long>,
+        source: String
+    ): CpuSnapshot {
         val procStat = procStatLines
 
         val total = procStat.firstOrNull { it.startsWith("cpu ") }?.let(::parseCpuLine)
@@ -93,31 +103,31 @@ object CpuReader {
         var totalPct = 0f
 
         if (total != null && total.total > 0) {
-            val prev = lastTotal
-            lastTotal = total
+            val prev = state.lastTotal
+            state.lastTotal = total
             if (prev != null) {
                 val sysPct = percentDelta(prev, total)
                 val delta = total.total - prev.total
                 if (delta > 0) {
                     totalPct = sysPct
-                    systemStatBroken = false
+                    state.systemStatBroken = false
                 } else {
-                    systemStatBroken = true
+                    state.systemStatBroken = true
                 }
             }
         } else {
-            systemStatBroken = true
+            state.systemStatBroken = true
         }
 
         val perCorePct = perCore.mapIndexed { idx, current ->
-            val prev = lastPerCore.getOrNull(idx)
+            val prev = state.lastPerCore.getOrNull(idx)
             prev?.let { percentDelta(it, current) } ?: 0f
         }
-        lastPerCore = perCore
+        state.lastPerCore = perCore
 
-        if (systemStatBroken == true) {
+        if (state.systemStatBroken == true) {
             dataSource = "process"
-            totalPct = readProcessCpuPercent()
+            totalPct = readProcessCpuPercent(state)
         }
 
         val freqs = if (directFreqs.isNotEmpty()) directFreqs else readFreqs("scaling_cur_freq")
@@ -142,17 +152,16 @@ object CpuReader {
         )
     }
 
-    private fun readProcessCpuPercent(): Float {
+    private fun readProcessCpuPercent(state: SamplerState): Float {
         val procCpuMs = Process.getElapsedCpuTime()
         val wallMs = SystemClock.elapsedRealtime()
-        val prevCpu = lastProcCpuMs
-        val prevWall = lastWallClockMs
-        lastProcCpuMs = procCpuMs
-        lastWallClockMs = wallMs
+        val prevCpu = state.lastProcCpuMs
+        val prevWall = state.lastWallClockMs
+        state.lastProcCpuMs = procCpuMs
+        state.lastWallClockMs = wallMs
         if (prevCpu < 0 || prevWall < 0) return 0f
         val dCpu = (procCpuMs - prevCpu).coerceAtLeast(0)
         val dWall = (wallMs - prevWall).coerceAtLeast(1)
-        // Process CPU time is summed across all cores → max = dWall * coreCount
         val maxCpuMs = dWall * coreCount
         return (dCpu * 100f / maxCpuMs).coerceIn(0f, 100f)
     }
