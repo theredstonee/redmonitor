@@ -36,27 +36,6 @@ fun SettingsScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Updates testen (Dev)") {
-            Text(
-                "Simuliert einen Update-Dialog mit Fake-Daten — ohne dass auf GitHub etwas Neues sein muss.",
-                color = OnSurfaceMuted, fontSize = 11.sp
-            )
-            Spacer(Modifier.height(8.dp))
-            Button(
-                onClick = {
-                    com.tamerin.sysmonitor.update.UpdateTestHelper.triggerFakeUpdate(context)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Test-Update anzeigen") }
-            Spacer(Modifier.height(6.dp))
-            OutlinedButton(
-                onClick = {
-                    com.tamerin.sysmonitor.update.UpdateTestHelper.clearDismissed(context)
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("Ignorierte Versionen zurücksetzen") }
-        }
-
         StatCard("Updates") {
             ToggleRow(
                 label = "Pre-Releases (Beta/RC) einschließen",
