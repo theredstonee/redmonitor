@@ -68,6 +68,33 @@ object ShizukuHelper {
 
     fun readLong(context: Context, path: String): Long? = readFile(context, path)?.toLongOrNull()
 
+    data class CmdResult(val exitCode: Int, val stdout: String, val stderr: String) {
+        val ok: Boolean get() = exitCode == 0
+    }
+
+    /**
+     * Run an arbitrary command via Shizuku as `shell` user.
+     * Returns stdout, stderr and exit code.
+     */
+    fun runCommand(context: Context, vararg cmd: String): CmdResult {
+        if (state(context) != State.Ready) {
+            return CmdResult(-1, "", "Shizuku not ready")
+        }
+        val process = newProcessReflected(arrayOf(*cmd))
+            ?: return CmdResult(-1, "", "newProcess failed")
+        return runCatching {
+            val out = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
+            val err = BufferedReader(InputStreamReader(process.errorStream)).use { it.readText() }
+            val exit = process.waitFor()
+            CmdResult(exit, out.trim(), err.trim())
+        }.getOrElse { CmdResult(-1, "", it.message ?: "unknown error") }
+            .also { runCatching { process.destroy() } }
+    }
+
+    /** Shortcut: run `sh -c "command"` */
+    fun runShell(context: Context, command: String): CmdResult =
+        runCommand(context, "sh", "-c", command)
+
     data class DumpsysBattery(
         val maxChargingCurrentUa: Long,
         val maxChargingVoltageUv: Long,

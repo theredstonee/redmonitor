@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Speed
+import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -80,6 +81,8 @@ import com.tamerin.sysmonitor.ui.screens.StorageBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.StressTestScreen
 import com.tamerin.sysmonitor.ui.screens.SystemHubScreen
 import com.tamerin.sysmonitor.ui.screens.SystemPropertiesScreen
+import com.tamerin.sysmonitor.ui.screens.TaskDetailScreen
+import com.tamerin.sysmonitor.ui.screens.TaskManagerScreen
 import com.tamerin.sysmonitor.ui.screens.TelephonyScreen
 import com.tamerin.sysmonitor.ui.screens.ThermalScreen
 import com.tamerin.sysmonitor.ui.screens.VibrationScreen
@@ -107,6 +110,9 @@ object Routes {
     const val BENCHMARK = "benchmark"
     const val TESTS = "tests"
     const val INFO = "info"
+    const val TASKS = "tasks"
+    const val TASK_DETAIL = "tasks/{pkg}"
+    fun taskDetail(pkg: String) = "tasks/$pkg"
 
     const val CPU = "system/cpu"
     const val RAM = "system/ram"
@@ -158,13 +164,14 @@ private data class TopTab(val route: String, val label: String, val icon: ImageV
 private val TOP_TABS = listOf(
     TopTab(Routes.LIVE, "Live", Icons.Filled.Dashboard),
     TopTab(Routes.SYSTEM, "System", Icons.Filled.Memory),
+    TopTab(Routes.TASKS, "Tasks", Icons.Filled.TaskAlt),
     TopTab(Routes.BENCHMARK, "Bench", Icons.Filled.Speed),
     TopTab(Routes.TESTS, "Tests", Icons.Filled.Build),
     TopTab(Routes.INFO, "Info", Icons.Filled.Info)
 )
 
 private val TOP_LEVEL_ROUTES = setOf(
-    Routes.LIVE, Routes.SYSTEM, Routes.BENCHMARK, Routes.TESTS, Routes.INFO
+    Routes.LIVE, Routes.SYSTEM, Routes.TASKS, Routes.BENCHMARK, Routes.TESTS, Routes.INFO
 )
 
 private fun titleFor(route: String?): String = when {
@@ -174,6 +181,8 @@ private fun titleFor(route: String?): String = when {
     route == Routes.BENCHMARK -> "Benchmark"
     route == Routes.TESTS -> "Tests"
     route == Routes.INFO -> "Info"
+    route == Routes.TASKS -> "Tasks"
+    route?.startsWith("tasks/") == true -> "App-Details"
     route == Routes.CPU -> "CPU"
     route == Routes.RAM -> "RAM & Speicher"
     route == Routes.BATTERY -> "Akku"
@@ -299,6 +308,16 @@ private fun SysMonitorApp() {
             composable(Routes.BENCHMARK) { BenchmarkHubScreen { navController.navigate(it) } }
             composable(Routes.TESTS) { TestsHubScreen { navController.navigate(it) } }
             composable(Routes.INFO) { InfoHubScreen { navController.navigate(it) } }
+            composable(Routes.TASKS) {
+                TaskManagerScreen(onSelect = { pkg -> navController.navigate(Routes.taskDetail(pkg)) })
+            }
+            composable(
+                Routes.TASK_DETAIL,
+                arguments = listOf(navArgument("pkg") { type = NavType.StringType })
+            ) { entry ->
+                val pkg = entry.arguments?.getString("pkg") ?: ""
+                TaskDetailScreen(pkg = pkg)
+            }
 
             composable(Routes.CPU) { CpuScreen() }
             composable(Routes.RAM) { RamScreen() }
