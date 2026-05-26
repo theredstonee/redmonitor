@@ -43,11 +43,6 @@ class StressEngine {
                 wakeLock = wl
             }
         }
-        // Boost scheduler priority via Shizuku if available
-        if (context != null) {
-            runCatching { PerformanceBooster.boost(context) }
-        }
-
         val cores = Runtime.getRuntime().availableProcessors().coerceAtLeast(1)
         repeat(cores) { idx ->
             val t = Thread({
@@ -74,6 +69,14 @@ class StressEngine {
             threads += t
             t.start()
         }
+        // Boost AFTER spawning — moves all child threads into top-app cpuset (all big cores)
+        if (context != null) {
+            // Small delay so /proc/<pid>/task enumeration catches every spawned worker
+            Thread {
+                Thread.sleep(150)
+                runCatching { PerformanceBooster.boost(context) }
+            }.apply { isDaemon = true }.start()
+        }
     }
 
     fun stop() {
@@ -82,5 +85,11 @@ class StressEngine {
         threads.clear()
         runCatching { if (wakeLock?.isHeld == true) wakeLock?.release() }
         wakeLock = null
+    }
+
+    fun stop(context: Context) {
+        stop()
+        // Move back to normal foreground cpuset
+        runCatching { PerformanceBooster.unboost(context) }
     }
 }

@@ -103,7 +103,7 @@ fun StressTestScreen() {
             Button(onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                 if (running) {
-                    engine.stop()
+                    engine.stop(context)
                     running = false
                 } else {
                     tempHistory.clear()
