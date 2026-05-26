@@ -278,7 +278,14 @@ class OverlayService : Service() {
         }
 
         if (cpu != null && HudMetric.CPU_PERCENT in metrics) {
-            appendLine("CPU", "${"%2d".format(cpu.totalPercent.toInt())}%")
+            // When /proc/stat is locked (Samsung etc.) and fallback measures only own process,
+            // the value is misleading — show "—" instead.
+            val display = if (cpu.source == "process" && cpu.totalPercent < 1f) {
+                "— (Shizuku?)"
+            } else {
+                "${"%2d".format(cpu.totalPercent.toInt())}%"
+            }
+            appendLine("CPU", display)
         }
         if (cpu != null && HudMetric.PER_CORE in metrics && cpu.perCorePercent.isNotEmpty()) {
             val bars = cpu.perCorePercent.joinToString("") { p ->
@@ -310,8 +317,11 @@ class OverlayService : Service() {
             appendLine("RAM", "${"%2d".format(ram.percent.toInt())}%")
         }
         if (batt != null) {
-            val w = if (batt.isCharging && batt.wattsNow > 0)
-                " ⚡${"%.1f".format(batt.wattsNow)}W" else ""
+            // Show watts whenever the sensor reports a value, charging OR discharging
+            val w = if (batt.wattsNow > 0.3f) {
+                val arrow = if (batt.isCharging) "⚡" else "↓"
+                "  $arrow${"%.1f".format(batt.wattsNow)}W"
+            } else ""
             appendLine("Akku", "${batt.percent.toInt()}%$w")
         }
         if (HudMetric.NETWORK in metrics) {

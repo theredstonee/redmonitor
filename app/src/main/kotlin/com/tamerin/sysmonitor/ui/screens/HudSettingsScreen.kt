@@ -51,7 +51,8 @@ fun HudSettingsScreen() {
     fun apply(newConfig: HudConfig) {
         config = newConfig
         HudPrefs.save(context, newConfig)
-        if (hudRunning) OverlayService.reload(context)
+        // Always send reload — OverlayService bails internally if not running
+        OverlayService.reload(context)
     }
 
     Column(
