@@ -46,7 +46,7 @@ fun CpuScreen() {
             snap = withContext(Dispatchers.IO) { CpuReader.read(context, "cpu-screen") }
             // Adaptive refresh: every 3rd tick (~3s) refresh top processes — dumpsys is heavier
             if (tick % 3 == 0) {
-                topProcs = withContext(Dispatchers.IO) { TopCpuReader.read(context, "cpu-screen") }
+                topProcs = withContext(Dispatchers.IO) { TopCpuReader.read(context) }
             }
             tick++
             // 500ms if CPU > 30%, else 1s
