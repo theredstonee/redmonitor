@@ -38,6 +38,7 @@ import com.tamerin.sysmonitor.ui.components.CircularGauge
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
+import com.tamerin.sysmonitor.ui.theme.AccentSoft
 import com.tamerin.sysmonitor.ui.theme.GaugeGreen
 import com.tamerin.sysmonitor.ui.theme.GaugeRed
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -294,20 +295,33 @@ fun BatteryScreen() {
 
         ShizukuCard()
 
+        SysfsProbeCard()
+
         StatCard("Diagnose (Mess-Methoden)") {
             Text(
                 "Falls die angezeigte Watt-Zahl nicht zu deinem Ladegerät passt — hier siehst du was jede einzelne Sensor-Quelle liefert. Auf manchen OEMs (Samsung, Xiaomi) liefert nur eine davon zuverlässige Werte.",
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
+            KeyValueRow("Status (BatteryManager)", if (snap.isCharging) "Lädt" else "Entlädt")
             KeyValueRow("Beste Quelle", snap.wattsSource)
             KeyValueRow("Bester Strom (verwendet)", "${snap.currentNowMa} mA")
             KeyValueRow("Δ Charge-Counter", if (snap.deltaDerivedCurrentMa != 0L) "${snap.deltaDerivedCurrentMa} mA" else "wartet (~2 s Sampling)")
             KeyValueRow("BatteryManager AVG", "${snap.averageCurrentMa} mA")
             if (snap.inputVoltageV > 0.5f) {
-                KeyValueRow("USB sysfs V × I", "${"%.2f".format(snap.inputVoltageV)} V × ${snap.inputCurrentMa} mA")
+                KeyValueRow(
+                    "USB / PD (sysfs oder dumpsys)",
+                    "${"%.2f".format(snap.inputVoltageV)} V × ${snap.inputCurrentMa} mA = " +
+                        "${"%.1f".format(snap.inputVoltageV * kotlin.math.abs(snap.inputCurrentMa.toFloat()) / 1000f)} W"
+                )
             } else {
-                KeyValueRow("USB sysfs", "nicht zugänglich (OEM-gesperrt)")
+                val shizuku = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
+                KeyValueRow(
+                    "USB / PD",
+                    if (!snap.isCharging) "—  (nicht angeschlossen)"
+                    else if (!shizuku) "gesperrt (Shizuku nicht aktiv)"
+                    else "Samsung sperrt auch via Shizuku (SELinux) — Δ-Methode greift stattdessen"
+                )
             }
             Spacer(Modifier.height(8.dp))
             Text(
@@ -315,6 +329,35 @@ fun BatteryScreen() {
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
+    }
+}
+
+@Composable
+private fun StepRow(num: String, title: String, hint: String) {
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            num,
+            color = Accent,
+            fontWeight = FontWeight.Bold,
+            fontSize = 12.sp,
+            modifier = Modifier.width(22.dp)
+        )
+        Column {
+            Text(title, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp,
+                fontWeight = FontWeight.Medium)
+            Text(hint, color = OnSurfaceMuted, fontSize = 10.sp)
+        }
+    }
+}
+
+private fun openUrl(context: android.content.Context, url: String) {
+    runCatching {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        context.startActivity(intent)
     }
 }
 
@@ -355,39 +398,116 @@ private fun ShizukuCard() {
         Spacer(Modifier.height(10.dp))
         when (state) {
             ShizukuHelper.State.NotInstalled -> {
-                Button(onClick = {
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api")
-                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                }) { Text("Shizuku im Play Store öffnen") }
+                // Smart detection: Shizuku Play-Store-Version targets older SDK,
+                // Google blocks "not for your device" on Android 15+ and on many Samsungs.
+                val sdkInt = android.os.Build.VERSION.SDK_INT
+                val manufacturer = android.os.Build.MANUFACTURER?.lowercase().orEmpty()
+                val recommendGithub = sdkInt >= android.os.Build.VERSION_CODES.VANILLA_ICE_CREAM ||
+                    manufacturer.contains("samsung")
+
+                if (recommendGithub) {
+                    Text(
+                        "Erkannt: Android $sdkInt · ${android.os.Build.MANUFACTURER}. " +
+                            "Auf deinem Gerät blockiert der Play Store Shizuku meistens. " +
+                            "Empfohlen: APK direkt von GitHub.",
+                        color = AccentSoft, fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = {
+                        openUrl(context, "https://github.com/RikkaApps/Shizuku/releases/latest")
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("APK von GitHub laden (empfohlen)")
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedButton(onClick = {
+                        openUrl(context, "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api")
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Trotzdem Play Store versuchen")
+                    }
+                } else {
+                    Text(
+                        "Erkannt: Android $sdkInt · ${android.os.Build.MANUFACTURER}. " +
+                            "Play Store sollte bei dir funktionieren.",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Button(onClick = {
+                        openUrl(context, "https://play.google.com/store/apps/details?id=moe.shizuku.privileged.api")
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Im Play Store öffnen")
+                    }
+                    Spacer(Modifier.height(6.dp))
+                    OutlinedButton(onClick = {
+                        openUrl(context, "https://github.com/RikkaApps/Shizuku/releases/latest")
+                    }, modifier = Modifier.fillMaxWidth()) {
+                        Text("Alternativ: APK von GitHub")
+                    }
+                }
                 Spacer(Modifier.height(6.dp))
                 OutlinedButton(onClick = {
-                    val intent = Intent(
-                        Intent.ACTION_VIEW,
-                        Uri.parse("https://shizuku.rikka.app/")
-                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context.startActivity(intent)
-                }) { Text("Offizielle Setup-Anleitung") }
+                    openUrl(context, "https://shizuku.rikka.app/guide/setup/")
+                }, modifier = Modifier.fillMaxWidth()) {
+                    Text("Setup-Anleitung")
+                }
             }
             ShizukuHelper.State.NotRunning -> {
                 Text(
-                    "Öffne die Shizuku-App und starte den Dienst — via Wireless-Debugging (Android 11+) oder über einen PC mit ADB.",
-                    color = OnSurfaceMuted, fontSize = 11.sp
+                    "Shizuku ist installiert, läuft aber nicht. Du musst ihn jetzt starten:",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
                 Spacer(Modifier.height(8.dp))
-                Button(onClick = {
-                    val launchIntent = context.packageManager
-                        .getLaunchIntentForPackage("moe.shizuku.privileged.api")
-                        ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    if (launchIntent != null) context.startActivity(launchIntent)
-                }) { Text("Shizuku-App öffnen") }
+                StepRow("1.", "Einstellungen öffnen", "Android-Einstellungen → Entwickleroptionen")
+                StepRow("2.", "Drahtloses Debugging AN", "muss eingeschaltet bleiben")
+                StepRow("3.", "Pairing-Code holen", "in Entwickleroptionen: 'Gerät mit Pairing-Code koppeln'")
+                StepRow("4.", "Shizuku öffnen", "Pair via Wireless Debugging → Code eingeben")
+                StepRow("5.", "In Shizuku: Start", "grüner Status oben muss erscheinen")
+                StepRow("6.", "Hierher zurückkommen", "Status springt automatisch")
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            runCatching {
+                                val intent = Intent(android.provider.Settings.ACTION_APPLICATION_DEVELOPMENT_SETTINGS)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                context.startActivity(intent)
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Entwickler-Settings", fontSize = 12.sp) }
+                    Button(
+                        onClick = {
+                            val launchIntent = context.packageManager
+                                .getLaunchIntentForPackage("moe.shizuku.privileged.api")
+                                ?.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            if (launchIntent != null) context.startActivity(launchIntent)
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Shizuku öffnen", fontSize = 12.sp) }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Hinweis: Shizuku überlebt keinen Reboot. Nach jedem Neustart musst du Schritte 2-5 wiederholen (außer du hast Root).",
+                    color = OnSurfaceMuted, fontSize = 10.sp
+                )
             }
             ShizukuHelper.State.NeedsPermission -> {
-                Button(onClick = { ShizukuHelper.requestPermission() }) {
-                    Text("Berechtigung erteilen")
-                }
+                Text(
+                    "Shizuku läuft. Jetzt fehlt nur noch deine Erlaubnis für diese App.",
+                    color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { ShizukuHelper.requestPermission() },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Berechtigung erteilen") }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Es erscheint ein Shizuku-Dialog — auf 'Allow' tippen.",
+                    color = OnSurfaceMuted, fontSize = 11.sp
+                )
             }
             ShizukuHelper.State.Ready -> {
                 Text(

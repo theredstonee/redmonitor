@@ -68,6 +68,56 @@ object ShizukuHelper {
 
     fun readLong(context: Context, path: String): Long? = readFile(context, path)?.toLongOrNull()
 
+    data class DumpsysBattery(
+        val maxChargingCurrentUa: Long,
+        val maxChargingVoltageUv: Long,
+        val acPowered: Boolean,
+        val usbPowered: Boolean,
+        val wirelessPowered: Boolean
+    )
+
+    /**
+     * Runs `dumpsys battery` via Shizuku. Works on Samsung where USB-sysfs is SELinux-locked.
+     * The dumpsys output contains the negotiated PD voltage/current.
+     */
+    fun dumpsysBattery(context: Context): DumpsysBattery? {
+        if (state(context) != State.Ready) return null
+        val process = newProcessReflected(arrayOf("dumpsys", "battery")) ?: return null
+        return runCatching {
+            val text = try {
+                BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
+            } finally {
+                runCatching { process.waitFor() }
+                runCatching { process.destroy() }
+            }
+            parseDumpsys(text)
+        }.getOrNull()
+    }
+
+    private fun parseDumpsys(out: String): DumpsysBattery {
+        var maxI = 0L
+        var maxV = 0L
+        var ac = false
+        var usb = false
+        var wireless = false
+        for (raw in out.lineSequence()) {
+            val line = raw.trim()
+            when {
+                line.startsWith("Max charging current:") ->
+                    maxI = line.substringAfter(":").trim().toLongOrNull() ?: 0L
+                line.startsWith("Max charging voltage:") ->
+                    maxV = line.substringAfter(":").trim().toLongOrNull() ?: 0L
+                line.startsWith("AC powered:") ->
+                    ac = line.endsWith("true")
+                line.startsWith("USB powered:") ->
+                    usb = line.endsWith("true")
+                line.startsWith("Wireless powered:") ->
+                    wireless = line.endsWith("true")
+            }
+        }
+        return DumpsysBattery(maxI, maxV, ac, usb, wireless)
+    }
+
     private fun newProcessReflected(
         cmd: Array<String>,
         env: Array<String>? = null,

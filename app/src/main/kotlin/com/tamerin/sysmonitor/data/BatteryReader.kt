@@ -125,7 +125,7 @@ object BatteryReader {
         }
 
         // ---- USB / Input-side (true wall-power if not blocked) ----
-        val usbVoltageMv = readSysfsVoltageMv(
+        var usbVoltageMv = readSysfsVoltageMv(
             context,
             "/sys/class/power_supply/usb/voltage_now",
             "/sys/class/power_supply/usb_pd/voltage_now",
@@ -133,7 +133,7 @@ object BatteryReader {
             "/sys/class/power_supply/ac/voltage_now",
             "/sys/class/power_supply/main/voltage_now"
         ) ?: 0
-        val usbCurrentMa = readSysfsLong(
+        var usbCurrentMa = readSysfsLong(
             context,
             "/sys/class/power_supply/usb/current_now",
             "/sys/class/power_supply/usb_pd/current_now",
@@ -142,6 +142,23 @@ object BatteryReader {
             "/sys/class/power_supply/main/current_now",
             "/sys/class/power_supply/battery/input_current_now"
         )?.let { normalizeToMa(it.toInt()) } ?: 0L
+
+        // Samsung blocks USB-sysfs even via Shizuku — but `dumpsys battery` works as shell user
+        // and contains the negotiated PD voltage/current.
+        if ((usbVoltageMv == 0 || usbCurrentMa == 0L) && charging
+            && ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
+            val dump = ShizukuHelper.dumpsysBattery(context)
+            if (dump != null) {
+                if (usbVoltageMv == 0 && dump.maxChargingVoltageUv > 0) {
+                    // µV → mV
+                    usbVoltageMv = (dump.maxChargingVoltageUv / 1000L).toInt()
+                }
+                if (usbCurrentMa == 0L && dump.maxChargingCurrentUa > 0) {
+                    // µA → mA
+                    usbCurrentMa = dump.maxChargingCurrentUa / 1000L
+                }
+            }
+        }
 
         val battVoltageV = battVoltageMv / 1000f
         val battAmps = abs(bestCurrentMa) / 1000f
