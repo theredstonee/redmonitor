@@ -8,6 +8,15 @@ android {
     namespace = "com.tamerin.sysmonitor"
     compileSdk = 35
 
+    // Build outputs as redmonitor.apk (matches GitHub release naming)
+    setProperty("archivesBaseName", "redmonitor")
+    applicationVariants.all {
+        outputs.all {
+            val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output.outputFileName = "redmonitor.apk"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.tamerin.sysmonitor"
         minSdk = 29
