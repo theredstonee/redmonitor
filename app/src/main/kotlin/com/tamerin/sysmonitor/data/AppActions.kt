@@ -26,9 +26,15 @@ object AppActions {
 
     fun isAppDisabled(context: Context, pkg: String): Boolean {
         val res = ShizukuHelper.runCommand(context, "pm", "dump", pkg)
-        // Find "enabled=false" line for the package
         return res.stdout.lineSequence().any {
             it.trim().startsWith("enabled=") && it.contains("false")
+        }
+    }
+
+    fun isAppSuspended(context: Context, pkg: String): Boolean {
+        val res = ShizukuHelper.runCommand(context, "pm", "dump", pkg)
+        return res.stdout.lineSequence().any {
+            it.trim().contains("suspended=true")
         }
     }
 
@@ -37,6 +43,41 @@ object AppActions {
 
     fun enableApp(context: Context, pkg: String): ShizukuHelper.CmdResult =
         ShizukuHelper.runCommand(context, "pm", "enable", pkg)
+
+    /** Suspend app — works on Android 10+ via shell. More reliable than disable on Samsung. */
+    fun suspendApp(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "pm", "suspend", pkg)
+
+    fun unsuspendApp(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "pm", "unsuspend", pkg)
+
+    /** Sets app standby bucket — `never` = app never runs in background. */
+    fun setStandbyBucket(context: Context, pkg: String, bucket: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "am", "set-standby-bucket", pkg, bucket)
+
+    /** Forces the app's uid into IDLE state immediately (releases wakelocks, jobs canceled). */
+    fun makeUidIdle(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "am", "make-uid-idle", pkg)
+
+    /**
+     * "Deep-Freeze" combo: force-stop + suspend + bucket never + make-uid-idle.
+     * Strongest stop you can do as shell user without root.
+     */
+    fun deepFreeze(context: Context, pkg: String): List<Pair<String, ShizukuHelper.CmdResult>> {
+        return listOf(
+            "Force-Stop" to forceStop(context, pkg),
+            "Bucket: never" to setStandbyBucket(context, pkg, "never"),
+            "UID-Idle" to makeUidIdle(context, pkg),
+            "Suspend" to suspendApp(context, pkg)
+        )
+    }
+
+    fun unfreeze(context: Context, pkg: String): List<Pair<String, ShizukuHelper.CmdResult>> {
+        return listOf(
+            "Unsuspend" to unsuspendApp(context, pkg),
+            "Bucket: active" to setStandbyBucket(context, pkg, "active")
+        )
+    }
 
     /** Clear only the app's cache (safe). */
     fun clearCache(context: Context, pkg: String): ShizukuHelper.CmdResult =

@@ -9,6 +9,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.TextButton
@@ -45,6 +46,7 @@ fun TaskDetailScreen(pkg: String) {
 
     var lastAction by remember { mutableStateOf<String?>(null) }
     var disabled by remember { mutableStateOf(false) }
+    var suspended by remember { mutableStateOf(false) }
     var bgState by remember { mutableStateOf<AppActions.AppOpsState?>(null) }
     var receivers by remember { mutableStateOf<List<AppActions.Receiver>>(emptyList()) }
     var confirmDialog by remember { mutableStateOf<ConfirmAction?>(null) }
@@ -53,6 +55,7 @@ fun TaskDetailScreen(pkg: String) {
     LaunchedEffect(shizukuReady) {
         if (shizukuReady) {
             disabled = withContext(Dispatchers.IO) { AppActions.isAppDisabled(context, pkg) }
+            suspended = withContext(Dispatchers.IO) { AppActions.isAppSuspended(context, pkg) }
             bgState = withContext(Dispatchers.IO) { AppActions.getAppOpsState(context, pkg) }
             receivers = withContext(Dispatchers.IO) { AppActions.listBootReceivers(context, pkg) }
         }
@@ -62,9 +65,18 @@ fun TaskDetailScreen(pkg: String) {
         scope.launch {
             val res = withContext(Dispatchers.IO) { block() }
             lastAction = if (res.ok) "✓ $label" else "✗ $label: ${res.stderr.ifBlank { "Exit ${res.exitCode}" }}"
-            // Refresh state
             disabled = withContext(Dispatchers.IO) { AppActions.isAppDisabled(context, pkg) }
+            suspended = withContext(Dispatchers.IO) { AppActions.isAppSuspended(context, pkg) }
             bgState = withContext(Dispatchers.IO) { AppActions.getAppOpsState(context, pkg) }
+        }
+    }
+
+    fun runMulti(label: String, results: List<Pair<String, ShizukuHelper.CmdResult>>) {
+        val failed = results.filter { !it.second.ok }.map { it.first }
+        lastAction = if (failed.isEmpty()) "✓ $label" else "⚠ $label, fehlgeschlagen: ${failed.joinToString(", ")}"
+        scope.launch {
+            disabled = withContext(Dispatchers.IO) { AppActions.isAppDisabled(context, pkg) }
+            suspended = withContext(Dispatchers.IO) { AppActions.isAppSuspended(context, pkg) }
         }
     }
 
@@ -165,15 +177,43 @@ fun TaskDetailScreen(pkg: String) {
         }
 
         StatCard("App-Status") {
+            // SUSPEND toggle (zuverlässiger als disable auf Samsung)
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("App aktiviert", fontSize = 14.sp)
+                    Text("Aktiv", fontSize = 14.sp)
                     Text(
-                        if (disabled) "Disabled — App startet bis Reboot nicht mehr"
-                        else "Enabled — startet normal",
+                        if (suspended) "Suspendiert — kann nicht starten, Daten erhalten"
+                        else "Läuft normal",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                }
+                Switch(
+                    checked = !suspended,
+                    onCheckedChange = { wantActive ->
+                        runAction(if (wantActive) "Unsuspend" else "Suspend (pm suspend)") {
+                            if (wantActive) AppActions.unsuspendApp(context, pkg)
+                            else AppActions.suspendApp(context, pkg)
+                        }
+                    },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = androidx.compose.ui.graphics.Color.White,
+                        checkedTrackColor = Accent
+                    )
+                )
+            }
+            HorizontalDivider(color = androidx.compose.ui.graphics.Color(0x1FFFFFFF))
+            // Legacy disable (für die wo's geht)
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Disable (alt)", fontSize = 14.sp)
+                    Text(
+                        if (disabled) "Disabled" else "Enabled  ·  oft gesperrt auf Samsung",
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
@@ -184,12 +224,60 @@ fun TaskDetailScreen(pkg: String) {
                             if (wantEnable) AppActions.enableApp(context, pkg)
                             else AppActions.disableApp(context, pkg)
                         }
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = androidx.compose.ui.graphics.Color.White,
-                        checkedTrackColor = Accent
-                    )
+                    }
                 )
+            }
+        }
+
+        StatCard("Deep-Freeze (stärkster Stop)") {
+            Text(
+                "Force-Stop + Standby-Bucket 'never' + UID-Idle + Suspend in einem Klick. " +
+                    "Stärkste Methode ohne Root — App kann faktisch nicht mehr laufen, bis du sie aufweckst.",
+                color = OnSurfaceMuted, fontSize = 12.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            val r = withContext(Dispatchers.IO) { AppActions.deepFreeze(context, pkg) }
+                            runMulti("Deep-Freeze", r)
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
+                    modifier = Modifier.weight(1f)
+                ) { Text("🥶 Einfrieren", fontSize = 13.sp) }
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            val r = withContext(Dispatchers.IO) { AppActions.unfreeze(context, pkg) }
+                            runMulti("Auftauen", r)
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("☀ Auftauen", fontSize = 13.sp) }
+            }
+        }
+
+        StatCard("Standby-Bucket") {
+            Text(
+                "Android-System teilt Apps in Buckets ein: active/working_set/frequent/rare/never. " +
+                    "Je seltener, desto weniger Background-CPU/Netz/Wakeups bekommt die App.",
+                color = OnSurfaceMuted, fontSize = 11.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("active", "working_set", "rare", "never").forEach { bucket ->
+                    OutlinedButton(
+                        onClick = {
+                            runAction("Bucket → $bucket") {
+                                AppActions.setStandbyBucket(context, pkg, bucket)
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(4.dp)
+                    ) { Text(bucket, fontSize = 10.sp) }
+                }
             }
         }
 
