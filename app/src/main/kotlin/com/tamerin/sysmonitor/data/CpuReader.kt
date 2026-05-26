@@ -1,5 +1,6 @@
 package com.tamerin.sysmonitor.data
 
+import android.content.Context
 import android.os.Build
 import android.os.Process
 import android.os.SystemClock
@@ -39,14 +40,56 @@ object CpuReader {
         }.getOrDefault(Runtime.getRuntime().availableProcessors())
     }
 
-    fun read(): CpuSnapshot {
-        val procStat = runCatching { File("/proc/stat").readLines() }.getOrDefault(emptyList())
+    /** Backward-compatible read without context — falls back to direct file reads only. */
+    fun read(): CpuSnapshot = readImpl(procStatLines = directReadProcStat(),
+        directFreqs = directReadFreqs(), source = "direct")
+
+    /** Preferred: uses Shizuku for /proc/stat + per-core freqs when available. */
+    fun read(context: Context): CpuSnapshot {
+        if (ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
+            val (lines, freqs) = readBatchViaShizuku(context)
+            if (lines.isNotEmpty()) {
+                return readImpl(procStatLines = lines, directFreqs = freqs, source = "shizuku")
+            }
+        }
+        return readImpl(procStatLines = directReadProcStat(),
+            directFreqs = directReadFreqs(), source = "direct")
+    }
+
+    private fun directReadProcStat(): List<String> =
+        runCatching { File("/proc/stat").readLines() }.getOrDefault(emptyList())
+
+    private fun directReadFreqs(): List<Long> =
+        (0 until coreCount).map { idx ->
+            runCatching {
+                File("/sys/devices/system/cpu/cpu$idx/cpufreq/scaling_cur_freq")
+                    .readText().trim().toLong()
+            }.getOrDefault(0L)
+        }
+
+    private fun readBatchViaShizuku(context: Context): Pair<List<String>, List<Long>> {
+        // Single shell invocation gets both /proc/stat and all freqs at once — much faster than per-core spawn
+        val cmd = "cat /proc/stat; echo '---FREQS---'; " +
+            "for i in /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq; do " +
+            "cat \$i 2>/dev/null || echo 0; done"
+        val res = ShizukuHelper.runShell(context, cmd)
+        if (!res.ok) return Pair(emptyList(), emptyList())
+        val parts = res.stdout.split("---FREQS---")
+        val statLines = parts.getOrNull(0)?.lines() ?: emptyList()
+        val freqs = parts.getOrNull(1)?.lines()
+            ?.mapNotNull { it.trim().toLongOrNull() }
+            ?.filter { it > 0 } ?: emptyList()
+        return Pair(statLines, freqs)
+    }
+
+    private fun readImpl(procStatLines: List<String>, directFreqs: List<Long>, source: String): CpuSnapshot {
+        val procStat = procStatLines
 
         val total = procStat.firstOrNull { it.startsWith("cpu ") }?.let(::parseCpuLine)
         val perCore = procStat.filter { it.matches(Regex("^cpu\\d+\\s.*")) }
             .mapNotNull(::parseCpuLine)
 
-        var source = "system"
+        var dataSource = source
         var totalPct = 0f
 
         if (total != null && total.total > 0) {
@@ -54,8 +97,6 @@ object CpuReader {
             lastTotal = total
             if (prev != null) {
                 val sysPct = percentDelta(prev, total)
-                // Detect that /proc/stat is zeroed/locked (Android 8+ on some kernels):
-                // total delta = 0 means stat isn't actually advancing.
                 val delta = total.total - prev.total
                 if (delta > 0) {
                     totalPct = sysPct
@@ -74,13 +115,12 @@ object CpuReader {
         }
         lastPerCore = perCore
 
-        // Fallback: compute from our own process CPU time when system stats are blocked.
         if (systemStatBroken == true) {
-            source = "process"
+            dataSource = "process"
             totalPct = readProcessCpuPercent()
         }
 
-        val freqs = readFreqs("scaling_cur_freq")
+        val freqs = if (directFreqs.isNotEmpty()) directFreqs else readFreqs("scaling_cur_freq")
         val minFreqs = readFreqs("cpuinfo_min_freq")
         val maxFreqs = readFreqs("cpuinfo_max_freq")
         val governor = runCatching {
@@ -98,7 +138,7 @@ object CpuReader {
             abi = Build.SUPPORTED_ABIS.firstOrNull() ?: "?",
             supportedAbis = Build.SUPPORTED_ABIS?.toList() ?: emptyList(),
             hardware = Build.HARDWARE ?: "?",
-            source = source
+            source = dataSource
         )
     }
 
