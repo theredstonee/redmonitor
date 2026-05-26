@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun CpuBenchmarkScreen() {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var running by remember { mutableStateOf(false) }
     var result by remember { mutableStateOf<CpuBenchmarkResult?>(null) }
     val scope = rememberCoroutineScope()
@@ -48,7 +49,7 @@ fun CpuBenchmarkScreen() {
                     running = true
                     result = null
                     scope.launch {
-                        result = CpuBenchmark.run()
+                        result = CpuBenchmark.run(context)
                         running = false
                     }
                 }

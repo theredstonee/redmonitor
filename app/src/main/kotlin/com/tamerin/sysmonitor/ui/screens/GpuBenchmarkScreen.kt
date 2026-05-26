@@ -2,12 +2,17 @@ package com.tamerin.sysmonitor.ui.screens
 
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -17,7 +22,6 @@ import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
-import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -41,24 +45,63 @@ fun GpuBenchmarkScreen() {
         }
     }
 
+    if (running) {
+        // Fullscreen render mode — GLSurfaceView fills entire display, FPS overlay floats on top
+        Box(modifier = Modifier.fillMaxSize()) {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = { ctx ->
+                    GLSurfaceView(ctx).apply {
+                        setEGLContextClientVersion(2)
+                        setRenderer(renderer)
+                        renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
+                    }
+                }
+            )
+            // FPS overlay top-left
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .padding(16.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Black.copy(alpha = 0.6f))
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Column {
+                    Text("$fpsCurrent fps", color = Accent, fontSize = 32.sp)
+                    Text("avg $fpsAverage · min $fpsMin · max $fpsMax",
+                        color = Color.White, fontSize = 12.sp)
+                    Text("${elapsed}s", color = OnSurfaceMuted, fontSize = 11.sp)
+                }
+            }
+            // Stop button bottom-center
+            OutlinedButton(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    running = false
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(24.dp)
+            ) { Text("Stopp", color = Color.White) }
+        }
+        return
+    }
+
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         StatCard("GPU-FPS Benchmark") {
             Text(
-                "Rendert 200 sich drehende Quadrate und misst die durchschnittliche Framerate.",
+                "Rendert 200 sich drehende Quadrate über den kompletten Bildschirm und misst die Framerate.",
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
             Spacer(Modifier.height(12.dp))
             Button(onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
-                running = !running
-                if (running) {
-                    renderer.reset()
-                    elapsed = 0
-                }
-            }) {
-                Text(if (running) "Stopp" else "Start (10 s laufen lassen)")
-            }
+                renderer.reset()
+                elapsed = 0
+                running = true
+            }) { Text("Vollbild-Test starten") }
         }
 
         Spacer(Modifier.height(16.dp))
@@ -76,34 +119,13 @@ fun GpuBenchmarkScreen() {
             KeyValueRow("Max FPS", fpsMax.toString())
             KeyValueRow("Laufzeit", "$elapsed s")
         }
-
-        Spacer(Modifier.height(16.dp))
-
-        if (running) {
-            AndroidView(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp),
-                factory = { ctx ->
-                    GLSurfaceView(ctx).apply {
-                        setEGLContextClientVersion(2)
-                        setRenderer(renderer)
-                        renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
-                    }
-                }
-            )
-        }
     }
 }
 
 @Composable
 private fun FpsValue(label: String, value: Int) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            value.toString(),
-            color = Accent,
-            fontSize = 42.sp
-        )
+        Text(value.toString(), color = Accent, fontSize = 42.sp)
         Text(label, color = OnSurfaceMuted, fontSize = 12.sp)
     }
 }
@@ -119,6 +141,8 @@ private class BenchmarkRenderer(
     private var maxFps = 0
     private var totalFrames = 0
     private var rot = 0f
+    private var width = 0
+    private var height = 0
 
     fun reset() {
         frames = 0
@@ -130,26 +154,38 @@ private class BenchmarkRenderer(
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0.043f, 0.058f, 0.078f, 1f)
+        GLES20.glClearColor(0f, 0f, 0f, 1f)
         startNs = System.nanoTime()
         lastTimeNs = startNs
     }
 
-    override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
-        GLES20.glViewport(0, 0, width, height)
+    override fun onSurfaceChanged(gl: GL10?, w: Int, h: Int) {
+        GLES20.glViewport(0, 0, w, h)
+        width = w
+        height = h
     }
 
     override fun onDrawFrame(gl: GL10?) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
         rot += 0.02f
 
-        // Light fragment workload: draw lots of points with scissor moving
+        // Distribute shapes across the actual screen size
+        val cx = width / 2f
+        val cy = height / 2f
+        val radius = (minOf(width, height) / 3f).coerceAtLeast(100f)
+        val shapeSize = (minOf(width, height) / 30).coerceAtLeast(8)
+
         GLES20.glEnable(GLES20.GL_SCISSOR_TEST)
         for (i in 0 until 200) {
             val a = rot + i * 0.05f
-            val x = (cos(a.toDouble()) * 200 + 250).toInt()
-            val y = (sin(a.toDouble()) * 200 + 250).toInt()
-            GLES20.glScissor(x.coerceAtLeast(0), y.coerceAtLeast(0), 12, 12)
+            val r = radius * (0.3f + 0.7f * ((i % 11) / 10f))
+            val x = (cx + cos(a.toDouble()) * r).toInt()
+            val y = (cy + sin(a.toDouble()) * r).toInt()
+            GLES20.glScissor(
+                x.coerceIn(0, width - shapeSize),
+                y.coerceIn(0, height - shapeSize),
+                shapeSize, shapeSize
+            )
             GLES20.glClearColor(
                 ((sin(a.toDouble()) + 1) / 2).toFloat(),
                 ((cos(a.toDouble()) + 1) / 2).toFloat(),

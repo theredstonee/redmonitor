@@ -100,7 +100,7 @@ fun StressTestScreen() {
                     tempHistory.clear()
                     cpuHistory.clear()
                     elapsedSec = 0
-                    engine.start(scope)
+                    engine.start(context)
                     running = true
                 }
             }) {
