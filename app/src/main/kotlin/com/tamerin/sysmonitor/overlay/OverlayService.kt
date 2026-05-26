@@ -287,27 +287,44 @@ class OverlayService : Service() {
             }
             appendLine("CPU", display)
         }
-        if (cpu != null && HudMetric.PER_CORE in metrics && cpu.perCorePercent.isNotEmpty()) {
-            val bars = cpu.perCorePercent.joinToString("") { p ->
-                val blocks = "▁▂▃▄▅▆▇█"
-                val idx = (p / 12.5f).toInt().coerceIn(0, 7)
-                blocks[idx].toString()
-            }
-            appendLine("•", bars)
-        }
-        if (cpu != null && HudMetric.PER_CORE_DETAIL in metrics && cpu.perCorePercent.isNotEmpty()) {
-            // Multi-line per-core breakdown: "C0 45% 2400" each on own line, columns padded
-            cpu.perCorePercent.forEachIndexed { idx, pct ->
-                val freq = cpu.coreFrequenciesKHz.getOrNull(idx) ?: 0L
-                val freqStr = if (freq > 0) " ${freq / 1000}MHz" else ""
-                appendLine("C$idx", "${"%2d".format(pct.toInt())}%$freqStr")
+        if (HudMetric.PER_CORE in metrics) {
+            val cores = cpu?.perCorePercent
+            if (!cores.isNullOrEmpty()) {
+                val bars = cores.joinToString("") { p ->
+                    val blocks = "▁▂▃▄▅▆▇█"
+                    val idx = (p / 12.5f).toInt().coerceIn(0, 7)
+                    blocks[idx].toString()
+                }
+                appendLine("•", bars)
+            } else {
+                appendLine("•", "— (gesperrt, Shizuku?)")
             }
         }
-        if (cpu != null && HudMetric.CPU_FREQ_AVG in metrics && cpu.coreFrequenciesKHz.isNotEmpty()) {
-            val active = cpu.coreFrequenciesKHz.filter { it > 0 }
+        if (HudMetric.PER_CORE_DETAIL in metrics) {
+            val cores = cpu?.perCorePercent
+            val freqs = cpu?.coreFrequenciesKHz.orEmpty()
+            if (!cores.isNullOrEmpty()) {
+                cores.forEachIndexed { idx, pct ->
+                    val freq = freqs.getOrNull(idx) ?: 0L
+                    val freqStr = if (freq > 0) " ${freq / 1000}MHz" else ""
+                    appendLine("C$idx", "${"%2d".format(pct.toInt())}%$freqStr")
+                }
+            } else if (freqs.isNotEmpty()) {
+                // No per-core %, but freqs work (sysfs partially open)
+                freqs.forEachIndexed { idx, f ->
+                    if (f > 0) appendLine("C$idx", "${f / 1000}MHz")
+                }
+            } else {
+                appendLine("C", "— (gesperrt)")
+            }
+        }
+        if (HudMetric.CPU_FREQ_AVG in metrics) {
+            val active = cpu?.coreFrequenciesKHz?.filter { it > 0 }.orEmpty()
             if (active.isNotEmpty()) {
                 val avgMhz = (active.average() / 1000).toInt()
                 appendLine("F", "${avgMhz} MHz")
+            } else {
+                appendLine("F", "—")
             }
         }
         if (cpuTemp != null && !cpuTemp.isNaN()) {
