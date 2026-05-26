@@ -284,6 +284,8 @@ private fun HudPreview(config: HudConfig) {
 private fun sampleFor(metric: HudMetric): Pair<String, String> = when (metric) {
     HudMetric.CPU_PERCENT -> "CPU" to "42%"
     HudMetric.PER_CORE -> "•" to "▃▄▆█▂▃▄▅"
+    HudMetric.PER_CORE_DETAIL -> "C0" to "45% 2400MHz · C1 22% 1800MHz · …"
+    HudMetric.CPU_FREQ_AVG -> "F" to "2147 MHz"
     HudMetric.CPU_TEMP -> "T" to "47°C"
     HudMetric.RAM_PERCENT -> "RAM" to "63%"
     HudMetric.BATTERY -> "Akku" to "78% ⚡18.5W"

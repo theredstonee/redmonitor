@@ -242,7 +242,11 @@ class OverlayService : Service() {
 
     private fun updateText() {
         val metrics = config.enabledMetrics
-        val cpu = if (HudMetric.CPU_PERCENT in metrics || HudMetric.PER_CORE in metrics) CpuReader.read() else null
+        val needsCpu = HudMetric.CPU_PERCENT in metrics ||
+            HudMetric.PER_CORE in metrics ||
+            HudMetric.PER_CORE_DETAIL in metrics ||
+            HudMetric.CPU_FREQ_AVG in metrics
+        val cpu = if (needsCpu) CpuReader.read(this) else null
         val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
         val batt = if (HudMetric.BATTERY in metrics) BatteryReader.read(this) else null
         val cpuTemp = if (HudMetric.CPU_TEMP in metrics) {
@@ -283,6 +287,21 @@ class OverlayService : Service() {
                 blocks[idx].toString()
             }
             appendLine("•", bars)
+        }
+        if (cpu != null && HudMetric.PER_CORE_DETAIL in metrics && cpu.perCorePercent.isNotEmpty()) {
+            // Multi-line per-core breakdown: "C0 45% 2400" each on own line, columns padded
+            cpu.perCorePercent.forEachIndexed { idx, pct ->
+                val freq = cpu.coreFrequenciesKHz.getOrNull(idx) ?: 0L
+                val freqStr = if (freq > 0) " ${freq / 1000}MHz" else ""
+                appendLine("C$idx", "${"%2d".format(pct.toInt())}%$freqStr")
+            }
+        }
+        if (cpu != null && HudMetric.CPU_FREQ_AVG in metrics && cpu.coreFrequenciesKHz.isNotEmpty()) {
+            val active = cpu.coreFrequenciesKHz.filter { it > 0 }
+            if (active.isNotEmpty()) {
+                val avgMhz = (active.average() / 1000).toInt()
+                appendLine("F", "${avgMhz} MHz")
+            }
         }
         if (cpuTemp != null && !cpuTemp.isNaN()) {
             appendLine("T", "${"%.0f".format(cpuTemp)}°C")

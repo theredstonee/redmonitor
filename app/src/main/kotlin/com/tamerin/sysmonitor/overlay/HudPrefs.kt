@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.compose.ui.graphics.Color
 
 enum class HudMetric(val key: String, val label: String) {
-    CPU_PERCENT("cpu", "CPU %"),
+    CPU_PERCENT("cpu", "CPU % gesamt"),
     PER_CORE("per_core", "Pro-Core-Balken"),
+    PER_CORE_DETAIL("per_core_detail", "Pro-Core %·MHz (detailliert)"),
+    CPU_FREQ_AVG("cpu_freq", "CPU-Takt Ø (MHz)"),
     CPU_TEMP("cpu_temp", "CPU/SoC-Temperatur"),
     RAM_PERCENT("ram", "RAM %"),
     BATTERY("batt", "Akku % + Watt"),
