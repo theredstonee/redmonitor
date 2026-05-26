@@ -15,6 +15,15 @@ build/
 *.aab
 *.keystore
 *.jks
+*.jks.*
+*.p12
+*.pfx
+redmonitor.jks
+redmonitor-keystore.jks
+release-keystore.jks
+keystore.properties
+signing.properties
+local.properties
 /app/release/
 /app/debug/
 
