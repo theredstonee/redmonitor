@@ -272,8 +272,10 @@ private fun readOne(cm: CameraManager, id: String, isPhysical: Boolean, parentId
         val maxRaw = rawSizes.maxByOrNull { it.width.toLong() * it.height }
             ?.let { "${it.width} × ${it.height}" }
 
-        val outputFormats = map?.outputFormats?.mapNotNull { formatName(it) }
-            ?.distinct()?.sorted().orEmpty()
+        val outputFormats = (map?.outputFormats?.toList() ?: emptyList())
+            .mapNotNull { formatName(it) }
+            .distinct()
+            .sorted()
 
         val focals = ch.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)?.toList().orEmpty()
         // Compute 35mm-equivalent focal length: f_35 = f_real × (43.27 / sensor_diagonal)
