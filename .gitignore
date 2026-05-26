@@ -1,0 +1,29 @@
+# --- Build / IDE ---
+*.iml
+.gradle
+.kotlin/
+/local.properties
+.idea/
+.DS_Store
+build/
+/captures
+.externalNativeBuild
+.cxx
+
+# --- Releases / signing ---
+*.apk
+*.aab
+*.keystore
+*.jks
+/app/release/
+/app/debug/
+
+# --- AI / Assistant artefacts (local only) ---
+.claude/
+.cursor/
+.aider*
+.kiro/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+.copilotignore

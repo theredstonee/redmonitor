@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Big rounded red chip body -->
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M30,30 L78,30 A4,4 0 0 1 82,34 L82,74 A4,4 0 0 1 78,78 L30,78 A4,4 0 0 1 26,74 L26,34 A4,4 0 0 1 30,30 Z" />
+
+    <!-- Inner contrast "screen" -->
+    <path
+        android:fillColor="#000000"
+        android:pathData="M38,38 L70,38 A2,2 0 0 1 72,40 L72,68 A2,2 0 0 1 70,70 L38,70 A2,2 0 0 1 36,68 L36,40 A2,2 0 0 1 38,38 Z" />
+
+    <!-- Small inner red "die" -->
+    <path
+        android:fillColor="#DC2626"
+        android:pathData="M46,46 L62,46 L62,62 L46,62 Z" />
+
+    <!-- 4 chunky pins, one per side, perfectly readable at any size -->
+    <path android:fillColor="#DC2626" android:pathData="M50,20 L58,20 L58,30 L50,30 Z" />
+    <path android:fillColor="#DC2626" android:pathData="M50,78 L58,78 L58,88 L50,88 Z" />
+    <path android:fillColor="#DC2626" android:pathData="M20,50 L30,50 L30,58 L20,58 Z" />
+    <path android:fillColor="#DC2626" android:pathData="M78,50 L88,50 L88,58 L78,58 Z" />
+</vector>
