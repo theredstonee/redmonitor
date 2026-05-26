@@ -38,6 +38,30 @@ object AppActions {
     fun enableApp(context: Context, pkg: String): ShizukuHelper.CmdResult =
         ShizukuHelper.runCommand(context, "pm", "enable", pkg)
 
+    /** Clear only the app's cache (safe). */
+    fun clearCache(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "pm", "clear", "--cache-only", pkg)
+
+    /** Clear ALL app data (full reset — destructive, like fresh install). */
+    fun clearAllData(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "pm", "clear", pkg)
+
+    /**
+     * Uninstall the app. For user-installed apps this fully removes it.
+     * For system apps this hides it from current user (--user 0).
+     */
+    fun uninstall(context: Context, pkg: String, isSystem: Boolean): ShizukuHelper.CmdResult {
+        return if (isSystem) {
+            ShizukuHelper.runCommand(context, "pm", "uninstall", "--user", "0", pkg)
+        } else {
+            ShizukuHelper.runCommand(context, "pm", "uninstall", pkg)
+        }
+    }
+
+    /** Force-stop a list of packages in one go. Returns map of pkg → result. */
+    fun batchForceStop(context: Context, pkgs: List<String>): Map<String, ShizukuHelper.CmdResult> =
+        pkgs.associateWith { forceStop(context, it) }
+
     // --- AppOps for background restriction ---
 
     fun setBackgroundAllowed(context: Context, pkg: String, allowed: Boolean): ShizukuHelper.CmdResult {

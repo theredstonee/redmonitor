@@ -8,8 +8,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -45,6 +47,8 @@ fun TaskDetailScreen(pkg: String) {
     var disabled by remember { mutableStateOf(false) }
     var bgState by remember { mutableStateOf<AppActions.AppOpsState?>(null) }
     var receivers by remember { mutableStateOf<List<AppActions.Receiver>>(emptyList()) }
+    var confirmDialog by remember { mutableStateOf<ConfirmAction?>(null) }
+    val isSystemApp = ai != null && (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
 
     LaunchedEffect(shizukuReady) {
         if (shizukuReady) {
@@ -118,6 +122,44 @@ fun TaskDetailScreen(pkg: String) {
             Spacer(Modifier.height(6.dp))
             Text(
                 "Force-Stop beendet alle Prozesse sofort. Soft-Kill killt nur Cache/leere Prozesse — verträglicher.",
+                color = OnSurfaceMuted, fontSize = 11.sp
+            )
+        }
+
+        StatCard("Speicher-Aktionen") {
+            OutlinedButton(
+                onClick = { runAction("Cache geleert") { AppActions.clearCache(context, pkg) } },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Nur Cache leeren (safe)", fontSize = 13.sp) }
+            Spacer(Modifier.height(6.dp))
+            Button(
+                onClick = { confirmDialog = ConfirmAction.ClearData },
+                colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("App-Daten komplett zurücksetzen", fontSize = 13.sp) }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "App-Reset löscht alle Einstellungen, Logins und lokalen Daten — App wirkt wie neu installiert.",
+                color = OnSurfaceMuted, fontSize = 11.sp
+            )
+        }
+
+        StatCard("Deinstallieren") {
+            Button(
+                onClick = { confirmDialog = ConfirmAction.Uninstall(isSystemApp) },
+                colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    if (isSystemApp) "System-App für mich verstecken" else "App deinstallieren",
+                    fontSize = 13.sp
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                if (isSystemApp)
+                    "System-Apps können nicht komplett gelöscht werden ohne Root. Aber: 'pm uninstall --user 0' versteckt sie für dich — Speicher wird frei, beim Werksreset kommt sie wieder."
+                else "Vollständig deinstalliert. Wie aus dem Play Store entfernen.",
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
@@ -231,6 +273,47 @@ fun TaskDetailScreen(pkg: String) {
                 Text("Im System-App-Info öffnen")
             }
         }
+    }
+
+    // Confirmation dialog
+    confirmDialog?.let { action ->
+        AlertDialog(
+            onDismissRequest = { confirmDialog = null },
+            title = { Text(action.title) },
+            text = { Text(action.body(pkg)) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        confirmDialog = null
+                        runAction(action.label) {
+                            when (action) {
+                                is ConfirmAction.ClearData -> AppActions.clearAllData(context, pkg)
+                                is ConfirmAction.Uninstall -> AppActions.uninstall(context, pkg, action.isSystem)
+                            }
+                        }
+                    }
+                ) { Text("Bestätigen", color = GaugeRed) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmDialog = null }) { Text("Abbrechen") }
+            }
+        )
+    }
+}
+
+private sealed class ConfirmAction(val title: String, val label: String) {
+    abstract fun body(pkg: String): String
+    object ClearData : ConfirmAction("App-Daten löschen?", "Daten gelöscht") {
+        override fun body(pkg: String) =
+            "$pkg wird auf Werkszustand zurückgesetzt. Logins, Einstellungen und alles Lokale ist weg."
+    }
+    data class Uninstall(val isSystem: Boolean) : ConfirmAction(
+        if (isSystem) "System-App verstecken?" else "App deinstallieren?",
+        if (isSystem) "Versteckt" else "Deinstalliert"
+    ) {
+        override fun body(pkg: String) =
+            if (isSystem) "$pkg wird für dich versteckt. Beim Werksreset kommt sie wieder."
+            else "$pkg wird komplett entfernt."
     }
 }
 

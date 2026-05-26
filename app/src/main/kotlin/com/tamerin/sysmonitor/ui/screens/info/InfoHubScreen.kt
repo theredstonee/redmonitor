@@ -6,6 +6,7 @@ import androidx.compose.material.icons.filled.Bluetooth
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Nfc
 import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.ListAlt
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.SimCard
@@ -28,7 +29,8 @@ private val INFO_ENTRIES = listOf(
     HubEntry(Routes.INFO_RUNNING, "Laufende Apps", "Aktiv + RAM", Icons.Filled.Memory),
     HubEntry(Routes.INFO_INSTALLED, "Installierte Apps", "Pakete + Größe", Icons.Filled.Apps),
     HubEntry(Routes.INFO_FEATURES, "Hardware-Features", "Was hat das Gerät", Icons.Filled.DeviceHub),
-    HubEntry(Routes.INFO_PROPS, "System-Properties", "Alle Build-Props", Icons.Filled.Storage)
+    HubEntry(Routes.INFO_PROPS, "System-Properties", "Alle Build-Props", Icons.Filled.Storage),
+    HubEntry(Routes.INFO_LOGCAT, "Logcat", "Live System-Logs (Shizuku)", Icons.Filled.ListAlt)
 )
 
 @Composable

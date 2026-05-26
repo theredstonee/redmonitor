@@ -62,6 +62,7 @@ import com.tamerin.sysmonitor.ui.screens.GpuScreen
 import com.tamerin.sysmonitor.ui.screens.HudSettingsScreen
 import com.tamerin.sysmonitor.ui.screens.ImageBenchScreen
 import com.tamerin.sysmonitor.ui.screens.InstalledAppsScreen
+import com.tamerin.sysmonitor.ui.screens.LogcatScreen
 import com.tamerin.sysmonitor.ui.screens.MicTestScreen
 import com.tamerin.sysmonitor.ui.screens.MultiTouchScreen
 import com.tamerin.sysmonitor.ui.screens.NetworkScreen
@@ -157,6 +158,7 @@ object Routes {
     const val INFO_WIFI = "info/wifi"
     const val INFO_BLUETOOTH = "info/bluetooth"
     const val INFO_NFC = "info/nfc"
+    const val INFO_LOGCAT = "info/logcat"
 }
 
 private data class TopTab(val route: String, val label: String, val icon: ImageVector)
@@ -222,6 +224,7 @@ private fun titleFor(route: String?): String = when {
     route == Routes.INFO_WIFI -> "WLAN-Scan"
     route == Routes.INFO_BLUETOOTH -> "Bluetooth"
     route == Routes.INFO_NFC -> "NFC"
+    route == Routes.INFO_LOGCAT -> "Logcat"
     else -> "SysMonitor"
 }
 
@@ -371,6 +374,7 @@ private fun SysMonitorApp() {
             composable(Routes.INFO_WIFI) { WifiScanScreen() }
             composable(Routes.INFO_BLUETOOTH) { BluetoothScreen() }
             composable(Routes.INFO_NFC) { NfcScreen() }
+            composable(Routes.INFO_LOGCAT) { LogcatScreen() }
         }
     }
 }
