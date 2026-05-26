@@ -312,7 +312,7 @@ private fun readOne(cm: CameraManager, id: String, isPhysical: Boolean, parentId
 
         val orientation = ch.get(CameraCharacteristics.SENSOR_ORIENTATION) ?: 0
 
-        val capLabels = caps.mapNotNull { capabilityLabel(it) }
+        val capLabels = caps.toList().mapNotNull { capabilityLabel(it) }
 
         val physicalIds = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             ch.physicalCameraIds.toList()
