@@ -18,6 +18,7 @@ build/
 *.jks.*
 *.p12
 *.pfx
+redmonitor
 redmonitor.jks
 redmonitor-keystore.jks
 release-keystore.jks

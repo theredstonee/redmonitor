@@ -11,6 +11,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -79,6 +80,7 @@ import com.tamerin.sysmonitor.ui.screens.RandomIOScreen
 import com.tamerin.sysmonitor.ui.screens.RunningAppsScreen
 import com.tamerin.sysmonitor.ui.screens.SensorDetailScreen
 import com.tamerin.sysmonitor.ui.screens.SensorsScreen
+import com.tamerin.sysmonitor.ui.screens.SettingsScreen
 import com.tamerin.sysmonitor.ui.screens.SpeakerTestScreen
 import com.tamerin.sysmonitor.ui.screens.StorageBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.StressTestScreen
@@ -88,6 +90,7 @@ import com.tamerin.sysmonitor.ui.screens.TaskDetailScreen
 import com.tamerin.sysmonitor.ui.screens.TaskManagerScreen
 import com.tamerin.sysmonitor.ui.screens.TelephonyScreen
 import com.tamerin.sysmonitor.ui.screens.ThermalScreen
+import com.tamerin.sysmonitor.ui.screens.UpdateScreen
 import com.tamerin.sysmonitor.ui.screens.VibrationScreen
 import com.tamerin.sysmonitor.ui.screens.WifiScanScreen
 import com.tamerin.sysmonitor.ui.screens.benchmark.BenchmarkHubScreen
@@ -99,6 +102,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
+        com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
         setContent {
             SysMonitorTheme {
                 SysMonitorApp()
@@ -163,6 +168,8 @@ object Routes {
     const val INFO_LOGCAT = "info/logcat"
     const val INFO_DOZE = "info/doze"
     const val SYSTEM_TWEAKS = "system/tweaks"
+    const val UPDATE = "update"
+    const val SETTINGS = "settings"
 }
 
 private data class TopTab(val route: String, val label: String, val icon: ImageVector)
@@ -173,11 +180,12 @@ private val TOP_TABS = listOf(
     TopTab(Routes.TASKS, "Tasks", Icons.Filled.TaskAlt),
     TopTab(Routes.BENCHMARK, "Bench", Icons.Filled.Speed),
     TopTab(Routes.TESTS, "Tests", Icons.Filled.Build),
-    TopTab(Routes.INFO, "Info", Icons.Filled.Info)
+    TopTab(Routes.INFO, "Info", Icons.Filled.Info),
+    TopTab(Routes.SETTINGS, "Mehr", Icons.Filled.Settings)
 )
 
 private val TOP_LEVEL_ROUTES = setOf(
-    Routes.LIVE, Routes.SYSTEM, Routes.TASKS, Routes.BENCHMARK, Routes.TESTS, Routes.INFO
+    Routes.LIVE, Routes.SYSTEM, Routes.TASKS, Routes.BENCHMARK, Routes.TESTS, Routes.INFO, Routes.SETTINGS
 )
 
 private fun titleFor(route: String?): String = when {
@@ -231,6 +239,8 @@ private fun titleFor(route: String?): String = when {
     route == Routes.INFO_LOGCAT -> "Logcat"
     route == Routes.INFO_DOZE -> "Doze-Whitelist"
     route == Routes.SYSTEM_TWEAKS -> "Display-Tweaks"
+    route == Routes.UPDATE -> "Update"
+    route == Routes.SETTINGS -> "Einstellungen"
     else -> "SysMonitor"
 }
 
@@ -241,6 +251,23 @@ private fun SysMonitorApp() {
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val isTopLevel = currentRoute in TOP_LEVEL_ROUTES || currentRoute == null
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var startupUpdate by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<com.tamerin.sysmonitor.update.ReleaseInfo?>(null)
+    }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
+            context,
+            com.tamerin.sysmonitor.update.UpdatePrefs.includePrerelease(context)
+        )
+        if (state.hasUpdate && state.latest != null) {
+            com.tamerin.sysmonitor.update.UpdatePrefs.setLatestSeenVersion(context, state.latest.versionName)
+            if (com.tamerin.sysmonitor.update.UpdatePrefs.dismissedVersion(context) != state.latest.versionName) {
+                startupUpdate = state.latest
+            }
+        }
+        com.tamerin.sysmonitor.update.UpdatePrefs.setLastCheckMs(context, System.currentTimeMillis())
+    }
 
     Scaffold(
         topBar = {
@@ -312,7 +339,7 @@ private fun SysMonitorApp() {
             startDestination = Routes.LIVE,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Routes.LIVE) { OverviewScreen() }
+            composable(Routes.LIVE) { OverviewScreen(onOpenUpdate = { navController.navigate(Routes.UPDATE) }) }
             composable(Routes.SYSTEM) { SystemHubScreen { navController.navigate(it) } }
             composable(Routes.BENCHMARK) { BenchmarkHubScreen { navController.navigate(it) } }
             composable(Routes.TESTS) { TestsHubScreen { navController.navigate(it) } }
@@ -383,7 +410,38 @@ private fun SysMonitorApp() {
             composable(Routes.INFO_LOGCAT) { LogcatScreen() }
             composable(Routes.INFO_DOZE) { DozeWhitelistScreen() }
             composable(Routes.SYSTEM_TWEAKS) { DisplayTweaksScreen() }
+            composable(Routes.UPDATE) { UpdateScreen() }
+            composable(Routes.SETTINGS) { SettingsScreen() }
         }
+    }
+
+    // Startup update dialog
+    val pending = startupUpdate
+    if (pending != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { startupUpdate = null },
+            title = { Text("Update verfügbar") },
+            text = {
+                Text(
+                    "${pending.name}\n\n" +
+                        "Aktuell: ${com.tamerin.sysmonitor.BuildConfig.VERSION_NAME}\n" +
+                        "Neu: ${pending.versionName}" +
+                        if (pending.isPrerelease) "  (Pre-Release)" else ""
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    startupUpdate = null
+                    navController.navigate(Routes.UPDATE)
+                }) { Text("Details / Installieren") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    com.tamerin.sysmonitor.update.UpdatePrefs.dismissVersion(context, pending.versionName)
+                    startupUpdate = null
+                }) { Text("Ignorieren") }
+            }
+        )
     }
 }
 

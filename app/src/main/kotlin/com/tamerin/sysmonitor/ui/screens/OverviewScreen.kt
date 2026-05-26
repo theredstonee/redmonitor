@@ -36,9 +36,23 @@ import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import kotlinx.coroutines.delay
 
 @Composable
-fun OverviewScreen() {
+fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
     val context = LocalContext.current
     val activity = context as? Activity
+    var updateAvailable by remember {
+        mutableStateOf<com.tamerin.sysmonitor.update.ReleaseInfo?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
+            context,
+            com.tamerin.sysmonitor.update.UpdatePrefs.includePrerelease(context)
+        )
+        if (state.hasUpdate && state.latest != null &&
+            com.tamerin.sysmonitor.update.UpdatePrefs.dismissedVersion(context) != state.latest.versionName) {
+            updateAvailable = state.latest
+        }
+    }
     var cpuPct by remember { mutableFloatStateOf(0f) }
     var ramPct by remember { mutableFloatStateOf(0f) }
     var ramUsed by remember { mutableLongStateOf(0L) }
@@ -79,6 +93,18 @@ fun OverviewScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
+        updateAvailable?.let { release ->
+            com.tamerin.sysmonitor.ui.components.UpdateBanner(
+                fromVersion = com.tamerin.sysmonitor.BuildConfig.VERSION_NAME,
+                toVersion = release.versionName,
+                onClick = onOpenUpdate,
+                onDismiss = {
+                    com.tamerin.sysmonitor.update.UpdatePrefs.dismissVersion(context, release.versionName)
+                    updateAvailable = null
+                }
+            )
+        }
+
         // ===== HERO =====
         Box(
             modifier = Modifier
