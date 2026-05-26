@@ -146,7 +146,7 @@ class OverlayService : Service() {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f * config.size.scale)
             typeface = android.graphics.Typeface.MONOSPACE
             text = "starte…"
-            lineSpacingExtra = 2f
+            setLineSpacing(2f, 1f)
         }
         container.addView(textView)
         view = container
