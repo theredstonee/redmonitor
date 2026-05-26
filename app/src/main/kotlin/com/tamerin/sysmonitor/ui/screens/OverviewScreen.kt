@@ -44,6 +44,11 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
     }
 
     LaunchedEffect(Unit) {
+        val fake = com.tamerin.sysmonitor.update.UpdateTestHelper.consumeFake(context)
+        if (fake != null) {
+            updateAvailable = fake
+            return@LaunchedEffect
+        }
         val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
             context,
             com.tamerin.sysmonitor.update.UpdatePrefs.includePrerelease(context)
