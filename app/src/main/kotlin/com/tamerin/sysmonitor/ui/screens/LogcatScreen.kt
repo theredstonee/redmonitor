@@ -90,12 +90,11 @@ fun LogcatScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
-            StatCard("Shizuku benötigt") {
-                Text(
-                    "Logcat liest System-Logs, dafür braucht Android die READ_LOGS-Permission. Nur via Shizuku (shell-User) zugänglich für normale Apps.",
-                    color = OnSurfaceMuted, fontSize = 12.sp
-                )
-            }
+            com.tamerin.sysmonitor.ui.components.ShizukuCard(
+                title = "Shizuku für Logcat",
+                description = "Logcat liest System-Logs aller Apps. Android schützt das mit READ_LOGS — " +
+                    "die haben nur System-Apps und der shell-User. Shizuku gibt uns shell-Zugriff."
+            )
             return@Column
         }
 

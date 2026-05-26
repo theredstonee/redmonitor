@@ -110,15 +110,18 @@ fun TaskDetailScreen(pkg: String) {
         }
 
         if (!shizukuReady) {
-            StatCard("Shizuku benötigt") {
-                Text(
-                    "Aktionen wie Force-Stop, App deaktivieren oder Hintergrund blockieren brauchen Shizuku. Setup unter System → Floating HUD → Akku-Karte.",
-                    color = OnSurfaceMuted, fontSize = 12.sp
-                )
-                Spacer(Modifier.height(8.dp))
-                OutlinedButton(onClick = { AppActions.openAppInfo(context, pkg) }) {
-                    Text("App-Info im System öffnen")
-                }
+            com.tamerin.sysmonitor.ui.components.ShizukuCard(
+                title = "Shizuku für App-Aktionen",
+                description = "Force-Stop, Soft-Kill, Cache leeren, App-Daten zurücksetzen, " +
+                    "Deinstallieren, Deep-Freeze, Auto-Start-Receiver, Standby-Bucket, Background-AppOps — " +
+                    "alles braucht shell-Zugriff via Shizuku."
+            )
+            Spacer(Modifier.height(12.dp))
+            OutlinedButton(
+                onClick = { AppActions.openAppInfo(context, pkg) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Bis dahin: App-Info im System öffnen")
             }
             return@Column
         }

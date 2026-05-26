@@ -80,17 +80,19 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+        if (!shizukuReady) {
+            com.tamerin.sysmonitor.ui.components.ShizukuCard(
+                title = "Shizuku für Task-Manager",
+                description = "Seit Android 7 darf eine App nur den eigenen Prozess sehen. " +
+                    "Mit Shizuku (shell-User-Zugriff) sehen wir alle laufenden Apps, " +
+                    "können Force-Stop / Cache leeren / App-Daten zurücksetzen / Deep-Freeze ausführen."
+            )
+            Spacer(Modifier.height(12.dp))
+        }
         // Diagnostic card
         StatCard("Status") {
             Text(result.source, color = OnSurfaceMuted, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace)
-            if (!shizukuReady) {
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    "→ Mit Shizuku siehst du alle Apps. Setup via System → Floating HUD → Shizuku-Karte.",
-                    color = AccentSoft, fontSize = 11.sp
-                )
-            }
         }
         Spacer(Modifier.height(12.dp))
 

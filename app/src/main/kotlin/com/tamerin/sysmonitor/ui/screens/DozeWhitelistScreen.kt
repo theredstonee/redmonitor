@@ -59,12 +59,11 @@ fun DozeWhitelistScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!shizukuReady) {
-            StatCard("Shizuku benötigt") {
-                Text(
-                    "Doze-Whitelist (Akku-Optimierung) lesen/schreiben braucht shell-Zugriff via Shizuku.",
-                    color = OnSurfaceMuted, fontSize = 12.sp
-                )
-            }
+            com.tamerin.sysmonitor.ui.components.ShizukuCard(
+                title = "Shizuku für Doze-Whitelist",
+                description = "Apps auf der Doze-Whitelist hinzufügen/entfernen geht nur via shell-User-Kontext. " +
+                    "Shizuku gibt uns den."
+            )
             return@Column
         }
 
