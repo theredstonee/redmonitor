@@ -21,96 +21,143 @@ object ProcessReader {
 
     fun read(context: Context): List<RunningApp> {
         val pm = context.packageManager
-        // Try Shizuku first — gives us all processes, not just our own
-        val viaShizuku = if (ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
-            readViaDumpsys(context, pm)
-        } else emptyList()
-        if (viaShizuku.isNotEmpty()) return viaShizuku
-
-        // Fallback: ActivityManager.getRunningAppProcesses returns only our own process since Android 7
+        if (ShizukuHelper.state(context) == ShizukuHelper.State.Ready) {
+            val viaPs = readViaPs(context, pm)
+            if (viaPs.isNotEmpty()) return viaPs
+            val viaDump = readViaDumpsys(context, pm)
+            if (viaDump.isNotEmpty()) return viaDump
+        }
         return readViaActivityManager(context, pm)
     }
 
-    private fun readViaDumpsys(context: Context, pm: PackageManager): List<RunningApp> {
-        val res = ShizukuHelper.runCommand(context, "dumpsys", "activity", "processes")
-        if (!res.ok) return emptyList()
-        return parseDumpsys(res.stdout, pm)
-    }
-
     /**
-     * Parses the relevant lines from `dumpsys activity processes`.
-     * Example block we look for:
-     *   *APP* UID 10245 ProcessRecord{abc123 12345:com.foo.bar/u0a245}
-     *     adj=cch+1 procState=15 ...
-     *     pss= ... uss=... rss= 234560kB
+     * Most reliable: `ps -A -o PID,RSS,USER,NAME` works on every Android via Shizuku.
+     * Output is one process per line.
      */
-    private fun parseDumpsys(output: String, pm: PackageManager): List<RunningApp> {
+    private fun readViaPs(context: Context, pm: PackageManager): List<RunningApp> {
+        val res = ShizukuHelper.runCommand(context, "ps", "-A", "-o", "PID,RSS,USER,NAME")
+        if (!res.ok || res.stdout.isBlank()) return emptyList()
+
         val apps = mutableListOf<RunningApp>()
-        val procRegex = Regex("""\d+:([\w.]+)/u?\d*a?(\d+)""")
-        val rssRegex = Regex("""rss=\s*(\d+)kB""")
-        var currentLines = mutableListOf<String>()
-        val blocks = mutableListOf<List<String>>()
-        for (line in output.lineSequence()) {
-            if (line.contains("ProcessRecord{")) {
-                if (currentLines.isNotEmpty()) blocks += currentLines
-                currentLines = mutableListOf(line)
-            } else if (currentLines.isNotEmpty()) {
-                currentLines += line
-                if (line.isBlank()) {
-                    blocks += currentLines
-                    currentLines = mutableListOf()
-                }
-            }
-        }
-        if (currentLines.isNotEmpty()) blocks += currentLines
-
         val seen = mutableSetOf<String>()
-        for (block in blocks) {
-            val headerLine = block.firstOrNull { it.contains("ProcessRecord{") } ?: continue
-            val matchHeader = Regex("""(\d+):([\w.:]+)/""").find(headerLine) ?: continue
-            val pid = matchHeader.groupValues[1].toIntOrNull() ?: continue
-            val processName = matchHeader.groupValues[2]
+        var firstLine = true
+        for (raw in res.stdout.lineSequence()) {
+            if (firstLine) { firstLine = false; continue } // skip header
+            val line = raw.trim()
+            if (line.isEmpty()) continue
+            val parts = line.split(Regex("\\s+"))
+            if (parts.size < 4) continue
+            val pid = parts[0].toIntOrNull() ?: continue
+            val rssKb = parts[1].toLongOrNull() ?: 0L
+            val user = parts[2]
+            // Process name may contain spaces only if quoted — usually it's the last token
+            val processName = parts.drop(3).joinToString(" ")
             val pkg = processName.substringBefore(":")
+            if (!isAndroidPkg(pkg)) continue
             if (pkg in seen) continue
+            val ai = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull() ?: continue
             seen += pkg
-
-            val uidMatch = Regex("""UID (\d+)""").find(headerLine)
-            val uid = uidMatch?.groupValues?.get(1)?.toIntOrNull() ?: 0
-
-            val rssLine = block.firstOrNull { it.contains("rss=") }
-            val rssKb = rssLine?.let { rssRegex.find(it)?.groupValues?.get(1)?.toLongOrNull() } ?: 0L
-
-            val importance = parseImportance(block)
-
-            val ai = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull()
-            val name = ai?.loadLabel(pm)?.toString() ?: pkg
-            val isSystem = ai != null && (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
-
+            val isSystem = (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
             apps += RunningApp(
                 pkg = pkg,
-                displayName = name,
+                displayName = ai.loadLabel(pm).toString(),
                 isSystem = isSystem,
                 pid = pid,
-                uid = uid,
+                uid = uidFromUserString(user),
                 rssKb = rssKb,
                 processName = processName,
-                importance = importance,
-                importanceLabel = importanceLabel(importance)
+                importance = -1,
+                importanceLabel = "—"
             )
         }
         return apps.sortedByDescending { it.rssKb }
     }
 
-    private fun parseImportance(block: List<String>): Int {
-        for (line in block) {
-            // procState=NN or oom: prev=NN curr=NN  — pick the foreground/visible state when possible
-            val ps = Regex("""procState=(\d+)""").find(line)?.groupValues?.get(1)?.toIntOrNull()
-            if (ps != null) return ps
-        }
-        return -1
+    private fun isAndroidPkg(name: String): Boolean {
+        // Heuristic: must contain at least one dot, no leading "[" (kernel threads)
+        if (name.isEmpty() || name.startsWith("[")) return false
+        return name.contains(".")
     }
 
-    private fun importanceLabel(ps: Int): String = when (ps) {
+    private fun uidFromUserString(user: String): Int {
+        // "u0_a234" → 10234 ; "system" → 1000 ; "root" → 0
+        if (user.startsWith("u") && user.contains("_a")) {
+            val appPart = user.substringAfter("_a").toIntOrNull() ?: return 0
+            return 10000 + appPart
+        }
+        return when (user) {
+            "root" -> 0
+            "system" -> 1000
+            "radio" -> 1001
+            "bluetooth" -> 1002
+            else -> 0
+        }
+    }
+
+    /**
+     * Fallback: parse `dumpsys activity processes`. Less reliable across OEMs.
+     */
+    private fun readViaDumpsys(context: Context, pm: PackageManager): List<RunningApp> {
+        val res = ShizukuHelper.runCommand(context, "dumpsys", "activity", "processes")
+        if (!res.ok) return emptyList()
+        val apps = mutableListOf<RunningApp>()
+        val seen = mutableSetOf<String>()
+        val procLineRegex = Regex("""(\d+):([\w.:]+)/u?\d*a?(\d*)""")
+        val rssRegex = Regex("""rss=\s*(\d+)""")
+        val procStateRegex = Regex("""procState=(\d+)""")
+
+        var currentLines = mutableListOf<String>()
+        for (line in res.stdout.lineSequence()) {
+            if (line.contains("ProcessRecord{") && currentLines.isNotEmpty()) {
+                processBlock(currentLines, procLineRegex, rssRegex, procStateRegex, apps, seen, pm)
+                currentLines = mutableListOf()
+            }
+            currentLines += line
+        }
+        if (currentLines.isNotEmpty()) {
+            processBlock(currentLines, procLineRegex, rssRegex, procStateRegex, apps, seen, pm)
+        }
+        return apps.sortedByDescending { it.rssKb }
+    }
+
+    private fun processBlock(
+        block: List<String>,
+        procLineRegex: Regex,
+        rssRegex: Regex,
+        procStateRegex: Regex,
+        apps: MutableList<RunningApp>,
+        seen: MutableSet<String>,
+        pm: PackageManager
+    ) {
+        val header = block.firstOrNull { it.contains("ProcessRecord{") } ?: return
+        val m = procLineRegex.find(header) ?: return
+        val pid = m.groupValues[1].toIntOrNull() ?: return
+        val processName = m.groupValues[2]
+        val pkg = processName.substringBefore(":")
+        if (pkg in seen) return
+
+        val rssKb = block.firstNotNullOfOrNull { line ->
+            rssRegex.find(line)?.groupValues?.get(1)?.toLongOrNull()
+        } ?: 0L
+        val procState = block.firstNotNullOfOrNull { line ->
+            procStateRegex.find(line)?.groupValues?.get(1)?.toIntOrNull()
+        } ?: -1
+
+        val ai = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull()
+        val name = ai?.loadLabel(pm)?.toString() ?: pkg
+        val isSystem = ai != null && (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0
+        seen += pkg
+
+        apps += RunningApp(
+            pkg = pkg, displayName = name, isSystem = isSystem,
+            pid = pid, uid = 0, rssKb = rssKb,
+            processName = processName,
+            importance = procState,
+            importanceLabel = procStateLabel(procState)
+        )
+    }
+
+    private fun procStateLabel(ps: Int): String = when (ps) {
         0, 1, 2 -> "Persistent"
         3, 4 -> "Vordergrund"
         5, 6 -> "Top sichtbar"
@@ -125,15 +172,15 @@ object ProcessReader {
     private fun readViaActivityManager(context: Context, pm: PackageManager): List<RunningApp> {
         val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
         val list = am.runningAppProcesses ?: return emptyList()
-        return list.map { info ->
+        return list.mapNotNull { info ->
             val pkg = info.pkgList.firstOrNull() ?: info.processName.substringBefore(":")
             val memInfo = am.getProcessMemoryInfo(intArrayOf(info.pid)).firstOrNull()
             val rss = memInfo?.totalPss?.toLong() ?: 0L
-            val ai = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull()
+            val ai = runCatching { pm.getApplicationInfo(pkg, 0) }.getOrNull() ?: return@mapNotNull null
             RunningApp(
                 pkg = pkg,
-                displayName = ai?.loadLabel(pm)?.toString() ?: pkg,
-                isSystem = ai != null && (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
+                displayName = ai.loadLabel(pm).toString(),
+                isSystem = (ai.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
                 pid = info.pid,
                 uid = info.uid,
                 rssKb = rss,
