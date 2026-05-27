@@ -1,5 +1,138 @@
 # Changelog
 
+## v1.4 — 2026-05-27
+
+### Neu
+
+**Trustpilot-Bewertung**
+- Modal-Dialog beim App-Start „Gefällt dir RedMonitor?" mit Stern-Icon
+- Erscheint ab dem **2. App-Start**, danach alle **3 Tage** solange noch nicht bewertet
+- **⭐ Jetzt bewerten** öffnet `de.trustpilot.com/evaluate/theredstonee.de` und markiert die App als bewertet (kein weiteres Nagging)
+- **Später**-Knopf snoozed 3 Tage
+- Bewertungs-Karte im Mehr-Tab mit beiden Buttons (Bewertung schreiben + Bewertungen ansehen)
+- Update-Dialog hat Vorrang — nie zwei Popups übereinander
+
+### Verbessert
+
+**Stresstest-Auslastung**
+- `PerformanceBooster` schiebt jetzt den Prozess **und alle Worker-Threads** via Shizuku in `/dev/cpuset/top-app/tasks`
+- Damit darf die App auf den großen CPU-Clustern (Cortex-X2/A710) laufen statt nur auf den LITTLE-Cores — gibt deutlich höhere reale Last
+- Boost läuft nach Thread-Spawn (sonst werden frische Worker nicht erfasst), `unboost()` räumt beim Stop wieder auf
+
+### Sonstiges
+
+- Gradle-Build produziert direkt `redmonitor.apk` (für Debug und Release), passend zum GitHub-Release-Naming
+- `versionName` auf 1.4 angehoben
+
+---
+
+## v1.3 — 2026-05-27
+
+### Neu
+
+**Haptisches Feedback-System**
+- 7 Haptik-Typen mit smart action mapping (TAP / TOGGLE / DESTRUCTIVE / CONFIRM / ERROR / SLIDER_TICK / LONG_PRESS)
+- Intensitäts-Stufen Schwach / Mittel / Stark mit Skalierung
+- Test-Buttons im Mehr-Tab für jeden Typ
+- Verkabelt an alle Buttons, Toggles und destruktiven Aktionen quer durch die App
+
+**HUD-Erweiterungen**
+- Neue Metriken: **Per-Core-Detail** (Auslastung + Takt pro Kern) und **Ø CPU-Frequenz**
+- Discharge-Watts werden jetzt auch ohne Ladevorgang angezeigt
+- HUD lädt sofort neu wenn Einstellungen geändert werden (Race-Bug gefixt)
+- Fallback-Marker „— (gesperrt, Shizuku?)" wenn /proc/stat blockiert ist, statt irreführender 0 %
+
+### Verbessert
+
+**CPU-Stress und Benchmarks**
+- Raw `Thread()` statt Coroutine-Dispatcher → eine Thread pro Kern, OS scheduled direkt
+- `Thread.MAX_PRIORITY` + `Process.THREAD_PRIORITY_URGENT_AUDIO` pro Worker
+- `PARTIAL_WAKE_LOCK` während Stress damit CPU nicht throttled
+- `PerformanceBooster`: `am set-standby-bucket active` + Doze-Whitelist + Battery-Saver-Off via Shizuku
+
+**GPU-Benchmark**
+- Render-Test füllt jetzt das komplette Display (vorher nur Card-Bereich)
+- FPS-Overlay bleibt sichtbar
+
+**CpuReader — kein Cross-Reader-Stomping mehr**
+- Per-Caller State-Buckets (HUD / Stress / CPU-Screen / Overview haben jeweils eigene `lastTotal`/`lastProcCpuMs`-Timestamps)
+- Vorher: HUD und Stress-Screen haben sich gegenseitig die Delta-Berechnung kaputtgemacht → falsche 0 % im Stresstest
+
+**Shared Shizuku-Setup-Karte**
+- Aus BatteryScreen extrahiert in `ShizukuCard`-Component
+- Wiederverwendet in Tasks / Logcat / Doze-Whitelist / Task-Detail
+- Konsistente Smart-Detection (Samsung/Android-15+ → GitHub statt Play Store)
+
+**Auto-Restart nach Update-Install**
+- Nach Shizuku-Install via `Intent.makeRestartActivityTask` + `Runtime.exit(0)` → App startet sofort mit neuer Version
+- Vorher: Update-Check zeigte fälschlich noch die alte Versionsnummer
+
+### Fixes
+
+- `Float.dp()` Scope-Issue im OverlayService gefixt
+- Fehlender `setValue`-Import in MainActivity ergänzt (state-delegation)
+- `TopCpuReader.read()`-Signatur durch `replace_all` versehentlich beschädigt → wiederhergestellt
+
+---
+
+## v1.2 — 2026-05-26
+
+### Neu
+
+**In-App-Update-System**
+- Periodischer Check alle 6 h via WorkManager gegen GitHub Releases API
+- Push-Notification bei neuen Versionen (auch wenn App geschlossen)
+- Update-Screen mit Release-Notes, APK-Download mit Progress, ein-Klick-Install
+- Install via Shizuku (`pm install -r -i`) wenn verfügbar, sonst System-Installer
+- Pre-Releases (Beta/RC) optional einschließbar
+- Banner auf Live-Tab + Startup-Dialog für neue Versionen
+- Dismiss-Pro-Version (genervte Versionen werden nicht erneut gemeldet)
+
+**Mehr-Tab (Einstellungen)**
+- Neuer Bottom-Tab mit Toggles für Updates, Pre-Releases, Notifications
+- Manueller „Auf Update prüfen"-Knopf
+- Bug-Melden-Button → öffnet GitHub Issues direkt
+- Repository-Link, App-Info (Version, Build, Anwendungs-ID, Lizenz)
+
+**Tasks-Manager-Erweiterungen**
+- `pm suspend` / `unsuspend` + Standby-Bucket-Steuerung
+- **Deep-Freeze**-Kombo-Aktion: Force-Stop + Standby-`never` + UID-Idle + Suspend in einem Klick
+- Cache leeren, App-Daten zurücksetzen, Deinstallieren — jeweils mit Confirm-Dialog
+- Multi-Format `ps -A`-Parser als Primärquelle (vorher nur `dumpsys`)
+- Sortier-Modi (RAM/Name/PID) und direkter Force-Stop-Knopf in der Liste
+- Diagnose-Statuszeile zeigt welche Reader-Methode greift
+
+**Doze-Whitelist-Manager**
+- Liste aller Apps auf Akku-Optimierung-Whitelist
+- Filter (alle/SYSTEM/USER), Entfernen/Hinzufügen-Knopf pro App
+- Direkter Toggle aus dem Task-Detail-Screen
+
+**Display-Tweaks**
+- DPI ändern (320/380/420/480/540 + Custom + Reset)
+- Auflösung ändern (z. B. 1080×2400)
+- Animations-Skalen-Slider (0× bis 2×, alle drei System-Skalen synchron)
+- Toggles für Touches-anzeigen, Pointer-Location, Always-On-Display
+
+**Logcat-Viewer**
+- Live-Streaming via Shizuku, farbcodiert nach Level
+- Filter nach Tag/PID/Text, Min-Level (V/D/I/W/E/F)
+
+### Verbessert
+
+**CPU-Screen**
+- Per-Core-Auslastung via Shizuku-Shell (`cat /proc/stat`) — funktioniert jetzt auch auf Samsung
+- Top-CPU-Prozesse-Liste via `dumpsys cpuinfo` (alle 3 s refreshed)
+- Adaptive Refresh-Rate: 500 ms bei > 30 % Last, sonst 1 s
+- Datenquellen-Indicator zeigt ob Shizuku/direkt/Process-Fallback genutzt wird
+
+### Fixes
+
+- `mapNotNull` auf `IntArray` in Camera-Capabilities gefixt (mehrere Stellen)
+- Issue-Templates für GitHub Issues hinzugefügt
+- Test-Helfer für Update-Flow nach Verifikation wieder entfernt
+
+---
+
 ## v1.1 — 2026-05-26
 
 ### Neu
