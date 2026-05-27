@@ -176,6 +176,38 @@ fun SettingsScreen() {
             ) { Text("GitHub-Repository öffnen") }
         }
 
+        StatCard("App bewerten") {
+            Text(
+                "Wenn dir RedMonitor gefällt — lass eine Bewertung auf Trustpilot da. Hilft anderen, die App zu finden, und mir, sie besser zu machen.",
+                color = OnSurfaceMuted, fontSize = 12.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Button(
+                onClick = {
+                    Haptic.perform(context, HapticType.CONFIRM)
+                    AppPrefs.setHasRated(context, true)
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://de.trustpilot.com/evaluate/theredstonee.de")
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(intent) }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("⭐ Auf Trustpilot bewerten") }
+            Spacer(Modifier.height(6.dp))
+            OutlinedButton(
+                onClick = {
+                    Haptic.perform(context, HapticType.TAP)
+                    val intent = Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://de.trustpilot.com/review/theredstonee.de")
+                    ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    runCatching { context.startActivity(intent) }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Bewertungen ansehen") }
+        }
+
         StatCard("Über") {
             KeyValueRow("Version", BuildConfig.VERSION_NAME)
             KeyValueRow("Build", BuildConfig.VERSION_CODE.toString())

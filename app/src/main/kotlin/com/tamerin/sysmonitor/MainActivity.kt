@@ -105,6 +105,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
         com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
+        com.tamerin.sysmonitor.settings.AppPrefs.incrementLaunchCount(this)
         setContent {
             SysMonitorTheme {
                 SysMonitorApp()
@@ -256,6 +257,9 @@ private fun SysMonitorApp() {
     var startupUpdate by androidx.compose.runtime.remember {
         androidx.compose.runtime.mutableStateOf<com.tamerin.sysmonitor.update.ReleaseInfo?>(null)
     }
+    var showRatePrompt by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(false)
+    }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
             context,
@@ -268,6 +272,10 @@ private fun SysMonitorApp() {
             }
         }
         com.tamerin.sysmonitor.update.UpdatePrefs.setLastCheckMs(context, System.currentTimeMillis())
+        // Don't stack dialogs: only show rate prompt if no update dialog is queued
+        if (startupUpdate == null && com.tamerin.sysmonitor.settings.AppPrefs.shouldShowRatePrompt(context)) {
+            showRatePrompt = true
+        }
     }
 
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
@@ -451,6 +459,11 @@ private fun SysMonitorApp() {
                 }) { Text("Ignorieren") }
             }
         )
+    }
+
+    // Rate prompt — only when no update dialog is showing
+    if (showRatePrompt && startupUpdate == null) {
+        com.tamerin.sysmonitor.ui.components.RateDialog(onDismiss = { showRatePrompt = false })
     }
 }
 
