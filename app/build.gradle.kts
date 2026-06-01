@@ -21,8 +21,8 @@ android {
         applicationId = "com.tamerin.sysmonitor"
         minSdk = 29
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.5.0"
 
         vectorDrawables {
             useSupportLibrary = true

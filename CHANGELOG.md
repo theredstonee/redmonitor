@@ -1,5 +1,37 @@
 # Changelog
 
+## v1.5 — 2026-05-27
+
+### Neu
+
+**App-Crash-Trigger (`am crash`)**
+- Neuer **Crash**-Knopf in der Sofort-Aktionen-Reihe im Task-Detail-Screen (neben Force-Stop)
+- Löst via Shizuku einen synthetischen Crash/ANR in der Foreground-App aus — nützlich für Stabilitäts-Tests, Crash-Reporter-Verifikation und Auto-Restart-Verhalten
+
+**Gefährliche Zone**
+- „App-Daten zurücksetzen" wurde aus der Speicher-Aktionen-Karte entfernt
+- Stattdessen jetzt eine eigene **rote „⚠ Gefährliche Zone"-Karte** ganz unten auf dem Screen
+- 48 dp Abstand zur letzten Aktion + roter Warntext erklärt explizit was gelöscht wird (Einstellungen, Logins, Cloud-Tokens, lokale Datenbanken, Cache)
+- Confirm-Dialog bleibt davor — versehentliches Klicken praktisch unmöglich
+
+### Verbessert
+
+**Home-Screen CPU-Wert**
+- CPU/RAM/Akku/Speicher-Reads laufen jetzt auf `Dispatchers.IO` (vorher Main-Thread)
+- Shizuku-Shell-Exec blockierte die UI → Sampling-Fenster war krumm → CPU-Wert war stale/falsch
+- Neuer Sublabel unter dem CPU-Gauge: **„System"** wenn echte /proc/stat-Werte verfügbar, **„nur App"** wenn nur Process-CPU-Fallback gemessen werden kann
+- Damit ist sofort sichtbar woher der Wert kommt — keine irreführenden 0% mehr ohne Hinweis
+
+**Task-Detail-Layout aufgeräumt**
+- Sofort-Aktionen-Reihe von 2 auf 3 Buttons (Force-Stop · Crash · Soft-Kill)
+- Speicher-Aktionen-Karte heißt jetzt nur „Cache leeren" — keine Mischung mehr von safe und destruktiv
+
+### Sonstiges
+
+- `versionName` auf 1.5.0, `versionCode` auf 5
+
+---
+
 ## v1.4 — 2026-05-27
 
 ### Neu
