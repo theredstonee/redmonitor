@@ -24,6 +24,10 @@ object AppActions {
     fun softKill(context: Context, pkg: String): ShizukuHelper.CmdResult =
         ShizukuHelper.runCommand(context, "am", "kill", pkg)
 
+    /** Trigger a synthetic crash in the app's foreground process. Useful for stability testing. */
+    fun crashApp(context: Context, pkg: String): ShizukuHelper.CmdResult =
+        ShizukuHelper.runCommand(context, "am", "crash", pkg)
+
     fun isAppDisabled(context: Context, pkg: String): Boolean {
         val res = ShizukuHelper.runCommand(context, "pm", "dump", pkg)
         return res.stdout.lineSequence().any {

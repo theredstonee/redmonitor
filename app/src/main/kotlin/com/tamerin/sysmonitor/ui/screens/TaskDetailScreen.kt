@@ -136,6 +136,14 @@ fun TaskDetailScreen(pkg: String) {
                     colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                     modifier = Modifier.weight(1f)
                 ) { Text("Force-Stop", fontSize = 13.sp) }
+                Button(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                        runAction("Crash (am crash)") { AppActions.crashApp(context, pkg) }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
+                    modifier = Modifier.weight(1f)
+                ) { Text("Crash", fontSize = 13.sp) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -146,12 +154,12 @@ fun TaskDetailScreen(pkg: String) {
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                "Force-Stop beendet alle Prozesse sofort. Soft-Kill killt nur Cache/leere Prozesse — verträglicher.",
+                "Force-Stop beendet alle Prozesse. Crash löst absichtlich einen ANR/Crash aus (für Stabilitäts-Tests). Soft-Kill killt nur Cache/leere Prozesse.",
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
 
-        StatCard("Speicher-Aktionen") {
+        StatCard("Cache leeren") {
             OutlinedButton(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -159,18 +167,9 @@ fun TaskDetailScreen(pkg: String) {
                 },
                 modifier = Modifier.fillMaxWidth()
             ) { Text("Nur Cache leeren (safe)", fontSize = 13.sp) }
-            Spacer(Modifier.height(6.dp))
-            Button(
-                onClick = {
-                    haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
-                    confirmDialog = ConfirmAction.ClearData
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
-                modifier = Modifier.fillMaxWidth()
-            ) { Text("App-Daten komplett zurücksetzen", fontSize = 13.sp) }
             Spacer(Modifier.height(4.dp))
             Text(
-                "App-Reset löscht alle Einstellungen, Logins und lokalen Daten — App wirkt wie neu installiert.",
+                "Löscht nur temporäre Dateien — Einstellungen, Logins und Daten bleiben.",
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
@@ -420,6 +419,29 @@ fun TaskDetailScreen(pkg: String) {
                 Text("Im System-App-Info öffnen")
             }
         }
+
+        // Big gap so the destructive button is visually isolated
+        Spacer(Modifier.height(48.dp))
+
+        StatCard("⚠ Gefährliche Zone") {
+            Text(
+                "App-Reset löscht alle Einstellungen, Logins, Cloud-Tokens, lokale Datenbanken und Cache — die App wirkt wie frisch installiert. Nicht rückgängig zu machen.",
+                color = GaugeRed,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                    confirmDialog = ConfirmAction.ClearData
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("App-Daten komplett zurücksetzen", fontSize = 13.sp) }
+        }
+
+        Spacer(Modifier.height(24.dp))
     }
 
     // Confirmation dialog

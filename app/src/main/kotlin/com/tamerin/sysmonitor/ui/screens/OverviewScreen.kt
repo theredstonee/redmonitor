@@ -33,7 +33,9 @@ import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.AccentBubble
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 
 @Composable
 fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
@@ -54,6 +56,7 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
         }
     }
     var cpuPct by remember { mutableFloatStateOf(0f) }
+    var cpuSource by remember { mutableStateOf("—") }
     var ramPct by remember { mutableFloatStateOf(0f) }
     var ramUsed by remember { mutableLongStateOf(0L) }
     var ramTotal by remember { mutableLongStateOf(0L) }
@@ -67,13 +70,16 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
     val displaySnap = remember(activity) { activity?.let { DeviceInfo.readDisplay(it) } }
 
     LaunchedEffect(Unit) {
-        CpuReader.read(context, "overview")
+        // Prime sampler off-thread so first display has a real delta
+        withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
         while (true) {
-            val cpu = CpuReader.read(context, "overview")
-            val ram = MemoryReader.readRam(context)
-            val batt = BatteryReader.read(context)
-            val storage = MemoryReader.readStorage()
+            // All blocking reads on IO; Shizuku shell + /proc IO would stall the UI otherwise
+            val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
+            val ram = withContext(Dispatchers.IO) { MemoryReader.readRam(context) }
+            val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
+            val storage = withContext(Dispatchers.IO) { MemoryReader.readStorage() }
             cpuPct = cpu.totalPercent
+            cpuSource = cpu.source
             ramPct = ram.percent
             ramUsed = ram.usedBytes
             ramTotal = ram.totalBytes
@@ -156,7 +162,16 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            CircularGauge(percent = cpuPct, label = "CPU")
+            CircularGauge(
+                percent = cpuPct,
+                label = "CPU",
+                sublabel = when (cpuSource) {
+                    "shizuku" -> "System"
+                    "direct" -> "System"
+                    "process" -> "nur App"
+                    else -> null
+                }
+            )
             CircularGauge(percent = ramPct, label = "RAM")
         }
         Row(
