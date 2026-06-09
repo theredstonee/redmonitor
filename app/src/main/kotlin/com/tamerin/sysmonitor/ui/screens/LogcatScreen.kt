@@ -18,10 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.data.ShizukuHelper
-import com.tamerin.sysmonitor.ui.components.StatCard
-import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.AccentSoft
-import com.tamerin.sysmonitor.ui.theme.GaugeGreen
 import com.tamerin.sysmonitor.ui.theme.GaugeOrange
 import com.tamerin.sysmonitor.ui.theme.GaugeRed
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -35,28 +32,51 @@ private enum class LogLevel(val flag: String, val short: String) {
     WARN("W", "W"), ERROR("E", "E"), FATAL("F", "F")
 }
 
+private enum class LogBuffer(val arg: String, val short: String) {
+    ALL("all", "All"),
+    MAIN("main", "Main"),
+    SYSTEM("system", "System"),
+    CRASH("crash", "Crash"),
+    EVENTS("events", "Events")
+}
+
 @Composable
 fun LogcatScreen() {
     val context = LocalContext.current
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
     var lines by remember { mutableStateOf<List<String>>(emptyList()) }
+    var status by remember { mutableStateOf("Bereit. 'Aktualisieren' drücken oder 'Live ein'.") }
     var streaming by remember { mutableStateOf(false) }
     var filterText by remember { mutableStateOf("") }
     var minLevel by remember { mutableStateOf(LogLevel.INFO) }
+    var buffer by remember { mutableStateOf(LogBuffer.ALL) }
     var autoScroll by remember { mutableStateOf(true) }
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
+    suspend fun pull(tail: Int): Pair<List<String>, String> = withContext(Dispatchers.IO) {
+        val res = ShizukuHelper.runCommand(
+            context, "logcat", "-d", "-b", buffer.arg, "-v", "threadtime", "-t", tail.toString()
+        )
+        when {
+            !res.ok -> emptyList<String>() to
+                "logcat exit ${res.exitCode}: ${res.stderr.ifBlank { "stdout leer" }}"
+            res.stdout.isBlank() -> emptyList<String>() to
+                "Buffer '${buffer.short}' liefert nichts. Anderen Buffer probieren?"
+            else -> {
+                val parsed = res.stdout.lines().filter { it.isNotBlank() }
+                parsed to "${parsed.size} Zeilen aus Buffer '${buffer.short}'."
+            }
+        }
+    }
+
     fun fetchOnce() {
         scope.launch {
-            val raw = withContext(Dispatchers.IO) {
-                val res = ShizukuHelper.runCommand(
-                    context, "logcat", "-d", "-v", "threadtime", "-t", "500"
-                )
-                if (res.ok) res.stdout.lines() else listOf("Fehler: ${res.stderr.ifBlank { "Exit ${res.exitCode}" }}")
-            }
+            status = "Lade Buffer '${buffer.short}'…"
+            val (raw, msg) = pull(500)
             lines = raw
+            status = msg
         }
     }
 
@@ -64,13 +84,9 @@ fun LogcatScreen() {
         streaming = true
         scope.launch {
             while (streaming) {
-                val raw = withContext(Dispatchers.IO) {
-                    val res = ShizukuHelper.runCommand(
-                        context, "logcat", "-d", "-v", "threadtime", "-t", "200"
-                    )
-                    if (res.ok) res.stdout.lines() else emptyList()
-                }
+                val (raw, msg) = pull(300)
                 if (raw.isNotEmpty()) lines = raw
+                status = if (streaming) "🟢 Live · $msg" else msg
                 if (autoScroll && lines.isNotEmpty()) {
                     runCatching { listState.scrollToItem(lines.lastIndex) }
                 }
@@ -128,6 +144,20 @@ fun LogcatScreen() {
             }
         }
         Spacer(Modifier.height(8.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            LogBuffer.values().forEach { b ->
+                FilterChip(
+                    selected = buffer == b,
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        buffer = b
+                    },
+                    label = { Text(b.short, fontSize = 11.sp) }
+                )
+            }
+        }
+        Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
@@ -159,7 +189,7 @@ fun LogcatScreen() {
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "${filtered.size} Zeilen  ·  Min-Level: ${minLevel.short}",
+            "${filtered.size} sichtbar · Min-Level ${minLevel.short} · $status",
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(4.dp))
@@ -197,7 +227,6 @@ fun LogcatScreen() {
 
 /** Logcat threadtime format: 06-15 12:34:56.789  1234  5678 I MyTag: message */
 private fun extractLevel(line: String): Char? {
-    // First letter after "  NNN NNN " pattern
     val regex = Regex("""\s+\d+\s+\d+\s+([VDIWEF])\s""")
     return regex.find(line)?.groupValues?.get(1)?.firstOrNull()
 }

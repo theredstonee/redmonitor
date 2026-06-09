@@ -1,5 +1,40 @@
 # Changelog
 
+## v1.5.1 — 2026-06-09
+
+### Behoben
+
+**Logcat zeigte leere Liste**
+- `logcat -d` lief vorher nur gegen den `main`-Buffer — auf vielen Geräten ist der für den shell-User fast leer, deshalb sah Logcat „kaputt" aus
+- Jetzt Default `-b all` plus **Buffer-Chips** (All · Main · System · Crash · Events) zum manuellen Umschalten
+- Neue **Status-Zeile** über dem Log: zeigt aktive Buffer-Wahl, Zeilenzahl, oder explizit „Buffer liefert nichts" / „logcat exit X" statt stiller Leere
+
+### Neu
+
+**Live-Tab: CPU pro Kern**
+- Eigene Karte mit Mini-Balken pro Kern direkt unter den Gauges
+- Farbcode: grün < 30 % · rot ≥ 85 %
+- Zeigt sofort ob Last gleichmäßig verteilt ist oder auf ein paar LITTLE-Cores pinnt
+
+**Live-Tab: Netzwerk live**
+- Down/Up in KB/s bzw. MB/s aus `TrafficStats`-Deltas (System-weit)
+- Zusätzlich Gesamtsumme empfangen/gesendet seit Boot
+
+**Live-Tab: FPS-Anzeige (echte App-FPS)**
+- Misst via `Choreographer.FrameCallback` die tatsächlich gerenderten Frames der App pro Sekunde
+- Farbcode: grün ab 110 (für 120-Hz-Panels), red < 28
+- Zeigt sofort wenn die App droppt oder nicht in der höchsten Refresh-Rate läuft
+
+**Live-Tab: Top-CPU-App**
+- Aktuell teuerster Prozess (Name + %) aus `dumpsys cpuinfo`, alle 3 Sekunden
+- Fallback-Text „Shizuku nötig" wenn Shizuku nicht bereit ist
+
+### Sonstiges
+
+- `versionName` auf 1.5.1, `versionCode` auf 6
+
+---
+
 ## v1.5 — 2026-05-27
 
 ### Neu
