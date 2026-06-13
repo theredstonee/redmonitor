@@ -14,11 +14,14 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import android.app.Activity
+import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +37,14 @@ data class HubEntry(
     val title: String,
     val subtitle: String,
     val icon: ImageVector,
-    val badge: String? = null
+    val badge: String? = null,
+    /**
+     * If set, tapping this entry starts the given Activity directly instead of
+     * routing through the parent NavController. Used for heavy/long-running
+     * screens (Akku-Drain, Stresstest, Benchmarks, Tests) so they run isolated
+     * and can be killed/restored independently by the system.
+     */
+    val activityClass: Class<out Activity>? = null
 )
 
 @Composable
@@ -44,6 +54,7 @@ fun HubGrid(
     modifier: Modifier = Modifier
 ) {
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    val context = LocalContext.current
     LazyVerticalGrid(
         columns = GridCells.Fixed(2),
         modifier = modifier
@@ -56,7 +67,11 @@ fun HubGrid(
         items(entries, key = { it.route }) { entry ->
             HubCard(entry = entry, onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
-                onClick(entry)
+                if (entry.activityClass != null) {
+                    context.startActivity(Intent(context, entry.activityClass))
+                } else {
+                    onClick(entry)
+                }
             })
         }
     }

@@ -1,5 +1,37 @@
 # Changelog
 
+## v1.5.4 — 2026-06-13
+
+### Neu
+
+**17 echte Standalone-Activities für Heavy-/Long-Running-Screens**
+
+Jeder dieser Screens läuft jetzt in seiner eigenen Activity statt im MainActivity-NavHost:
+
+- **System** — Akku-Drain, Sensoren, Sensor-Detail
+- **Benchmark** — CPU-Bench, GPU-Bench, RAM-Bench, Storage-Sequenziell, Storage-4K-Random, Bild-Verarbeitung, Netz-Speed, Stresstest, Display-Test
+- **Tests** — Multi-Touch, Display-Farben, Taschenlampe, Speaker-Ton, Mikrofon
+
+Vorteile:
+- Das System kann jeden Test unabhängig pausieren/killen ohne die App-Hauptsession zu beeinträchtigen
+- Ein Crash im Benchmark killt nicht die ganze App
+- Jeder Test kann als separater Home-Screen-Shortcut gepinnt werden
+- Heavy-Tests blockieren den Live-Tab Compose-Tree nicht mehr
+- Im System-Aktivitäten-Browser sind alle einzeln auflistbar
+
+Architektur:
+- Neue `BaseScreenActivity` als abstrakte Basis mit Scaffold + Back-Navigation + LocalImmersive-Plumbing
+- 17 dünne Subklassen in `ui/ScreenActivities.kt` (je ~3 Zeilen, delegieren an existierenden Composable)
+- `HubEntry` neu mit `activityClass: Class<out Activity>?` Feld
+- `HubGrid` startet bei gesetztem `activityClass` per Intent statt NavController
+- SensorsActivity → SensorDetailActivity übergibt Sensor-Type via Intent-Extra
+
+### Sonstiges
+
+- `versionName` auf 1.5.4, `versionCode` auf 9
+
+---
+
 ## v1.5.3 — 2026-06-13
 
 ### Behoben

@@ -12,14 +12,18 @@ import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
+import com.tamerin.sysmonitor.ui.BatteryStandaloneActivity
+import com.tamerin.sysmonitor.ui.SensorsStandaloneActivity
 import com.tamerin.sysmonitor.ui.components.HubEntry
 import com.tamerin.sysmonitor.ui.components.HubGrid
 
 private val SYSTEM_ENTRIES = listOf(
     HubEntry(Routes.CPU, "CPU", "Last, Frequenzen, Kerne", Icons.Filled.Speed),
     HubEntry(Routes.RAM, "RAM & Speicher", "Auslastung & Storage", Icons.Filled.Memory),
-    HubEntry(Routes.BATTERY, "Akku", "Stand, Watt, Schnelllad-Erkennung", Icons.Filled.BatteryFull),
-    HubEntry(Routes.SENSORS, "Sensoren", "Liste + Klick = Detail-Graph", Icons.Filled.Sensors),
+    HubEntry(Routes.BATTERY, "Akku", "Stand, Watt, Schnelllad-Erkennung", Icons.Filled.BatteryFull,
+        activityClass = BatteryStandaloneActivity::class.java),
+    HubEntry(Routes.SENSORS, "Sensoren", "Liste + Klick = Detail-Graph", Icons.Filled.Sensors,
+        activityClass = SensorsStandaloneActivity::class.java),
     HubEntry(Routes.GPU, "GPU", "Renderer, OpenGL, GLSL", Icons.Filled.DeveloperBoard),
     HubEntry(Routes.NETWORK, "Netzwerk", "WLAN, Signal, IP, Traffic", Icons.Filled.NetworkCheck),
     HubEntry(Routes.DISPLAY, "Display & Gerät", "Build, Uptime, Display", Icons.Filled.PhoneAndroid),
