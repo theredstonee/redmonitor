@@ -3,6 +3,7 @@ package com.tamerin.sysmonitor.ui
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.ui.screens.BatteryScreen
 import com.tamerin.sysmonitor.ui.screens.CpuBenchmarkScreen
+import com.tamerin.sysmonitor.ui.screens.DevToolsScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayTestScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
 import com.tamerin.sysmonitor.ui.screens.FullscreenDisplayTestScreen
@@ -15,6 +16,7 @@ import com.tamerin.sysmonitor.ui.screens.RamBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.RandomIOScreen
 import com.tamerin.sysmonitor.ui.screens.SensorDetailScreen
 import com.tamerin.sysmonitor.ui.screens.SensorsScreen
+import com.tamerin.sysmonitor.ui.screens.SnakeGameScreen
 import com.tamerin.sysmonitor.ui.screens.SpeakerTestScreen
 import com.tamerin.sysmonitor.ui.screens.StorageBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.StressTestScreen
@@ -116,4 +118,14 @@ class SensorDetailStandaloneActivity : BaseScreenActivity() {
         val sensorType = intent.getIntExtra(EXTRA_SENSOR_TYPE, 1)
         SensorDetailScreen(sensorType = sensorType)
     }
+}
+
+class SnakeGameStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "🐍 CPU-Snake"
+    @Composable override fun ScreenContent() { SnakeGameScreen() }
+}
+
+class DevToolsStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Dev-Tools"
+    @Composable override fun ScreenContent() { DevToolsScreen() }
 }

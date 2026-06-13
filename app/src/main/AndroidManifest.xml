@@ -359,6 +359,27 @@
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
+        <!-- Easter egg: launched from About card after 5 taps on TheRedStonee -->
+        <activity
+            android:name=".ui.SnakeGameStandaloneActivity"
+            android:exported="false"
+            android:label="🐍 CPU-Snake"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.DevToolsStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Dev-Tools"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <!-- 2nd easter egg: 7 taps on version row -> fullscreen video -->
+        <activity
+            android:name=".ui.SecretVideoActivity"
+            android:exported="false"
+            android:label="RedMonitor"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden|screenLayout" />
+
         <service
             android:name=".overlay.OverlayService"
             android:exported="false"

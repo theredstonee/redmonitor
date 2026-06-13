@@ -28,6 +28,9 @@ local.properties
 /app/release/
 /app/debug/
 
+# --- Easter egg payload (lokal im APK, nicht im Repo) ---
+app/src/main/res/raw/secret_video.mp4
+
 # --- AI / Assistant artefacts (local only) ---
 .claude/
 .cursor/

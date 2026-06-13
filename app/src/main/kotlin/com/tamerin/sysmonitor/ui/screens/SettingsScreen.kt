@@ -217,11 +217,11 @@ fun SettingsScreen() {
         }
 
         StatCard("Über") {
-            KeyValueRow("Version", BuildConfig.VERSION_NAME)
+            VersionRow(context)
             KeyValueRow("Build", BuildConfig.VERSION_CODE.toString())
             KeyValueRow("Anwendungs-ID", BuildConfig.APPLICATION_ID)
             KeyValueRow("Lizenz", "MIT")
-            KeyValueRow("Hersteller", "TheRedStonee")
+            HerstellerRow(context)
             Spacer(Modifier.height(12.dp))
             AppComponentsBlock(context)
             Spacer(Modifier.height(8.dp))
@@ -237,6 +237,122 @@ fun SettingsScreen() {
                 modifier = Modifier.fillMaxWidth()
             ) { Text("theredstonee.de") }
         }
+
+        if (AppPrefs.isEasterEggUnlocked(context)) {
+            StatCard("🐍 Geheimer Bereich") {
+                Text(
+                    "Du hast das Easter Egg entdeckt. Diese Sektion bleibt freigeschaltet.",
+                    color = OnSurfaceMuted, fontSize = 12.sp
+                )
+                Spacer(Modifier.height(10.dp))
+                Button(
+                    onClick = {
+                        Haptic.perform(context, HapticType.CONFIRM)
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.SnakeGameStandaloneActivity::class.java)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("CPU-Snake spielen") }
+                Spacer(Modifier.height(6.dp))
+                OutlinedButton(
+                    onClick = {
+                        Haptic.perform(context, HapticType.TAP)
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.DevToolsStandaloneActivity::class.java)
+                        )
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("Dev-Tools (Roh-Dumps)") }
+            }
+        }
+    }
+}
+
+private const val EASTER_EGG_TAPS = 5
+private const val EASTER_EGG_WINDOW_MS = 4000L
+private const val VIDEO_EGG_TAPS = 7
+
+@Composable
+private fun VersionRow(context: Context) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    var tapCount by remember { mutableIntStateOf(0) }
+    var lastTap by remember { mutableLongStateOf(0L) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable {
+                val now = android.os.SystemClock.elapsedRealtime()
+                tapCount = if (now - lastTap > EASTER_EGG_WINDOW_MS) 1 else tapCount + 1
+                lastTap = now
+                when {
+                    tapCount >= VIDEO_EGG_TAPS -> {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        tapCount = 0
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.SecretVideoActivity::class.java)
+                        )
+                    }
+                    tapCount in 4..6 -> haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                }
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Version", color = OnSurfaceMuted, fontSize = 13.sp)
+        val label = when {
+            tapCount in 4..6 -> "${BuildConfig.VERSION_NAME}  …${VIDEO_EGG_TAPS - tapCount}"
+            else -> BuildConfig.VERSION_NAME
+        }
+        Text(
+            label,
+            color = if (tapCount >= 4) Accent else androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
+    }
+}
+
+@Composable
+private fun HerstellerRow(context: Context) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    var tapCount by remember { mutableIntStateOf(0) }
+    var lastTap by remember { mutableLongStateOf(0L) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
+            .clickable {
+                val now = android.os.SystemClock.elapsedRealtime()
+                tapCount = if (now - lastTap > EASTER_EGG_WINDOW_MS) 1 else tapCount + 1
+                lastTap = now
+                when {
+                    tapCount >= EASTER_EGG_TAPS -> {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        AppPrefs.setEasterEggUnlocked(context, true)
+                        tapCount = 0
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.SnakeGameStandaloneActivity::class.java)
+                        )
+                    }
+                    tapCount >= 3 -> haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                }
+            },
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("Hersteller", color = OnSurfaceMuted, fontSize = 13.sp)
+        val label = when {
+            tapCount in 3..4 -> "TheRedStonee  …${EASTER_EGG_TAPS - tapCount}"
+            else -> "TheRedStonee"
+        }
+        Text(
+            label,
+            color = if (tapCount >= 3) Accent else androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.Medium
+        )
     }
 }
 

@@ -16,6 +16,8 @@ object AppPrefs {
     private const val K_RATE_LAST_SHOWN = "trustpilot_last_shown"
     private const val K_LAUNCH_COUNT = "launch_count"
     private const val K_OEM_ONBOARDING_DONE = "oem_onboarding_done"
+    private const val K_EASTER_EGG_UNLOCKED = "easter_egg_unlocked"
+    private const val K_SNAKE_HIGH_SCORE = "snake_high_score"
     private const val RATE_INTERVAL_MS = 3L * 24L * 3600L * 1000L
 
     fun hasRated(context: Context): Boolean =
@@ -52,6 +54,20 @@ object AppPrefs {
 
     fun setOemOnboardingDone(context: Context, value: Boolean) {
         prefs(context).edit().putBoolean(K_OEM_ONBOARDING_DONE, value).apply()
+    }
+
+    fun isEasterEggUnlocked(context: Context): Boolean =
+        prefs(context).getBoolean(K_EASTER_EGG_UNLOCKED, false)
+
+    fun setEasterEggUnlocked(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_EASTER_EGG_UNLOCKED, value).apply()
+    }
+
+    fun snakeHighScore(context: Context): Int =
+        prefs(context).getInt(K_SNAKE_HIGH_SCORE, 0)
+
+    fun setSnakeHighScore(context: Context, value: Int) {
+        prefs(context).edit().putInt(K_SNAKE_HIGH_SCORE, value).apply()
     }
 
     fun hapticFeedbackEnabled(context: Context): Boolean =
