@@ -20,6 +20,15 @@ import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 
+private data class TelephonySnapshot(
+    val operator: String, val mccMnc: String, val country: String,
+    val simOperator: String, val simState: String, val phoneType: String,
+    val dataNetwork: String, val roaming: String,
+    val modemCount: String, val subs: List<SimSummary>?,
+    val volte: String, val sms: String, val hasIcc: String
+)
+private data class SimSummary(val name: String, val carrier: String, val country: String, val slot: Int)
+
 @Composable
 fun TelephonyScreen() {
     val context = LocalContext.current
@@ -29,62 +38,96 @@ fun TelephonyScreen() {
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_PHONE_STATE) ==
             PackageManager.PERMISSION_GRANTED
     }
+    var snap by remember { mutableStateOf<TelephonySnapshot?>(null) }
+    LaunchedEffect(Unit) {
+        snap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            readTelephony(tm, sm, hasReadPhone)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        val s = snap
+        if (s == null) {
+            StatCard("Telefonie") {
+                Text("Lade Mobilfunk-Status…", color = OnSurfaceMuted, fontSize = 13.sp)
+            }
+            return@Column
+        }
         StatCard("Netzwerk-Betreiber") {
-            KeyValueRow("Operator", tm.networkOperatorName ?: "—")
-            KeyValueRow("MCC+MNC", tm.networkOperator?.ifBlank { "—" } ?: "—")
-            KeyValueRow("Land", tm.networkCountryIso?.uppercase() ?: "—")
-            KeyValueRow("SIM-Operator", tm.simOperatorName ?: "—")
-            KeyValueRow("SIM-Status", simStateLabel(tm.simState))
-            KeyValueRow("Phone-Typ", phoneTypeLabel(tm.phoneType))
-            KeyValueRow(
-                "Datennetz-Typ",
-                if (hasReadPhone) dataNetworkLabel(safeNetworkType(tm)) else "Berechtigung fehlt"
-            )
-            KeyValueRow("Roaming", if (tm.isNetworkRoaming) "Ja" else "Nein")
+            KeyValueRow("Operator", s.operator)
+            KeyValueRow("MCC+MNC", s.mccMnc)
+            KeyValueRow("Land", s.country)
+            KeyValueRow("SIM-Operator", s.simOperator)
+            KeyValueRow("SIM-Status", s.simState)
+            KeyValueRow("Phone-Typ", s.phoneType)
+            KeyValueRow("Datennetz-Typ", s.dataNetwork)
+            KeyValueRow("Roaming", s.roaming)
         }
 
         StatCard("SIM-Karten") {
-            val count = runCatching {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) tm.activeModemCount
-                else tm.phoneCount
-            }.getOrDefault(1)
-            KeyValueRow("Modems aktiv", count.toString())
-
-            val subs = runCatching {
-                @Suppress("MissingPermission")
-                sm.activeSubscriptionInfoList
-            }.getOrNull()
-            if (subs == null) {
+            KeyValueRow("Modems aktiv", s.modemCount)
+            if (s.subs == null) {
                 Text(
                     "SIM-Liste benötigt READ_PHONE_STATE (in den App-Einstellungen erteilen).",
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
             } else {
-                subs.forEachIndexed { idx, sub ->
+                s.subs.forEachIndexed { idx, sub ->
                     Spacer(Modifier.height(8.dp))
-                    Text("SIM ${idx + 1}: ${sub.displayName ?: "—"}", fontSize = 13.sp)
-                    KeyValueRow("Carrier", sub.carrierName?.toString() ?: "—")
-                    KeyValueRow("Land", sub.countryIso?.uppercase() ?: "—")
-                    KeyValueRow("Slot-Index", sub.simSlotIndex.toString())
+                    Text("SIM ${idx + 1}: ${sub.name}", fontSize = 13.sp)
+                    KeyValueRow("Carrier", sub.carrier)
+                    KeyValueRow("Land", sub.country)
+                    KeyValueRow("Slot-Index", sub.slot.toString())
                 }
             }
         }
 
         StatCard("Mehr") {
-            KeyValueRow("VoLTE-fähig", if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
-                runCatching { tm.isVoiceCapable }.getOrDefault(false).toString() else "?")
-            KeyValueRow("SMS-fähig", runCatching { tm.isSmsCapable }.getOrDefault(false).toString())
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                KeyValueRow("Hat ICC-Karte", tm.hasIccCard().toString())
-            }
+            KeyValueRow("VoLTE-fähig", s.volte)
+            KeyValueRow("SMS-fähig", s.sms)
+            KeyValueRow("Hat ICC-Karte", s.hasIcc)
         }
     }
+}
+
+@Suppress("MissingPermission")
+private fun readTelephony(
+    tm: TelephonyManager,
+    sm: SubscriptionManager,
+    hasReadPhone: Boolean
+): TelephonySnapshot {
+    val modemCount = runCatching {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) tm.activeModemCount else tm.phoneCount
+    }.getOrDefault(1)
+    val subs = runCatching { sm.activeSubscriptionInfoList }.getOrNull()?.map { sub ->
+        SimSummary(
+            name = sub.displayName?.toString() ?: "—",
+            carrier = sub.carrierName?.toString() ?: "—",
+            country = sub.countryIso?.uppercase() ?: "—",
+            slot = sub.simSlotIndex
+        )
+    }
+    return TelephonySnapshot(
+        operator = tm.networkOperatorName ?: "—",
+        mccMnc = tm.networkOperator?.ifBlank { "—" } ?: "—",
+        country = tm.networkCountryIso?.uppercase() ?: "—",
+        simOperator = tm.simOperatorName ?: "—",
+        simState = simStateLabel(tm.simState),
+        phoneType = phoneTypeLabel(tm.phoneType),
+        dataNetwork = if (hasReadPhone) dataNetworkLabel(safeNetworkType(tm)) else "Berechtigung fehlt",
+        roaming = if (tm.isNetworkRoaming) "Ja" else "Nein",
+        modemCount = modemCount.toString(),
+        subs = subs,
+        volte = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+            runCatching { tm.isVoiceCapable }.getOrDefault(false).toString() else "?",
+        sms = runCatching { tm.isSmsCapable }.getOrDefault(false).toString(),
+        hasIcc = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+            runCatching { tm.hasIccCard() }.getOrDefault(false).toString() else "?"
+    )
 }
 
 @Suppress("MissingPermission", "DEPRECATION")

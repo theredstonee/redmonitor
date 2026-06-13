@@ -44,11 +44,13 @@ fun BluetoothScreen() {
     var bonded by remember { mutableStateOf<List<BluetoothDevice>>(emptyList()) }
     LaunchedEffect(hasPerm, adapter) {
         if (adapter != null && hasPerm) {
-            bonded = try {
-                @Suppress("MissingPermission")
-                adapter.bondedDevices?.toList() ?: emptyList()
-            } catch (_: SecurityException) {
-                emptyList()
+            bonded = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    @Suppress("MissingPermission")
+                    adapter.bondedDevices?.toList() ?: emptyList()
+                } catch (_: SecurityException) {
+                    emptyList()
+                }
             }
         }
     }

@@ -18,10 +18,13 @@ import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 @Composable
 fun FeaturesScreen() {
     val context = LocalContext.current
-    val features = remember {
-        context.packageManager.systemAvailableFeatures
-            .sortedBy { it.name ?: "" }
+    var features by remember { mutableStateOf<List<FeatureInfo>?>(null) }
+    LaunchedEffect(Unit) {
+        features = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            context.packageManager.systemAvailableFeatures.sortedBy { it.name ?: "" }
+        }
     }
+    val list = features.orEmpty()
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -29,7 +32,7 @@ fun FeaturesScreen() {
     ) {
         item {
             StatCard("Hardware-Features") {
-                KeyValueRow("Anzahl", features.size.toString())
+                KeyValueRow("Anzahl", if (features == null) "lade…" else list.size.toString())
                 Text(
                     "Vom System gemeldete Features (PackageManager.systemAvailableFeatures).",
                     color = OnSurfaceMuted,
@@ -37,7 +40,7 @@ fun FeaturesScreen() {
                 )
             }
         }
-        items(features, key = { (it.name ?: "openGL") + it.version }) { f: FeatureInfo ->
+        items(list, key = { (it.name ?: "openGL") + it.version }) { f: FeatureInfo ->
             Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                 Text(
                     f.name ?: "android.opengles.version",

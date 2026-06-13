@@ -24,13 +24,18 @@ private data class CodecEntry(
 
 @Composable
 fun CodecsScreen() {
-    val codecs = remember { readCodecs() }
+    var codecs by remember { mutableStateOf<List<CodecEntry>?>(null) }
     var showEncoders by remember { mutableStateOf(true) }
     var showDecoders by remember { mutableStateOf(true) }
     var hwOnly by remember { mutableStateOf(false) }
 
-    val filtered = remember(codecs, showEncoders, showDecoders, hwOnly) {
-        codecs.filter {
+    LaunchedEffect(Unit) {
+        codecs = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { readCodecs() }
+    }
+
+    val list = codecs.orEmpty()
+    val filtered = remember(list, showEncoders, showDecoders, hwOnly) {
+        list.filter {
             (if (it.isEncoder) showEncoders else showDecoders) &&
                 (!hwOnly || it.isHardwareAccelerated)
         }
@@ -53,7 +58,10 @@ fun CodecsScreen() {
             }, label = { Text("Nur HW") })
         }
         Spacer(Modifier.height(8.dp))
-        Text("${filtered.size} Codecs", color = OnSurfaceMuted, fontSize = 12.sp)
+        Text(
+            if (codecs == null) "Lade Codec-Liste…" else "${filtered.size} Codecs",
+            color = OnSurfaceMuted, fontSize = 12.sp
+        )
         Spacer(Modifier.height(8.dp))
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {

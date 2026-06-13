@@ -1,5 +1,25 @@
 # Changelog
 
+## v1.5.5 — 2026-06-13
+
+### Performance
+
+Restliche Screens vom Main-Thread befreit. Vorher hingen schwere Reads im `remember{}`-Block was die UI beim Öffnen jeden Screens kurz einfror:
+
+- **Codecs** — `MediaCodecList(ALL_CODECS)` (kann beim ersten Aufruf mehrere hundert ms dauern, läuft jetzt auf `Dispatchers.IO`)
+- **Hardware-Features** — `PackageManager.systemAvailableFeatures` + Sortierung auf IO
+- **Bluetooth** — `adapter.bondedDevices.toList()` jetzt in `withContext(Dispatchers.IO)`
+- **Telefonie** — alle `TelephonyManager`-Getter (`networkOperatorName`, `networkOperator`, `simOperator`, `simState`, `phoneType`, `dataNetworkType`, `isNetworkRoaming`, `isVoiceCapable`, `isSmsCapable`, `hasIccCard`) sowie `SubscriptionManager.activeSubscriptionInfoList` jetzt einmal komplett auf IO geladen, dann als Snapshot dargestellt — kein IPC mehr während der Komposition
+- **Einstellungen → Komponenten** — `PackageManager.getPackageInfo(GET_ACTIVITIES | GET_SERVICES | GET_PROVIDERS | GET_RECEIVERS)` + `getRunningServices` auf IO
+
+Jeder dieser Screens zeigt jetzt einen kurzen Lade-Hinweis falls die Daten noch nicht da sind, statt einen weißen/eingefrorenen Frame zu rendern.
+
+### Sonstiges
+
+- `versionName` auf 1.5.5, `versionCode` auf 10
+
+---
+
 ## v1.5.4 — 2026-06-13
 
 ### Neu

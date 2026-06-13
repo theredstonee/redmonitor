@@ -279,8 +279,14 @@ private fun readComponents(context: Context): List<AppComponent> {
 private fun AppComponentsBlock(context: Context) {
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     var expanded by remember { mutableStateOf(false) }
-    val comps = remember { readComponents(context) }
+    var comps by remember { mutableStateOf<List<AppComponent>>(emptyList()) }
     val pkg = remember { context.packageName }
+
+    LaunchedEffect(Unit) {
+        comps = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            readComponents(context)
+        }
+    }
 
     Row(
         modifier = Modifier
