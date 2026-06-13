@@ -11,7 +11,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -68,19 +72,17 @@ private data class CamSpec(
 @Composable
 fun CameraInfoScreen() {
     val context = LocalContext.current
-    var cams by androidx.compose.runtime.remember {
-        androidx.compose.runtime.mutableStateOf<List<CamSpec>?>(null)
-    }
-    androidx.compose.runtime.LaunchedEffect(Unit) {
+    var cams by remember { mutableStateOf<List<CamSpec>?>(null) }
+    LaunchedEffect(Unit) {
         cams = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             readAllCameras(context)
         }
     }
-    val list = cams ?: emptyList()
-    if (cams == null) {
+    val list = cams
+    if (list == null) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             StatCard("Kameras") {
-                Text("Lade Kamera-Eigenschaften...", color = OnSurfaceMuted, fontSize = 13.sp)
+                Text("Lade Kamera-Eigenschaften…", color = OnSurfaceMuted, fontSize = 13.sp)
             }
         }
         return
