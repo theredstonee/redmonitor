@@ -29,6 +29,14 @@ private val COLORS = listOf(
 fun DisplayTestScreen() {
     var fullscreen by remember { mutableIntStateOf(-1) }
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    val immersive = com.tamerin.sysmonitor.LocalImmersive.current
+
+    androidx.compose.runtime.LaunchedEffect(fullscreen) {
+        immersive.value = fullscreen >= 0
+    }
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        onDispose { immersive.value = false }
+    }
 
     if (fullscreen >= 0) {
         val c = COLORS[fullscreen]

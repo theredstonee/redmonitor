@@ -56,6 +56,10 @@ fun FullscreenDisplayTestScreen() {
     var paused by remember { mutableStateOf(false) }
     var secondsPerPattern by remember { mutableFloatStateOf(2.5f) }
     var progress by remember { mutableFloatStateOf(0f) }
+    val immersive = com.tamerin.sysmonitor.LocalImmersive.current
+
+    LaunchedEffect(index) { immersive.value = index >= 0 }
+    DisposableEffect(Unit) { onDispose { immersive.value = false } }
 
     // Keep screen on while a pattern is showing
     DisposableEffect(index >= 0) {
@@ -206,18 +210,26 @@ private fun Color.luminance(): Float = 0.299f * red + 0.587f * green + 0.114f * 
 
 @Composable
 private fun FullCheckerboard() {
-    Canvas(modifier = Modifier.fillMaxSize()) {
-        val cell = 4f
-        val cols = (size.width / cell).toInt() + 1
-        val rows = (size.height / cell).toInt() + 1
-        for (y in 0 until rows) {
-            for (x in 0 until cols) {
-                val odd = (x + y) % 2 == 1
-                drawRect(
-                    color = if (odd) Color.White else Color.Black,
-                    topLeft = Offset(x * cell, y * cell),
-                    size = androidx.compose.ui.geometry.Size(cell, cell)
-                )
+    // Background is black; only draw the white cells. Cell size 16f keeps the
+    // pattern fine but avoids the 160k+ drawRect/frame allocation that previously
+    // OOM'd the renderer (visible as 'app crashes after gray pattern').
+    Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val cell = 16f
+            val cellSize = androidx.compose.ui.geometry.Size(cell, cell)
+            val cols = (size.width / cell).toInt() + 1
+            val rows = (size.height / cell).toInt() + 1
+            for (y in 0 until rows) {
+                val rowOdd = y % 2 == 1
+                var x = if (rowOdd) 1 else 0
+                while (x < cols) {
+                    drawRect(
+                        color = Color.White,
+                        topLeft = Offset(x * cell, y * cell),
+                        size = cellSize
+                    )
+                    x += 2
+                }
             }
         }
     }

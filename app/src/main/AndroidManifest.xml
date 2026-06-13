@@ -58,6 +58,121 @@
             </intent-filter>
         </activity>
 
+        <!-- Activity-Aliases: each top-level tab visible as its own Activity in
+             system Activity browsers + can be pinned to home screen as separate
+             shortcut. All point to MainActivity which detects which alias was
+             launched and opens the matching tab. -->
+        <activity-alias
+            android:name=".LiveActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Live"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".SystemActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · System"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".TasksActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Tasks"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".BenchmarkActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Benchmark"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".TestsActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Tests"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".InfoActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Info"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".SettingsActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Einstellungen"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".LogcatActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Logcat"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".HudActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · HUD"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+        <activity-alias
+            android:name=".OemSetupActivity"
+            android:targetActivity=".MainActivity"
+            android:exported="true"
+            android:label="RedMonitor · Geräte-Setup"
+            android:icon="@mipmap/ic_launcher">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity-alias>
+
         <service
             android:name=".overlay.OverlayService"
             android:exported="false"

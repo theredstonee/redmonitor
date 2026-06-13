@@ -107,11 +107,28 @@ class MainActivity : ComponentActivity() {
         com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
         com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
         com.tamerin.sysmonitor.settings.AppPrefs.incrementLaunchCount(this)
+        val initialRoute = routeFromAlias(intent?.component?.className)
         setContent {
             SysMonitorTheme {
-                SysMonitorApp()
+                SysMonitorApp(initialRoute = initialRoute)
             }
         }
+    }
+}
+
+private fun routeFromAlias(className: String?): String {
+    if (className == null) return Routes.LIVE
+    return when {
+        className.endsWith(".SystemActivity") -> Routes.SYSTEM
+        className.endsWith(".TasksActivity") -> Routes.TASKS
+        className.endsWith(".BenchmarkActivity") -> Routes.BENCHMARK
+        className.endsWith(".TestsActivity") -> Routes.TESTS
+        className.endsWith(".InfoActivity") -> Routes.INFO
+        className.endsWith(".SettingsActivity") -> Routes.SETTINGS
+        className.endsWith(".LogcatActivity") -> Routes.INFO_LOGCAT
+        className.endsWith(".HudActivity") -> Routes.HUD
+        className.endsWith(".OemSetupActivity") -> Routes.OEM_SETUP
+        else -> Routes.LIVE
     }
 }
 
@@ -249,14 +266,36 @@ private fun titleFor(route: String?): String = when {
     else -> "SysMonitor"
 }
 
+/** Set to true by full-screen tests to hide top/bottom bars + system bars. */
+val LocalImmersive = androidx.compose.runtime.compositionLocalOf<androidx.compose.runtime.MutableState<Boolean>> {
+    error("LocalImmersive not provided")
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SysMonitorApp() {
+private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     val navController = rememberNavController()
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
     val isTopLevel = currentRoute in TOP_LEVEL_ROUTES || currentRoute == null
     val context = androidx.compose.ui.platform.LocalContext.current
+    val view = androidx.compose.ui.platform.LocalView.current
+    val immersive = androidx.compose.runtime.remember { androidx.compose.runtime.mutableStateOf(false) }
+
+    androidx.compose.runtime.DisposableEffect(immersive.value) {
+        val window = (view.context as? android.app.Activity)?.window
+        val controller = window?.let {
+            androidx.core.view.WindowCompat.getInsetsController(it, view)
+        }
+        if (immersive.value) {
+            controller?.hide(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+            controller?.systemBarsBehavior =
+                androidx.core.view.WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        } else {
+            controller?.show(androidx.core.view.WindowInsetsCompat.Type.systemBars())
+        }
+        onDispose { /* leave bars in current state */ }
+    }
     var startupUpdate by androidx.compose.runtime.remember {
         androidx.compose.runtime.mutableStateOf<com.tamerin.sysmonitor.update.ReleaseInfo?>(null)
     }
@@ -295,8 +334,10 @@ private fun SysMonitorApp() {
 
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
+    androidx.compose.runtime.CompositionLocalProvider(LocalImmersive provides immersive) {
     Scaffold(
         topBar = {
+            if (immersive.value) return@Scaffold
             TopAppBar(
                 title = {
                     if (isTopLevel) {
@@ -333,6 +374,7 @@ private fun SysMonitorApp() {
             )
         },
         bottomBar = {
+            if (immersive.value) return@Scaffold
             NavigationBar(
                 containerColor = BgDark,
                 tonalElevation = 0.dp
@@ -366,7 +408,7 @@ private fun SysMonitorApp() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.LIVE,
+            startDestination = initialRoute,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Routes.LIVE) {
@@ -486,6 +528,7 @@ private fun SysMonitorApp() {
     if (showRatePrompt && startupUpdate == null) {
         com.tamerin.sysmonitor.ui.components.RateDialog(onDismiss = { showRatePrompt = false })
     }
+    } // CompositionLocalProvider
 }
 
 private fun NavController.navigateTopLevel(route: String) {

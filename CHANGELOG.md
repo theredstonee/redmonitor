@@ -1,5 +1,53 @@
 # Changelog
 
+## v1.5.3 — 2026-06-13
+
+### Behoben
+
+**Display-Test crashte nach „50 % Grau"**
+- Schachbrett-Muster (das nächste Muster nach Grau) erzeugte 163.000 `drawRect`-Calls pro Frame mit Cell-Size 4 px auf einem 1080p-Panel — Compose-Renderer ging OOM oder ANR
+- Jetzt Cell-Size 16 px (~10.000 Cells) + nur die weißen Cells werden gezeichnet (schwarze sind der Hintergrund) → ~5.000 echte Draws pro Frame
+- `Size`-Objekt wird einmal pro Frame allokiert statt 163k Mal
+
+**Display-Test war nicht wirklich fullscreen**
+- Top-Bar und Bottom-NavBar blieben sichtbar während der Farb-/Muster-Anzeige
+- Status-Bar und System-Nav-Bar blieben sichtbar
+- Neu: `LocalImmersive` CompositionLocal — Screens setzen den Flag und der Scaffold versteckt automatisch alle Bars + System-Bars (Swipe-to-show bleibt)
+- Wirkt im `Tests → Display-Farben` *und* `Benchmark → Display-Test` Screen
+- Beim Verlassen kommen alle Bars zurück
+
+**Kamera zeigte falsche Megapixel**
+- Berechnung nutzte `SENSOR_INFO_PIXEL_ARRAY_SIZE` — das ist die *physische* Sensor-Fläche inkl. Optical-Black-Ränder, gibt zu hohe Werte
+- Jetzt: `SENSOR_INFO_ACTIVE_ARRAY_SIZE` für „effektive MP" (was wirklich rauskommt)
+- Auf Android 13+ zusätzlich `SENSOR_INFO_ACTIVE_ARRAY_SIZE_MAXIMUM_RESOLUTION` für „max. Sensor MP" bei Quad-Bayer/Nona-Bayer-Sensoren (50/108/200 MP)
+- Pixel-Pitch (µm) ebenfalls auf Active-Array umgestellt
+- Read läuft jetzt auf `Dispatchers.IO` mit Lade-Anzeige (war auf Main-Thread mit vielen Kameras laggy)
+
+### Neu
+
+**LAN-Scan: alle Geräte im Netzwerk finden**
+- Neue Sektion im WLAN-Scan-Screen
+- Erkennt automatisch das aktive Subnet via `ConnectivityManager.LinkProperties`
+- Parallel-Probe auf 254 Hosts (TCP-Connect zu Ports 80/443/22/445/139/8080/23/21/53/7)
+- Liest `/proc/net/arp` für MAC-Adressen + erkennt Hosts die schon Traffic hatten ohne Port-Antwort
+- DNS-Reverse-Lookup pro Host für Hostname (mit 400 ms Timeout)
+- OUI-Lookup: erkennt 60+ häufige Hersteller (Apple, Samsung, Xiaomi, Google, AVM/FRITZ!, TP-Link, Sonos, Raspberry Pi, ...)
+- Live-Fortschritt während Scan (Counter X/254)
+- Default-Gateway und eigenes Gerät werden hervorgehoben
+
+**Activity-Aliases: jeder Tab als eigene Activity**
+- 9 neue Aliases im Manifest: Live, System, Tasks, Benchmark, Tests, Info, Settings, Logcat, HUD, Geräte-Setup
+- Jeder taucht im System-Aktivitäten-Browser als eigene Activity auf
+- Tippen öffnet die App direkt im richtigen Tab — kein Umweg über Live
+- Jeder kann als separates Home-Screen-Shortcut gepinnt werden
+- MainActivity erkennt automatisch über welchen Alias gestartet wurde und springt zum passenden Tab
+
+### Sonstiges
+
+- `versionName` auf 1.5.3, `versionCode` auf 8
+
+---
+
 ## v1.5.2 — 2026-06-13
 
 ### Neu

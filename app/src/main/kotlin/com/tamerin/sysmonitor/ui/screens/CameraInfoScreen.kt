@@ -31,11 +31,14 @@ private data class CamSpec(
     val parentId: String?,
     val facing: String,
     val sensorMp: Float,
+    val sensorMpMax: Float,
     val sensorWidthMm: Float,
     val sensorHeightMm: Float,
     val sensorDiagonal: Float,
     val pixelArrayW: Int,
     val pixelArrayH: Int,
+    val activeArrayW: Int,
+    val activeArrayH: Int,
     val maxJpegW: Int,
     val maxJpegH: Int,
     val maxVideo: String?,
@@ -65,7 +68,23 @@ private data class CamSpec(
 @Composable
 fun CameraInfoScreen() {
     val context = LocalContext.current
-    val cams = remember { readAllCameras(context) }
+    var cams by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<List<CamSpec>?>(null)
+    }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        cams = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            readAllCameras(context)
+        }
+    }
+    val list = cams ?: emptyList()
+    if (cams == null) {
+        Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+            StatCard("Kameras") {
+                Text("Lade Kamera-Eigenschaften...", color = OnSurfaceMuted, fontSize = 13.sp)
+            }
+        }
+        return
+    }
 
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -73,8 +92,8 @@ fun CameraInfoScreen() {
     ) {
         item {
             StatCard("Übersicht") {
-                val logical = cams.count { !it.isPhysical }
-                val physical = cams.count { it.isPhysical }
+                val logical = list.count { !it.isPhysical }
+                val physical = list.count { it.isPhysical }
                 KeyValueRow("Logische Kameras", logical.toString())
                 if (physical > 0) KeyValueRow("Physische Sub-Kameras", physical.toString())
                 Text(
@@ -83,7 +102,7 @@ fun CameraInfoScreen() {
                 )
             }
         }
-        items(cams, key = { (if (it.isPhysical) "p" else "l") + it.id }) { c ->
+        items(list, key = { (if (it.isPhysical) "p" else "l") + it.id }) { c ->
             CamCard(c)
         }
     }
@@ -103,16 +122,27 @@ private fun CamCard(c: CamSpec) {
 
         // --- Sensor ---
         SectionHeader("Sensor")
-        KeyValueRow("Megapixel (real)", "${"%.1f".format(c.sensorMp)} MP")
-        KeyValueRow("Pixel-Array", "${c.pixelArrayW} × ${c.pixelArrayH}")
+        // Effective MP = active array (post-binning, what you actually get out).
+        // For Quad-Bayer / Nona-Bayer sensors Android 13+ exposes the unbinned
+        // 'maximum resolution' size; show both when they differ.
+        KeyValueRow("Megapixel (effektiv)", "${"%.1f".format(c.sensorMp)} MP")
+        if (c.sensorMpMax > c.sensorMp * 1.5f) {
+            KeyValueRow("Megapixel (max. Sensor)", "${"%.0f".format(c.sensorMpMax)} MP")
+        }
+        if (c.activeArrayW > 0) {
+            KeyValueRow("Aktive Pixel", "${c.activeArrayW} × ${c.activeArrayH}")
+        }
+        KeyValueRow("Pixel-Array (gesamt)", "${c.pixelArrayW} × ${c.pixelArrayH}")
         if (c.sensorWidthMm > 0 && c.sensorHeightMm > 0) {
             KeyValueRow(
                 "Sensor-Fläche",
                 "${"%.2f".format(c.sensorWidthMm)} × ${"%.2f".format(c.sensorHeightMm)} mm"
             )
             KeyValueRow("Sensor-Diagonale", "${"%.2f".format(c.sensorDiagonal)} mm")
-            if (c.pixelArrayW > 0) {
-                val pxSize = (c.sensorWidthMm * 1000) / c.pixelArrayW
+            // Pixel pitch using ACTIVE array (real pixel pitch) instead of total array.
+            val refW = if (c.activeArrayW > 0) c.activeArrayW else c.pixelArrayW
+            if (refW > 0) {
+                val pxSize = (c.sensorWidthMm * 1000) / refW
                 KeyValueRow("Pixel-Größe", "${"%.2f".format(pxSize)} µm")
             }
         }
@@ -246,7 +276,23 @@ private fun readOne(cm: CameraManager, id: String, isPhysical: Boolean, parentId
         val pixelArr = ch.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE)
         val pixelW = pixelArr?.width ?: 0
         val pixelH = pixelArr?.height ?: 0
-        val sensorMp = if (pixelW > 0) (pixelW.toLong() * pixelH) / 1_000_000f else 0f
+        val activeArr = ch.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE)
+        val activeW = activeArr?.width() ?: 0
+        val activeH = activeArr?.height() ?: 0
+        // Effective MP = active array (binned, what photos actually come out as).
+        // Fall back to max JPEG size if active array is missing for some reason.
+        val sensorMp = when {
+            activeW > 0 -> (activeW.toLong() * activeH) / 1_000_000f
+            pixelW > 0 -> (pixelW.toLong() * pixelH) / 1_000_000f
+            else -> 0f
+        }
+        // Marketed 'max resolution' for Quad-Bayer / Nona-Bayer (Android 13+).
+        val sensorMpMax = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val mr = runCatching {
+                ch.get(CameraCharacteristics.SENSOR_INFO_ACTIVE_ARRAY_SIZE_MAXIMUM_RESOLUTION)
+            }.getOrNull()
+            if (mr != null) (mr.width().toLong() * mr.height()) / 1_000_000f else sensorMp
+        } else sensorMp
 
         val sensorPhys = ch.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE)
         val sensorWMm = sensorPhys?.width ?: 0f
@@ -320,8 +366,8 @@ private fun readOne(cm: CameraManager, id: String, isPhysical: Boolean, parentId
 
         CamSpec(
             id, isPhysical, parentId, facing,
-            sensorMp, sensorWMm, sensorHMm, diag,
-            pixelW, pixelH, maxJpegW, maxJpegH,
+            sensorMp, sensorMpMax, sensorWMm, sensorHMm, diag,
+            pixelW, pixelH, activeW, activeH, maxJpegW, maxJpegH,
             maxVideo, maxRaw, outputFormats,
             focals, equiv35, apertures, minFocus, hyperfocal,
             isoRange, shutterRange, fpsRanges,
