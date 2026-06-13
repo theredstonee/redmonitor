@@ -26,7 +26,9 @@ fun NetworkScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            snap = NetworkReader.read(context)
+            snap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                NetworkReader.read(context)
+            }
             delay(2000)
         }
     }

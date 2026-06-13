@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.5.2 — 2026-06-13
+
+### Neu
+
+**Geräte-Setup (alle OEMs)**
+- Erkennt Hersteller + Skin automatisch: Xiaomi/HyperOS, MIUI, Samsung One UI, OnePlus, OPPO ColorOS, Vivo, Huawei, Honor MagicOS, Realme, Asus, Motorola, Sony, LG, Pixel, Nothing
+- Bewertet die Restriktions-Stufe (LOW · MEDIUM · HIGH) und zeigt Hersteller-spezifische Hinweise
+- **First-Launch-Wizard** öffnet sich automatisch bei restriktiven Geräten (Xiaomi/Oppo/Vivo/Huawei/Honor/Realme + ColorOS-OnePlus)
+- Status-Checks für Akku-Optimierung, Nutzungsstatistiken, Benachrichtigungen, Overlay-Permission — alles mit grünem Haken oder „Öffnen >" Direkt-Link
+- OEM-spezifische Deeplinks: MIUI-Autostart-Manager, Samsung Schlafende Apps, ColorOS Startup, Vivo Hintergrund, Huawei App-Start, Asus Mobile Manager, MIUI „Andere Berechtigungen" (Pop-ups), Entwickleroptionen (MIUI-Optimierung)
+- Erreichbar später jederzeit über **Info → Geräte-Setup** oder das kleine Banner oben im Live-Tab
+- Bei MIUI/HyperOS: Hinweis zum Sperren der App in Recents gegen den Memory Cleaner
+
+### Behoben
+
+**Logcat zeigte zu wenig**
+- Default-Tiefe auf 5000 Zeilen erhöht (war 500)
+- Neue **Tiefe-Chips**: 1k · 5k · 20k · Alles (komplettes Buffer-Dump)
+- **Raw-Modus**: zeigt wirklich alles, ignoriert Level-Filter komplett
+- **Radio-Buffer** ergänzt (Modem/RIL-Logs)
+- **Multi-Buffer-Merge-Fallback**: wenn `-b all` auf manchen Builds leer bleibt (HyperOS hat das wiederholt gemacht), wird jeder Buffer einzeln abgefragt (main+system+crash+events+radio) und nach Timestamp sortiert zusammengeführt
+- **Tolerantere Regex** für Level-Erkennung — auch brief/long Format `I/Tag(1234)` wird erkannt
+- Filter-Text wirkt jetzt auch auf Zeilen ohne klares Level-Token (Bug behoben, der binäre Events vorher unkontrolliert durchließ)
+- Status-Zeile zeigt jetzt `sichtbar / geladen` damit man sofort sieht ob die Filter zu hart sind
+
+### Performance
+
+**App läuft generell flüssiger**
+- Live-Tab: eine einzelne 1s-Schleife wurde in **sechs unabhängige parallele Coroutines** aufgeteilt (CPU 1s · RAM 1.5s · Akku 3s · Storage 30s · Netzwerk 1s · Top-App 3s) — eine langsame Shizuku-Shell oder ein träger Sensor blockiert nicht mehr die anderen Reads
+- Jeder Reader läuft jetzt explizit auf `Dispatchers.IO` (Datei-/Shell-Reads) bzw. `Dispatchers.Default` (Network-Delta-Berechnung) statt versteckt auf dem UI-Thread
+- **Battery-, RAM-, Network-, Thermal-, Display-, RunningApps-, Stresstest-Screen** hatten alle den gleichen Bug: Reader lief im LaunchedEffect synchron auf Main → behoben mit `withContext(Dispatchers.IO)`
+- Logcat-Filter (bis zu 20k Zeilen + Regex + `contains()`) läuft jetzt auf `Dispatchers.Default` statt im `remember{}` auf Main — kein Jank mehr beim Tippen im Filter-Feld
+
+### Sonstiges
+
+- `versionName` auf 1.5.2, `versionCode` auf 7
+- Neuer Composable `OemSetupCard` + `OemHintBanner` zur Wiederverwendung in anderen Screens
+- `data/OemDetect.kt` als zentraler Erkennungs-Helper
+- **Einstellungen → Über**: ausklappbare „Komponenten"-Sektion listet alle internen `com.tamerin.sysmonitor.*` Activities, Services, Provider und Receiver mit Live-„läuft"-Indicator für Services
+
+---
+
 ## v1.5.1 — 2026-06-09
 
 ### Behoben

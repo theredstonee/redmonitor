@@ -28,11 +28,21 @@ fun RamScreen() {
         mutableStateOf(StorageSnapshot(0, 0, 0f))
     }
 
+    // RAM (1.5 s) + Storage (15 s) as independent loops on IO dispatcher.
     LaunchedEffect(Unit) {
         while (true) {
-            ram = MemoryReader.readRam(context)
-            storage = MemoryReader.readStorage()
+            ram = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                MemoryReader.readRam(context)
+            }
             delay(1500)
+        }
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            storage = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                MemoryReader.readStorage()
+            }
+            delay(15_000)
         }
     }
 

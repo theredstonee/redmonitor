@@ -47,7 +47,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 @Composable
-fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
+fun OverviewScreen(onOpenUpdate: () -> Unit = {}, onOpenOemSetup: () -> Unit = {}) {
     val context = LocalContext.current
     val activity = context as? Activity
     var updateAvailable by remember {
@@ -93,57 +93,91 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
     val device = remember { DeviceInfo.readDevice() }
     val displaySnap = remember(activity) { activity?.let { DeviceInfo.readDisplay(it) } }
 
+    // === Parallel sampler loops ===
+    // Each metric runs in its own coroutine on its own dispatcher with its own cadence.
+    // A slow read (Shizuku shell, /proc, dumpsys) on one loop never blocks the others
+    // and never stalls the UI thread.
+
+    // CPU + per-core (1 s, IO — reads /proc/stat or Shizuku shell)
     LaunchedEffect(Unit) {
-        // Prime sampler off-thread so first display has a real delta
         withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
-        var lastRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-        var lastTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
-        var lastWall = SystemClock.elapsedRealtime()
-        var tick = 0
         while (true) {
-            // All blocking reads on IO; Shizuku shell + /proc IO would stall the UI otherwise
             val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
-            val ram = withContext(Dispatchers.IO) { MemoryReader.readRam(context) }
-            val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
-            val storage = withContext(Dispatchers.IO) { MemoryReader.readStorage() }
             cpuPct = cpu.totalPercent
             cpuSource = cpu.source
             perCorePct = cpu.perCorePercent
+            delay(1000)
+        }
+    }
+
+    // RAM (1.5 s, IO — reads /proc/meminfo)
+    LaunchedEffect(Unit) {
+        while (true) {
+            val ram = withContext(Dispatchers.IO) { MemoryReader.readRam(context) }
             ramPct = ram.percent
             ramUsed = ram.usedBytes
             ramTotal = ram.totalBytes
+            delay(1500)
+        }
+    }
+
+    // Battery (3 s, IO — sticky intent + optional dumpsys via Shizuku)
+    LaunchedEffect(Unit) {
+        while (true) {
+            val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
             batteryPct = batt.percent
             batteryTemp = batt.temperatureC
             batteryWatts = batt.wattsNow
             batteryCharging = batt.isCharging
-            storagePct = storage.internalPercent
+            delay(3000)
+        }
+    }
 
-            // Netzwerk-Delta
-            val curRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-            val curTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
-            val nowWall = SystemClock.elapsedRealtime()
-            val dt = (nowWall - lastWall).coerceAtLeast(1L)
-            downKbs = ((curRx - lastRx).coerceAtLeast(0L) * 1000f) / dt / 1024f
-            upKbs = ((curTx - lastTx).coerceAtLeast(0L) * 1000f) / dt / 1024f
-            rxTotal = curRx
-            txTotal = curTx
-            lastRx = curRx
-            lastTx = curTx
-            lastWall = nowWall
+    // Storage (30 s, IO — StatFs syscall, changes very slowly)
+    LaunchedEffect(Unit) {
+        while (true) {
+            storagePct = withContext(Dispatchers.IO) { MemoryReader.readStorage() }.internalPercent
+            delay(30_000)
+        }
+    }
 
-            // Top-App nur alle 3 Ticks (dumpsys cpuinfo ist teuer)
-            tick++
-            if (tick % 3 == 0) {
-                topAppShizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
-                if (topAppShizukuReady) {
-                    val top = withContext(Dispatchers.IO) { TopCpuReader.read(context, limit = 5) }
-                    val first = top.firstOrNull { !it.processName.startsWith("kworker") }
-                    topAppName = first?.processName
-                    topAppPct = first?.cpuPercent ?: 0f
-                }
+    // Network throughput (1 s, Default — TrafficStats is fast; deltas computed here)
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            var lastRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
+            var lastTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+            var lastWall = SystemClock.elapsedRealtime()
+            while (true) {
+                val curRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
+                val curTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+                val nowWall = SystemClock.elapsedRealtime()
+                val dt = (nowWall - lastWall).coerceAtLeast(1L)
+                downKbs = ((curRx - lastRx).coerceAtLeast(0L) * 1000f) / dt / 1024f
+                upKbs = ((curTx - lastTx).coerceAtLeast(0L) * 1000f) / dt / 1024f
+                rxTotal = curRx
+                txTotal = curTx
+                lastRx = curRx
+                lastTx = curTx
+                lastWall = nowWall
+                delay(1000)
             }
+        }
+    }
 
-            delay(1000)
+    // Top CPU app (3 s, IO — dumpsys cpuinfo is the most expensive call in this screen)
+    LaunchedEffect(Unit) {
+        while (true) {
+            val ready = withContext(Dispatchers.IO) {
+                ShizukuHelper.state(context) == ShizukuHelper.State.Ready
+            }
+            topAppShizukuReady = ready
+            if (ready) {
+                val top = withContext(Dispatchers.IO) { TopCpuReader.read(context, limit = 5) }
+                val first = top.firstOrNull { !it.processName.startsWith("kworker") }
+                topAppName = first?.processName
+                topAppPct = first?.cpuPercent ?: 0f
+            }
+            delay(3000)
         }
     }
 
@@ -185,6 +219,8 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}) {
                 }
             )
         }
+
+        com.tamerin.sysmonitor.ui.components.OemHintBanner(onOpenSetup = onOpenOemSetup)
 
         // ===== HERO =====
         Box(

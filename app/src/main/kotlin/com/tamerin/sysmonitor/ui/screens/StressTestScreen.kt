@@ -55,12 +55,20 @@ fun StressTestScreen() {
     }
 
     LaunchedEffect(Unit) {
-        CpuReader.read(context, "stress")
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            CpuReader.read(context, "stress")
+        }
         while (true) {
-            val cpu = CpuReader.read(context, "stress")
-            val batt = BatteryReader.read(context)
-            val zones = ThermalReader.read()
-            val hottest = ThermalReader.hottestCpuZone(zones)
+            val tick = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val cpu = CpuReader.read(context, "stress")
+                val batt = BatteryReader.read(context)
+                val zones = ThermalReader.read()
+                val hottest = ThermalReader.hottestCpuZone(zones)
+                Triple(cpu, batt, hottest)
+            }
+            val cpu = tick.first
+            val batt = tick.second
+            val hottest = tick.third
             cpuPct = cpu.totalPercent
             cpuSource = cpu.source
             battTempC = batt.temperatureC

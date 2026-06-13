@@ -1,7 +1,11 @@
 package com.tamerin.sysmonitor.ui.screens
 
+import android.app.ActivityManager
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -25,7 +29,11 @@ import com.tamerin.sysmonitor.update.UpdatePrefs
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
+import com.tamerin.sysmonitor.ui.theme.AccentSoft
+import com.tamerin.sysmonitor.ui.theme.GaugeGreen
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 
 @Composable
 fun SettingsScreen() {
@@ -214,6 +222,8 @@ fun SettingsScreen() {
             KeyValueRow("Anwendungs-ID", BuildConfig.APPLICATION_ID)
             KeyValueRow("Lizenz", "MIT")
             KeyValueRow("Hersteller", "TheRedStonee")
+            Spacer(Modifier.height(12.dp))
+            AppComponentsBlock(context)
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
                 onClick = {
@@ -228,6 +238,123 @@ fun SettingsScreen() {
             ) { Text("theredstonee.de") }
         }
     }
+}
+
+private data class AppComponent(
+    val kind: String,
+    val fqcn: String,
+    val running: Boolean = false
+)
+
+private fun readComponents(context: Context): List<AppComponent> {
+    val pm = context.packageManager
+    val pkg = context.packageName
+    val pi = runCatching {
+        pm.getPackageInfo(
+            pkg,
+            PackageManager.GET_ACTIVITIES or PackageManager.GET_SERVICES or
+                PackageManager.GET_PROVIDERS or PackageManager.GET_RECEIVERS
+        )
+    }.getOrNull() ?: return emptyList()
+
+    val am = context.getSystemService(Context.ACTIVITY_SERVICE) as? ActivityManager
+    @Suppress("DEPRECATION")
+    val runningServices: Set<String> = runCatching {
+        am?.getRunningServices(Int.MAX_VALUE)
+            ?.filter { it.service.packageName == pkg }
+            ?.map { it.service.className }
+            ?.toSet()
+            ?: emptySet()
+    }.getOrDefault(emptySet())
+
+    val out = mutableListOf<AppComponent>()
+    pi.activities?.forEach { out += AppComponent("Activity", it.name) }
+    pi.services?.forEach { out += AppComponent("Service", it.name, running = it.name in runningServices) }
+    pi.providers?.forEach { out += AppComponent("Provider", it.name) }
+    pi.receivers?.forEach { out += AppComponent("Receiver", it.name) }
+    return out.sortedWith(compareBy({ it.kind }, { it.fqcn }))
+}
+
+@Composable
+private fun AppComponentsBlock(context: Context) {
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    var expanded by remember { mutableStateOf(false) }
+    val comps = remember { readComponents(context) }
+    val pkg = remember { context.packageName }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                haptic(HapticType.TAP)
+                expanded = !expanded
+            }
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                "Komponenten",
+                color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                "${comps.size} interne $pkg.* Klassen",
+                color = OnSurfaceMuted,
+                fontSize = 11.sp
+            )
+        }
+        Text(
+            if (expanded) "v" else ">",
+            color = AccentSoft,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp
+        )
+    }
+
+    if (expanded) {
+        Spacer(Modifier.height(4.dp))
+        val byKind = comps.groupBy { it.kind }
+        listOf("Activity", "Service", "Provider", "Receiver").forEach { kind ->
+            val items = byKind[kind].orEmpty()
+            if (items.isEmpty()) return@forEach
+            Text(
+                "$kind  (${items.size})",
+                color = Accent,
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(top = 6.dp, bottom = 2.dp)
+            )
+            items.forEach { c ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        shortenFqcn(c.fqcn, pkg),
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
+                        fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (kind == "Service" && c.running) {
+                        Text(
+                            "• läuft",
+                            color = GaugeGreen,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun shortenFqcn(fqcn: String, pkg: String): String {
+    if (fqcn.startsWith("$pkg.")) return "." + fqcn.substring(pkg.length + 1)
+    return fqcn
 }
 
 @Composable

@@ -15,6 +15,7 @@ object AppPrefs {
     private const val K_RATED = "trustpilot_rated"
     private const val K_RATE_LAST_SHOWN = "trustpilot_last_shown"
     private const val K_LAUNCH_COUNT = "launch_count"
+    private const val K_OEM_ONBOARDING_DONE = "oem_onboarding_done"
     private const val RATE_INTERVAL_MS = 3L * 24L * 3600L * 1000L
 
     fun hasRated(context: Context): Boolean =
@@ -44,6 +45,13 @@ object AppPrefs {
         if (launchCount(context) < 2) return false
         val lastShown = prefs(context).getLong(K_RATE_LAST_SHOWN, 0L)
         return System.currentTimeMillis() - lastShown >= RATE_INTERVAL_MS
+    }
+
+    fun isOemOnboardingDone(context: Context): Boolean =
+        prefs(context).getBoolean(K_OEM_ONBOARDING_DONE, false)
+
+    fun setOemOnboardingDone(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_OEM_ONBOARDING_DONE, value).apply()
     }
 
     fun hapticFeedbackEnabled(context: Context): Boolean =

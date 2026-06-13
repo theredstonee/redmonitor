@@ -21,7 +21,9 @@ fun ThermalScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            zones = ThermalReader.read()
+            zones = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                ThermalReader.read()
+            }
             delay(1500)
         }
     }

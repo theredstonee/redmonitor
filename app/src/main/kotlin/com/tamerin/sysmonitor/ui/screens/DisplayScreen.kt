@@ -26,8 +26,10 @@ fun DisplayScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            device = DeviceInfo.readDevice()
-            delay(1000)
+            device = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                DeviceInfo.readDevice()
+            }
+            delay(2500)
         }
     }
 

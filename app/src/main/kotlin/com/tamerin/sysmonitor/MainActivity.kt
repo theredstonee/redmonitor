@@ -72,6 +72,7 @@ import com.tamerin.sysmonitor.ui.screens.MultiTouchScreen
 import com.tamerin.sysmonitor.ui.screens.NetworkScreen
 import com.tamerin.sysmonitor.ui.screens.NetworkSpeedScreen
 import com.tamerin.sysmonitor.ui.screens.NfcScreen
+import com.tamerin.sysmonitor.ui.screens.OemOnboardingScreen
 import com.tamerin.sysmonitor.ui.screens.OverlayHudScreen
 import com.tamerin.sysmonitor.ui.screens.OverviewScreen
 import com.tamerin.sysmonitor.ui.screens.ProximityLightScreen
@@ -172,6 +173,7 @@ object Routes {
     const val SYSTEM_TWEAKS = "system/tweaks"
     const val UPDATE = "update"
     const val SETTINGS = "settings"
+    const val OEM_SETUP = "oem/setup"
 }
 
 private data class TopTab(val route: String, val label: String, val icon: ImageVector)
@@ -243,6 +245,7 @@ private fun titleFor(route: String?): String = when {
     route == Routes.SYSTEM_TWEAKS -> "Display-Tweaks"
     route == Routes.UPDATE -> "Update"
     route == Routes.SETTINGS -> "Einstellungen"
+    route == Routes.OEM_SETUP -> "Geräte-Setup"
     else -> "SysMonitor"
 }
 
@@ -261,6 +264,18 @@ private fun SysMonitorApp() {
         androidx.compose.runtime.mutableStateOf(false)
     }
     androidx.compose.runtime.LaunchedEffect(Unit) {
+        // First-launch OEM onboarding for restrictive ROMs (Xiaomi, Oppo, Vivo, Huawei, ...)
+        if (!com.tamerin.sysmonitor.settings.AppPrefs.isOemOnboardingDone(context)) {
+            val spec = com.tamerin.sysmonitor.data.OemDetect.detect()
+            if (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.HIGH ||
+                (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.MEDIUM &&
+                    com.tamerin.sysmonitor.settings.AppPrefs.launchCount(context) <= 1)) {
+                navController.navigate(Routes.OEM_SETUP)
+            } else if (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.LOW) {
+                // Stock Android: nothing to do, mark as done so we don't re-check.
+                com.tamerin.sysmonitor.settings.AppPrefs.setOemOnboardingDone(context, true)
+            }
+        }
         val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
             context,
             com.tamerin.sysmonitor.update.UpdatePrefs.includePrerelease(context)
@@ -354,7 +369,12 @@ private fun SysMonitorApp() {
             startDestination = Routes.LIVE,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Routes.LIVE) { OverviewScreen(onOpenUpdate = { navController.navigate(Routes.UPDATE) }) }
+            composable(Routes.LIVE) {
+                OverviewScreen(
+                    onOpenUpdate = { navController.navigate(Routes.UPDATE) },
+                    onOpenOemSetup = { navController.navigate(Routes.OEM_SETUP) }
+                )
+            }
             composable(Routes.SYSTEM) { SystemHubScreen { navController.navigate(it) } }
             composable(Routes.BENCHMARK) { BenchmarkHubScreen { navController.navigate(it) } }
             composable(Routes.TESTS) { TestsHubScreen { navController.navigate(it) } }
@@ -427,6 +447,7 @@ private fun SysMonitorApp() {
             composable(Routes.SYSTEM_TWEAKS) { DisplayTweaksScreen() }
             composable(Routes.UPDATE) { UpdateScreen() }
             composable(Routes.SETTINGS) { SettingsScreen() }
+            composable(Routes.OEM_SETUP) { OemOnboardingScreen(onDone = { navController.popBackStack() }) }
         }
     }
 

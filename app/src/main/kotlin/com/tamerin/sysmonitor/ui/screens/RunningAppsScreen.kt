@@ -29,6 +29,13 @@ private data class RunningApp(
     val totalForeground: Long
 )
 
+private data class RunningAppsTick(
+    val access: Boolean,
+    val fetched: List<RunningApp>,
+    val pid: Int,
+    val memMb: Int
+)
+
 @Composable
 fun RunningAppsScreen() {
     val context = LocalContext.current
@@ -39,17 +46,20 @@ fun RunningAppsScreen() {
 
     LaunchedEffect(hasUsageAccess) {
         while (true) {
-            hasUsageAccess = checkUsageAccess(context)
-            if (hasUsageAccess) {
-                apps = readUsage(context)
+            val (access, fetched, pid, memMb) = kotlinx.coroutines.withContext(
+                kotlinx.coroutines.Dispatchers.IO
+            ) {
+                val access = checkUsageAccess(context)
+                val fetched = if (access) readUsage(context) else emptyList()
+                val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val pid = Process.myPid()
+                val mem = am.getProcessMemoryInfo(intArrayOf(pid)).firstOrNull()?.totalPss?.div(1024) ?: 0
+                RunningAppsTick(access, fetched, pid, mem)
             }
-            // Own process info — works without permission
-            val am = context.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
-            ownPid = Process.myPid()
-            val info = am.getProcessMemoryInfo(intArrayOf(ownPid)).firstOrNull()
-            if (info != null) {
-                ownMemMb = info.totalPss / 1024
-            }
+            hasUsageAccess = access
+            if (access) apps = fetched
+            ownPid = pid
+            ownMemMb = memMb
             delay(3000)
         }
     }

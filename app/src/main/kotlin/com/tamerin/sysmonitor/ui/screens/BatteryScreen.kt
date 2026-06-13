@@ -76,7 +76,9 @@ fun BatteryScreen() {
 
     LaunchedEffect(Unit) {
         while (true) {
-            snap = BatteryReader.read(context)
+            snap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                BatteryReader.read(context)
+            }
             // Drain-Tracking
             if (drainActive && drainEngine.running) {
                 val elapsedMs = System.currentTimeMillis() - drainStartMs
