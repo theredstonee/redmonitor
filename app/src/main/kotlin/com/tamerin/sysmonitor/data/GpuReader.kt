@@ -1,9 +1,11 @@
 package com.tamerin.sysmonitor.data
 
 import android.opengl.GLSurfaceView
+import androidx.compose.runtime.Immutable
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
+@Immutable
 data class GpuInfo(
     val vendor: String,
     val renderer: String,

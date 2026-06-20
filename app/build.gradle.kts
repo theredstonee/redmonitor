@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.baselineprofile)
 }
 
 android {
@@ -21,8 +23,8 @@ android {
         applicationId = "com.tamerin.sysmonitor"
         minSdk = 29
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.5.5"
+        versionCode = 13
+        versionName = "1.6.2"
 
         vectorDrawables {
             useSupportLibrary = true
@@ -41,6 +43,18 @@ android {
         debug {
             isMinifyEnabled = false
         }
+        // Baseline-profile generation runs against a release-like build that is
+        // still installable on a connected device for macrobenchmark to drive.
+        create("benchmark") {
+            initWith(getByName("release"))
+            signingConfig = signingConfigs.getByName("debug")
+            matchingFallbacks += listOf("release")
+            isDebuggable = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
     }
 
     compileOptions {
@@ -57,6 +71,14 @@ android {
         buildConfig = true
     }
 
+    composeCompiler {
+        // Enable stability / strong-skipping reports. Output lands in
+        // build/compose_compiler/* — drop into compose-stability-analyzer or
+        // read manually to find recomposing call-sites.
+        reportsDestination = layout.buildDirectory.dir("compose_compiler")
+        metricsDestination = layout.buildDirectory.dir("compose_compiler")
+    }
+
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -64,9 +86,15 @@ android {
     }
 }
 
+// Consumer side of the baseline-profile plugin uses sensible defaults:
+// mergeIntoMain = true (in main src), automaticGenerationDuringBuild = false.
+// Device selection (useConnectedDevices) lives in the producer module
+// :baselineprofile, not here.
+
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
 
@@ -81,6 +109,13 @@ dependencies {
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
     implementation(libs.androidx.work.runtime)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(project(":baselineprofile"))
 
     debugImplementation(libs.androidx.ui.tooling)
 }

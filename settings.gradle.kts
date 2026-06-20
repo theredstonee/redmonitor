@@ -22,3 +22,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SysMonitor"
 include(":app")
+include(":baselineprofile")

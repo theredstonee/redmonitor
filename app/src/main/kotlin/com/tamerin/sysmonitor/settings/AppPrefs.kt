@@ -18,6 +18,10 @@ object AppPrefs {
     private const val K_OEM_ONBOARDING_DONE = "oem_onboarding_done"
     private const val K_EASTER_EGG_UNLOCKED = "easter_egg_unlocked"
     private const val K_SNAKE_HIGH_SCORE = "snake_high_score"
+    private const val K_ROULETTE_ACK = "roulette_acknowledged"
+    private const val K_AUTOSTART_OVERLAY = "autostart_overlay_on_boot"
+    private const val K_MATERIAL_YOU = "material_you_dynamic_theme"
+    private const val K_ONBOARDING_DONE = "first_launch_onboarding_done"
     private const val RATE_INTERVAL_MS = 3L * 24L * 3600L * 1000L
 
     fun hasRated(context: Context): Boolean =
@@ -70,6 +74,13 @@ object AppPrefs {
         prefs(context).edit().putInt(K_SNAKE_HIGH_SCORE, value).apply()
     }
 
+    fun isRouletteAcknowledged(context: Context): Boolean =
+        prefs(context).getBoolean(K_ROULETTE_ACK, false)
+
+    fun setRouletteAcknowledged(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_ROULETTE_ACK, value).apply()
+    }
+
     fun hapticFeedbackEnabled(context: Context): Boolean =
         prefs(context).getBoolean(K_HAPTICS, true)
 
@@ -84,6 +95,27 @@ object AppPrefs {
 
     fun setHapticIntensity(context: Context, intensity: HapticIntensity) {
         prefs(context).edit().putString(K_HAPTIC_INTENSITY, intensity.key).apply()
+    }
+
+    fun isOverlayAutostartEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(K_AUTOSTART_OVERLAY, false)
+
+    fun setOverlayAutostartEnabled(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_AUTOSTART_OVERLAY, value).apply()
+    }
+
+    fun isMaterialYouEnabled(context: Context): Boolean =
+        prefs(context).getBoolean(K_MATERIAL_YOU, false)
+
+    fun setMaterialYouEnabled(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_MATERIAL_YOU, value).apply()
+    }
+
+    fun isFirstLaunchOnboardingDone(context: Context): Boolean =
+        prefs(context).getBoolean(K_ONBOARDING_DONE, false)
+
+    fun setFirstLaunchOnboardingDone(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean(K_ONBOARDING_DONE, value).apply()
     }
 
     private fun prefs(context: Context) =

@@ -6,6 +6,9 @@ import android.os.SystemClock
 import android.view.Choreographer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -28,6 +31,8 @@ import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.data.DeviceInfo
+import com.tamerin.sysmonitor.data.DeviceInfoSnapshot
+import com.tamerin.sysmonitor.data.DisplaySnapshot
 import com.tamerin.sysmonitor.data.MemoryReader
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.TopCpuReader
@@ -75,6 +80,7 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}, onOpenOemSetup: () -> Unit = {
     var batteryWatts by remember { mutableFloatStateOf(0f) }
     var batteryCharging by remember { mutableStateOf(false) }
     var storagePct by remember { mutableFloatStateOf(0f) }
+    var gpuPct by remember { mutableStateOf<Float?>(null) } // null = source nicht lesbar
 
     // Netzwerk live
     var downKbs by remember { mutableFloatStateOf(0f) }
@@ -93,91 +99,116 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}, onOpenOemSetup: () -> Unit = {
     val device = remember { DeviceInfo.readDevice() }
     val displaySnap = remember(activity) { activity?.let { DeviceInfo.readDisplay(it) } }
 
-    // === Parallel sampler loops ===
+    // === Lifecycle-aware parallel sampler loops ===
     // Each metric runs in its own coroutine on its own dispatcher with its own cadence.
-    // A slow read (Shizuku shell, /proc, dumpsys) on one loop never blocks the others
-    // and never stalls the UI thread.
+    // repeatOnLifecycle(RESUMED) pausiert ALLE Sampler sobald die App pausiert (Screen
+    // aus, andere App, Lock) → kein CPU/Akku-Verbrauch im Hintergrund.
+    val lifecycleOwner = LocalLifecycleOwner.current
 
-    // CPU + per-core (1 s, IO — reads /proc/stat or Shizuku shell)
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
-        while (true) {
-            val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
-            cpuPct = cpu.totalPercent
-            cpuSource = cpu.source
-            perCorePct = cpu.perCorePercent
-            delay(1000)
-        }
-    }
-
-    // RAM (1.5 s, IO — reads /proc/meminfo)
-    LaunchedEffect(Unit) {
-        while (true) {
-            val ram = withContext(Dispatchers.IO) { MemoryReader.readRam(context) }
-            ramPct = ram.percent
-            ramUsed = ram.usedBytes
-            ramTotal = ram.totalBytes
-            delay(1500)
-        }
-    }
-
-    // Battery (3 s, IO — sticky intent + optional dumpsys via Shizuku)
-    LaunchedEffect(Unit) {
-        while (true) {
-            val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
-            batteryPct = batt.percent
-            batteryTemp = batt.temperatureC
-            batteryWatts = batt.wattsNow
-            batteryCharging = batt.isCharging
-            delay(3000)
-        }
-    }
-
-    // Storage (30 s, IO — StatFs syscall, changes very slowly)
-    LaunchedEffect(Unit) {
-        while (true) {
-            storagePct = withContext(Dispatchers.IO) { MemoryReader.readStorage() }.internalPercent
-            delay(30_000)
-        }
-    }
-
-    // Network throughput (1 s, Default — TrafficStats is fast; deltas computed here)
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.Default) {
-            var lastRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-            var lastTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
-            var lastWall = SystemClock.elapsedRealtime()
+    // CPU + per-core (1 s, IO)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
             while (true) {
-                val curRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
-                val curTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
-                val nowWall = SystemClock.elapsedRealtime()
-                val dt = (nowWall - lastWall).coerceAtLeast(1L)
-                downKbs = ((curRx - lastRx).coerceAtLeast(0L) * 1000f) / dt / 1024f
-                upKbs = ((curTx - lastTx).coerceAtLeast(0L) * 1000f) / dt / 1024f
-                rxTotal = curRx
-                txTotal = curTx
-                lastRx = curRx
-                lastTx = curTx
-                lastWall = nowWall
+                val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "overview") }
+                cpuPct = cpu.totalPercent
+                cpuSource = cpu.source
+                perCorePct = cpu.perCorePercent
                 delay(1000)
             }
         }
     }
 
-    // Top CPU app (3 s, IO — dumpsys cpuinfo is the most expensive call in this screen)
-    LaunchedEffect(Unit) {
-        while (true) {
-            val ready = withContext(Dispatchers.IO) {
-                ShizukuHelper.state(context) == ShizukuHelper.State.Ready
+    // RAM (1.5 s, IO)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                val ram = withContext(Dispatchers.IO) { MemoryReader.readRam(context) }
+                ramPct = ram.percent
+                ramUsed = ram.usedBytes
+                ramTotal = ram.totalBytes
+                delay(1500)
             }
-            topAppShizukuReady = ready
-            if (ready) {
-                val top = withContext(Dispatchers.IO) { TopCpuReader.read(context, limit = 5) }
-                val first = top.firstOrNull { !it.processName.startsWith("kworker") }
-                topAppName = first?.processName
-                topAppPct = first?.cpuPercent ?: 0f
+        }
+    }
+
+    // Battery (3 s, IO)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
+                batteryPct = batt.percent
+                batteryTemp = batt.temperatureC
+                batteryWatts = batt.wattsNow
+                batteryCharging = batt.isCharging
+                delay(3000)
             }
-            delay(3000)
+        }
+    }
+
+    // Storage (30 s, IO)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                storagePct = withContext(Dispatchers.IO) { MemoryReader.readStorage() }.internalPercent
+                delay(30_000)
+            }
+        }
+    }
+
+    // GPU usage (1.5 s, IO)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                gpuPct = withContext(Dispatchers.IO) {
+                    com.tamerin.sysmonitor.data.GpuUsageReader.read(context)
+                }
+                delay(1500)
+            }
+        }
+    }
+
+    // Network throughput (1 s, Default)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            withContext(Dispatchers.Default) {
+                var lastRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
+                var lastTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+                var lastWall = SystemClock.elapsedRealtime()
+                while (true) {
+                    val curRx = TrafficStats.getTotalRxBytes().coerceAtLeast(0L)
+                    val curTx = TrafficStats.getTotalTxBytes().coerceAtLeast(0L)
+                    val nowWall = SystemClock.elapsedRealtime()
+                    val dt = (nowWall - lastWall).coerceAtLeast(1L)
+                    downKbs = ((curRx - lastRx).coerceAtLeast(0L) * 1000f) / dt / 1024f
+                    upKbs = ((curTx - lastTx).coerceAtLeast(0L) * 1000f) / dt / 1024f
+                    rxTotal = curRx
+                    txTotal = curTx
+                    lastRx = curRx
+                    lastTx = curTx
+                    lastWall = nowWall
+                    delay(1000)
+                }
+            }
+        }
+    }
+
+    // Top CPU app (3 s, IO — most expensive read because dumpsys cpuinfo)
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (true) {
+                val ready = withContext(Dispatchers.IO) {
+                    ShizukuHelper.state(context) == ShizukuHelper.State.Ready
+                }
+                topAppShizukuReady = ready
+                if (ready) {
+                    val top = withContext(Dispatchers.IO) { TopCpuReader.read(context, limit = 5) }
+                    val first = top.firstOrNull { !it.processName.startsWith("kworker") }
+                    topAppName = first?.processName
+                    topAppPct = first?.cpuPercent ?: 0f
+                }
+                delay(3000)
+            }
         }
     }
 
@@ -222,162 +253,218 @@ fun OverviewScreen(onOpenUpdate: () -> Unit = {}, onOpenOemSetup: () -> Unit = {
 
         com.tamerin.sysmonitor.ui.components.OemHintBanner(onOpenSetup = onOpenOemSetup)
 
-        // ===== HERO =====
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(AccentBubble, Color.Transparent),
-                        radius = 600f
-                    )
-                )
-                .padding(vertical = 12.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.Start) {
-                SectionEyebrow("Live Dashboard")
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    buildAnnotatedString {
-                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
-                            append("${device.manufacturer}\n")
-                        }
-                        withStyle(SpanStyle(color = Accent)) {
-                            append(device.model)
-                        }
-                    },
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    lineHeight = 32.sp
-                )
-                Spacer(Modifier.height(8.dp))
-                Text(
-                    "Android ${device.androidVersion} · SDK ${device.sdk} · Patch ${device.securityPatch}",
-                    color = OnSurfaceMuted,
-                    fontSize = 13.sp
-                )
-                displaySnap?.let {
-                    Text(
-                        "${it.widthPx} × ${it.heightPx} px · ${"%.0f".format(it.refreshRateHz)} Hz",
-                        color = OnSurfaceMuted,
-                        fontSize = 13.sp
-                    )
-                }
-            }
-        }
+        HeroCard(device, displaySnap)
 
-        // ===== GAUGES =====
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularGauge(
-                percent = cpuPct,
-                label = "CPU",
-                sublabel = when (cpuSource) {
-                    "shizuku" -> "System"
-                    "direct" -> "System"
-                    "process" -> "nur App"
-                    else -> null
-                }
+        TopGauges(cpuPct = cpuPct, cpuSource = cpuSource, ramPct = ramPct)
+        BottomGauges(
+            batteryPct = batteryPct,
+            batteryCharging = batteryCharging,
+            batteryWatts = batteryWatts,
+            batteryTemp = batteryTemp,
+            gpuPct = gpuPct
+        )
+
+        PerCoreCard(perCorePct)
+        NetworkLiveCard(downKbs = downKbs, upKbs = upKbs, rxTotal = rxTotal, txTotal = txTotal)
+        PerformanceCard(
+            fps = fps,
+            topAppName = topAppName,
+            topAppPct = topAppPct,
+            topAppShizukuReady = topAppShizukuReady
+        )
+        StorageCompactCard(ramUsed = ramUsed, ramTotal = ramTotal, ramPct = ramPct, storagePct = storagePct)
+    }
+}
+
+// ===== Stable per-card composables =====
+// Each takes ONLY the primitives it renders → Strong-Skipping (Compose 2.0+)
+// keeps the others from recomposing when unrelated state ticks (every 1-3 s).
+
+@Composable
+private fun HeroCard(device: DeviceInfoSnapshot, displaySnap: DisplaySnapshot?) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.radialGradient(
+                    colors = listOf(AccentBubble, Color.Transparent),
+                    radius = 600f
+                )
             )
-            CircularGauge(percent = ramPct, label = "RAM")
-        }
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            CircularGauge(
-                percent = batteryPct,
-                label = if (batteryCharging) "Lädt ${"%.1f".format(batteryWatts)} W"
-                        else "Akku",
-                sublabel = "${"%.1f".format(batteryTemp)} °C"
-            )
-            CircularGauge(percent = storagePct, label = "Speicher")
-        }
-
-        StatCard("CPU pro Kern") {
-            if (perCorePct.isEmpty()) {
-                Text("Sampler wärmt auf…", color = OnSurfaceMuted, fontSize = 12.sp)
-            } else {
-                PerCoreBars(perCorePct)
-                Spacer(Modifier.height(6.dp))
-                val avg = perCorePct.average().toFloat()
-                Text(
-                    "Ø ${"%.0f".format(avg)} %  ·  ${perCorePct.size} Kerne",
-                    color = OnSurfaceMuted, fontSize = 12.sp
-                )
-            }
-        }
-
-        StatCard("Netzwerk live") {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                NetCol("↓ Download", downKbs)
-                NetCol("↑ Upload", upKbs)
-            }
+            .padding(vertical = 12.dp)
+    ) {
+        Column(horizontalAlignment = Alignment.Start) {
+            SectionEyebrow("Live Dashboard")
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Empfangen gesamt", rxTotal.formatBytes())
-            KeyValueRow("Gesendet gesamt", txTotal.formatBytes())
+            Text(
+                buildAnnotatedString {
+                    withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
+                        append("${device.manufacturer}\n")
+                    }
+                    withStyle(SpanStyle(color = Accent)) {
+                        append(device.model)
+                    }
+                },
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold,
+                lineHeight = 32.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Android ${device.androidVersion} · SDK ${device.sdk} · Patch ${device.securityPatch}",
+                color = OnSurfaceMuted, fontSize = 13.sp
+            )
+            displaySnap?.let {
+                Text(
+                    "${it.widthPx} × ${it.heightPx} px · ${"%.0f".format(it.refreshRateHz)} Hz",
+                    color = OnSurfaceMuted, fontSize = 13.sp
+                )
+            }
         }
+    }
+}
 
-        StatCard("Performance") {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Text("FPS (App)", color = OnSurfaceMuted, fontSize = 12.sp)
-                    val fpsColor = when {
-                        fps >= 110 -> GaugeGreen
-                        fps >= 55 -> Accent
-                        fps >= 28 -> GaugeOrange
-                        else -> GaugeRed
-                    }
-                    Text(
-                        if (fps == 0) "—" else "$fps",
-                        color = fpsColor,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
-                    )
+@Composable
+private fun TopGauges(cpuPct: Float, cpuSource: String, ramPct: Float) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularGauge(
+            percent = cpuPct,
+            label = "CPU",
+            sublabel = when (cpuSource) {
+                "shizuku", "direct" -> "System"
+                "process" -> "nur App"
+                else -> null
+            }
+        )
+        CircularGauge(percent = ramPct, label = "RAM")
+    }
+}
+
+@Composable
+private fun BottomGauges(
+    batteryPct: Float,
+    batteryCharging: Boolean,
+    batteryWatts: Float,
+    batteryTemp: Float,
+    gpuPct: Float?
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        CircularGauge(
+            percent = batteryPct,
+            label = if (batteryCharging) "Lädt ${"%.1f".format(batteryWatts)} W" else "Akku",
+            sublabel = "${"%.1f".format(batteryTemp)} °C"
+        )
+        CircularGauge(
+            percent = gpuPct ?: 0f,
+            label = "GPU",
+            sublabel = if (gpuPct == null) "n/a · Shizuku?" else null
+        )
+    }
+}
+
+@Composable
+private fun PerCoreCard(perCorePct: List<Float>) {
+    StatCard("CPU pro Kern") {
+        if (perCorePct.isEmpty()) {
+            Text("Sampler wärmt auf…", color = OnSurfaceMuted, fontSize = 12.sp)
+        } else {
+            PerCoreBars(perCorePct)
+            Spacer(Modifier.height(6.dp))
+            val avg = remember(perCorePct) { perCorePct.average().toFloat() }
+            Text(
+                "Ø ${"%.0f".format(avg)} %  ·  ${perCorePct.size} Kerne",
+                color = OnSurfaceMuted, fontSize = 12.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun NetworkLiveCard(downKbs: Float, upKbs: Float, rxTotal: Long, txTotal: Long) {
+    StatCard("Netzwerk live") {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            NetCol("↓ Download", downKbs)
+            NetCol("↑ Upload", upKbs)
+        }
+        Spacer(Modifier.height(8.dp))
+        KeyValueRow("Empfangen gesamt", remember(rxTotal) { rxTotal.formatBytes() })
+        KeyValueRow("Gesendet gesamt", remember(txTotal) { txTotal.formatBytes() })
+    }
+}
+
+@Composable
+private fun PerformanceCard(
+    fps: Int,
+    topAppName: String?,
+    topAppPct: Float,
+    topAppShizukuReady: Boolean
+) {
+    StatCard("Performance") {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column {
+                Text("FPS (App)", color = OnSurfaceMuted, fontSize = 12.sp)
+                val fpsColor = when {
+                    fps >= 110 -> GaugeGreen
+                    fps >= 55 -> Accent
+                    fps >= 28 -> GaugeOrange
+                    else -> GaugeRed
                 }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Top-CPU-App", color = OnSurfaceMuted, fontSize = 12.sp)
-                    val label = when {
-                        !topAppShizukuReady -> "Shizuku nötig"
-                        topAppName == null -> "—"
-                        else -> shortenProcessName(topAppName!!)
-                    }
+                Text(
+                    if (fps == 0) "—" else "$fps",
+                    color = fpsColor,
+                    fontSize = 28.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text("Top-CPU-App", color = OnSurfaceMuted, fontSize = 12.sp)
+                val label = when {
+                    !topAppShizukuReady -> "Shizuku nötig"
+                    topAppName == null -> "—"
+                    else -> shortenProcessName(topAppName)
+                }
+                Text(
+                    label,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+                if (topAppShizukuReady && topAppName != null) {
                     Text(
-                        label,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold
+                        "${"%.1f".format(topAppPct)} %",
+                        color = Accent,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Medium
                     )
-                    if (topAppShizukuReady && topAppName != null) {
-                        Text(
-                            "${"%.1f".format(topAppPct)} %",
-                            color = Accent,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
                 }
             }
         }
+    }
+}
 
-        StatCard("Speicher kompakt") {
-            KeyValueRow("RAM verwendet", ramUsed.formatBytes())
-            KeyValueRow("RAM gesamt", ramTotal.formatBytes())
-            KeyValueRow("RAM-Auslastung", "${ramPct.toInt()} %")
-            KeyValueRow("Interner Speicher", "${storagePct.toInt()} %")
-        }
+@Composable
+private fun StorageCompactCard(ramUsed: Long, ramTotal: Long, ramPct: Float, storagePct: Float) {
+    StatCard("Speicher kompakt") {
+        KeyValueRow("RAM verwendet", remember(ramUsed) { ramUsed.formatBytes() })
+        KeyValueRow("RAM gesamt", remember(ramTotal) { ramTotal.formatBytes() })
+        KeyValueRow("RAM-Auslastung", "${ramPct.toInt()} %")
+        KeyValueRow("Interner Speicher", "${storagePct.toInt()} %")
     }
 }
 

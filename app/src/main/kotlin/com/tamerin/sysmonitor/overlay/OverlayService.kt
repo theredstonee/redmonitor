@@ -250,7 +250,7 @@ class OverlayService : Service() {
         val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
         val batt = if (HudMetric.BATTERY in metrics) BatteryReader.read(this) else null
         val cpuTemp = if (HudMetric.CPU_TEMP in metrics) {
-            val zones = ThermalReader.read()
+            val zones = ThermalReader.read(this)
             ThermalReader.hottestCpuZone(zones)?.tempCelsius
         } else null
 

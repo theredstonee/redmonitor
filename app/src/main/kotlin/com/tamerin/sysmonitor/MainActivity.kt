@@ -4,6 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,6 +23,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
+import androidx.compose.material3.NavigationRailItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -106,6 +112,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
         com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
+        com.tamerin.sysmonitor.data.battery.BatterySamplerWorker.schedule(this)
+        // Plus one sample now so first run already has data
+        lifecycleScope.launch {
+            com.tamerin.sysmonitor.data.battery.BatteryHistoryTracker.sample(this@MainActivity)
+        }
+        // Wenn Shizuku schon ready: Android-13-Restricted-Settings sofort entsperren,
+        // damit der User danach Accessibility/Usage-Stats/Notification-Listener in
+        // den System-Settings überhaupt antippen kann.
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                com.tamerin.sysmonitor.data.ShizukuHelper.unblockRestrictedSettings(this@MainActivity)
+            }
+        }
         com.tamerin.sysmonitor.settings.AppPrefs.incrementLaunchCount(this)
         val initialRoute = routeFromAlias(intent?.component?.className)
         setContent {
@@ -302,6 +321,11 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     var showRatePrompt by androidx.compose.runtime.remember {
         androidx.compose.runtime.mutableStateOf(false)
     }
+    var showOnboarding by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(
+            !com.tamerin.sysmonitor.settings.AppPrefs.isFirstLaunchOnboardingDone(context)
+        )
+    }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         // First-launch OEM onboarding for restrictive ROMs (Xiaomi, Oppo, Vivo, Huawei, ...)
         if (!com.tamerin.sysmonitor.settings.AppPrefs.isOemOnboardingDone(context)) {
@@ -333,6 +357,8 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     }
 
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    val config = androidx.compose.ui.platform.LocalConfiguration.current
+    val useRail = config.screenWidthDp >= 600
 
     androidx.compose.runtime.CompositionLocalProvider(LocalImmersive provides immersive) {
     Scaffold(
@@ -374,7 +400,7 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
             )
         },
         bottomBar = {
-            if (immersive.value) return@Scaffold
+            if (immersive.value || useRail) return@Scaffold
             NavigationBar(
                 containerColor = BgDark,
                 tonalElevation = 0.dp
@@ -406,10 +432,42 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
             }
         }
     ) { innerPadding ->
+        androidx.compose.foundation.layout.Row(modifier = Modifier.padding(innerPadding)) {
+            if (useRail && !immersive.value) {
+                NavigationRail(
+                    containerColor = BgDark,
+                    modifier = Modifier.fillMaxHeight()
+                ) {
+                    TOP_TABS.forEach { tab ->
+                        val selected = currentRoute?.startsWith(tab.route) == true ||
+                            (currentRoute == null && tab.route == Routes.LIVE)
+                        NavigationRailItem(
+                            selected = selected,
+                            onClick = {
+                                haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                                if (selected && currentRoute != tab.route) {
+                                    navController.popBackStack(tab.route, inclusive = false)
+                                } else {
+                                    navController.navigateTopLevel(tab.route)
+                                }
+                            },
+                            icon = { Icon(tab.icon, contentDescription = tab.label) },
+                            label = { Text(tab.label, maxLines = 1, fontSize = 11.sp) },
+                            colors = NavigationRailItemDefaults.colors(
+                                selectedIconColor = Color.White,
+                                selectedTextColor = Accent,
+                                unselectedIconColor = Color(0xFF6B7280),
+                                unselectedTextColor = Color(0xFF6B7280),
+                                indicatorColor = Color(0x33DC2626)
+                            )
+                        )
+                    }
+                }
+            }
         NavHost(
             navController = navController,
             startDestination = initialRoute,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
         ) {
             composable(Routes.LIVE) {
                 OverviewScreen(
@@ -491,6 +549,7 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
             composable(Routes.SETTINGS) { SettingsScreen() }
             composable(Routes.OEM_SETUP) { OemOnboardingScreen(onDone = { navController.popBackStack() }) }
         }
+        } // Row (NavigationRail wrapper)
     }
 
     // Startup update dialog
@@ -527,6 +586,14 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     // Rate prompt — only when no update dialog is showing
     if (showRatePrompt && startupUpdate == null) {
         com.tamerin.sysmonitor.ui.components.RateDialog(onDismiss = { showRatePrompt = false })
+    }
+
+    // First-launch onboarding — only when no other dialog is queued
+    if (showOnboarding && startupUpdate == null && !showRatePrompt) {
+        com.tamerin.sysmonitor.ui.components.OnboardingDialog(onDismiss = {
+            com.tamerin.sysmonitor.settings.AppPrefs.setFirstLaunchOnboardingDone(context, true)
+            showOnboarding = false
+        })
     }
     } // CompositionLocalProvider
 }

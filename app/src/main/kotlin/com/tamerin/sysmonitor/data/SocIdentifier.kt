@@ -1,8 +1,10 @@
 package com.tamerin.sysmonitor.data
 
 import android.os.Build
+import androidx.compose.runtime.Immutable
 import java.io.File
 
+@Immutable
 data class SocInfo(
     val marketingName: String,
     val code: String,

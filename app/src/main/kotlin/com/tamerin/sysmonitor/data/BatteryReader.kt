@@ -5,9 +5,11 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.SystemClock
+import androidx.compose.runtime.Immutable
 import java.io.File
 import kotlin.math.abs
 
+@Immutable
 data class BatterySnapshot(
     val percent: Float,
     val isCharging: Boolean,
@@ -274,10 +276,17 @@ object BatteryReader {
         return emaCurrentMa.toLong()
     }
 
-    /** Convert µA or mA reading to mA, by guessing based on magnitude. */
+    /** Convert µA or mA reading to mA, by guessing based on magnitude.
+     *  Filters Int.MAX/MIN sentinels (BatteryManager returns those when the
+     *  property isn't supported by the device) and any value physically out
+     *  of range for a phone (>20 A in either direction). */
     private fun normalizeToMa(raw: Int): Long {
         if (raw == 0) return 0L
+        if (raw == Int.MAX_VALUE || raw == Int.MIN_VALUE) return 0L
         val absVal = abs(raw.toLong())
+        // > 50 mA in mA OR > 50 A in µA — first branch is µA conversion
+        // Anything beyond 20 A absolute is physically impossible for a phone battery.
+        if (absVal > 20_000_000) return 0L
         return when {
             absVal > 50_000 -> raw.toLong() / 1000  // µA → mA
             else -> raw.toLong()                    // already mA

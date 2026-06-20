@@ -10,9 +10,11 @@ import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.SdStorage
 import androidx.compose.material.icons.filled.Shuffle
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.VideogameAsset
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
+import com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity
 import com.tamerin.sysmonitor.ui.CpuBenchmarkStandaloneActivity
 import com.tamerin.sysmonitor.ui.FullscreenDisplayTestStandaloneActivity
 import com.tamerin.sysmonitor.ui.GpuBenchmarkStandaloneActivity
@@ -44,7 +46,9 @@ private val BENCH_ENTRIES = listOf(
         activityClass = StressTestStandaloneActivity::class.java),
     HubEntry(Routes.BM_COLOR, "Farbraum & Gamut", "sRGB, HDR, Gradienten", Icons.Filled.ColorLens),
     HubEntry(Routes.BM_DISPLAY, "Display-Test", "Auto-Sequenz Vollbild-Muster", Icons.Filled.Palette,
-        activityClass = FullscreenDisplayTestStandaloneActivity::class.java)
+        activityClass = FullscreenDisplayTestStandaloneActivity::class.java),
+    HubEntry("bench/history", "Verlauf", "Alle Runs mit Sub-Scores", Icons.Filled.History,
+        activityClass = BenchHistoryStandaloneActivity::class.java, badge = "NEU")
 )
 
 @Composable

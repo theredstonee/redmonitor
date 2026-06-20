@@ -95,6 +95,24 @@ object ShizukuHelper {
     fun runShell(context: Context, command: String): CmdResult =
         runCommand(context, "sh", "-c", command)
 
+    /**
+     * Android 13+ blockt sideloaded Apps mit „Restricted setting" — bestimmte
+     * Permissions (Accessibility, Usage-Stats, Notification-Listener) sind
+     * in den App-Settings ausgegraut bis ACCESS_RESTRICTED_SETTINGS auf allow
+     * steht. Mit Shizuku können wir das selbst freischalten.
+     *
+     * Idempotent — Aufruf bei jedem Ready-Übergang ist OK, der Befehl ist
+     * billig und überschreibt einfach den aktuellen Wert.
+     */
+    fun unblockRestrictedSettings(context: Context): Boolean {
+        if (state(context) != State.Ready) return false
+        val res = runCommand(
+            context, "appops", "set", context.packageName,
+            "ACCESS_RESTRICTED_SETTINGS", "allow"
+        )
+        return res.ok
+    }
+
     data class DumpsysBattery(
         val maxChargingCurrentUa: Long,
         val maxChargingVoltageUv: Long,

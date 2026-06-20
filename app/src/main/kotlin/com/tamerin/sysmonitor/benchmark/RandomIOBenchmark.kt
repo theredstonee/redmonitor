@@ -2,77 +2,144 @@ package com.tamerin.sysmonitor.benchmark
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.RandomAccessFile
-import kotlin.system.measureNanoTime
+import java.util.concurrent.atomic.AtomicLong
 
-data class RandomIOResult(
-    val read4kIops: Int,
-    val write4kIops: Int,
+data class QdResult(
+    val queueDepth: Int,
+    val readIops: Int,
+    val writeIops: Int,
     val readMbPerSec: Double,
-    val writeMbPerSec: Double,
-    val testFileSizeMb: Int
+    val writeMbPerSec: Double
 )
 
-object RandomIOBenchmark {
-    private const val FILE_SIZE_MB = 16
-    private const val BLOCK_SIZE = 4096
-    private const val OPS_PER_TEST = 2000
+data class RandomIOResult(
+    val perQd: List<QdResult>,
+    val totalScore: Int,
+    val testFileSizeMb: Int,
+    val durationSec: Int
+)
 
-    suspend fun run(context: Context): RandomIOResult = withContext(Dispatchers.IO) {
-        val file = File(context.cacheDir, "sysmonitor_rand.bin")
+/**
+ * Random 4-KB IOPS across multiple queue depths (QD=1, QD=4, QD=16).
+ *
+ * QD=1 measures latency-bound serial performance — what you feel when an app
+ * scrolls a SQLite DB.
+ * QD=4 / QD=16 measure parallel throughput — what UFS+f2fs is actually capable
+ * of when many threads request blocks at once. The gap between them reveals
+ * how well the storage can pipeline requests.
+ *
+ * Each (QD × read/write) combination runs for [durationSec] seconds — far more
+ * stable than the previous 2000-op fixed count which finished in under 200 ms
+ * on fast UFS 4.0 devices.
+ */
+object RandomIOBenchmark {
+
+    private const val FILE_SIZE_MB = 64
+    private const val BLOCK_SIZE = 4096
+    private val QUEUE_DEPTHS = listOf(1, 4, 16)
+
+    suspend fun run(
+        context: Context,
+        durationSec: Int = 10,
+        onProgress: (label: String, doneSec: Int, totalSec: Int) -> Unit = { _, _, _ -> }
+    ): RandomIOResult = withContext(Dispatchers.IO) {
+        val file = File(context.cacheDir, "sysmonitor_rand_bench.bin")
+        file.delete()
+
         // Initialize file with sequential data
         file.outputStream().use { os ->
-            val chunk = ByteArray(1024 * 1024)
-            for (i in chunk.indices) chunk[i] = (i and 0xFF).toByte()
+            val chunk = ByteArray(1024 * 1024).also { for (i in it.indices) it[i] = (i and 0xFF).toByte() }
             repeat(FILE_SIZE_MB) { os.write(chunk) }
         }
         val fileBytes = file.length()
-        val random = java.util.Random(42)
-        val buf = ByteArray(BLOCK_SIZE)
+        val totalPhases = QUEUE_DEPTHS.size * 2
+        var phaseIndex = 0
 
-        // Random read
-        var readSum = 0L
-        val readNs = measureNanoTime {
-            RandomAccessFile(file, "r").use { raf ->
-                repeat(OPS_PER_TEST) {
-                    val offset = (random.nextLong() and Long.MAX_VALUE) %
-                        (fileBytes - BLOCK_SIZE)
-                    raf.seek(offset)
-                    raf.readFully(buf)
-                    readSum += buf[0].toInt()
+        try {
+            val perQd = mutableListOf<QdResult>()
+            for (qd in QUEUE_DEPTHS) {
+                onProgress("QD=$qd · Random Read", phaseIndex * durationSec, totalPhases * durationSec)
+                val readOps = randomOps(file, fileBytes, qd, durationSec, writeMode = false)
+                phaseIndex++
+
+                onProgress("QD=$qd · Random Write", phaseIndex * durationSec, totalPhases * durationSec)
+                val writeOps = randomOps(file, fileBytes, qd, durationSec, writeMode = true)
+                phaseIndex++
+
+                val readIops = (readOps.toDouble() / durationSec).toInt()
+                val writeIops = (writeOps.toDouble() / durationSec).toInt()
+                perQd += QdResult(
+                    queueDepth = qd,
+                    readIops = readIops,
+                    writeIops = writeIops,
+                    readMbPerSec = readIops * BLOCK_SIZE / 1_048_576.0,
+                    writeMbPerSec = writeIops * BLOCK_SIZE / 1_048_576.0
+                )
+            }
+
+            // Score: average of QD=1 score and QD=16 score (read+write averaged)
+            val qd1 = perQd.first { it.queueDepth == 1 }
+            val qd16 = perQd.first { it.queueDepth == 16 }
+            val qd1Score = (
+                normalize(qd1.readIops.toDouble(), BenchmarkReferences.STORAGE_RAND_QD1_REF_IOPS) +
+                normalize(qd1.writeIops.toDouble(), BenchmarkReferences.STORAGE_RAND_QD1_REF_IOPS)
+            ) / 2
+            val qd16Score = (
+                normalize(qd16.readIops.toDouble(), BenchmarkReferences.STORAGE_RAND_QD16_REF_IOPS) +
+                normalize(qd16.writeIops.toDouble(), BenchmarkReferences.STORAGE_RAND_QD16_REF_IOPS)
+            ) / 2
+
+            RandomIOResult(
+                perQd = perQd,
+                totalScore = (qd1Score + qd16Score) / 2,
+                testFileSizeMb = FILE_SIZE_MB,
+                durationSec = durationSec
+            )
+        } finally {
+            file.delete()
+        }
+    }
+
+    private suspend fun randomOps(
+        file: File,
+        fileBytes: Long,
+        queueDepth: Int,
+        durationSec: Int,
+        writeMode: Boolean
+    ): Long = coroutineScope {
+        val deadline = System.currentTimeMillis() + durationSec * 1000L
+        val totalOps = AtomicLong(0)
+        val jobs = (0 until queueDepth).map { workerIdx ->
+            async(Dispatchers.IO) {
+                val random = java.util.Random(System.nanoTime() xor workerIdx.toLong())
+                val buf = ByteArray(BLOCK_SIZE)
+                val mode = if (writeMode) "rw" else "r"
+                RandomAccessFile(file, mode).use { raf ->
+                    var ops = 0L
+                    while (System.currentTimeMillis() < deadline) {
+                        val offset = (random.nextLong() and Long.MAX_VALUE) %
+                            (fileBytes - BLOCK_SIZE)
+                        raf.seek(offset and (BLOCK_SIZE - 1).inv().toLong())
+                        if (writeMode) {
+                            buf[0] = ops.toByte()
+                            raf.write(buf)
+                        } else {
+                            raf.readFully(buf)
+                        }
+                        ops++
+                    }
+                    if (writeMode) raf.fd.sync()
+                    totalOps.addAndGet(ops)
                 }
             }
         }
-
-        // Random write
-        val writeNs = measureNanoTime {
-            RandomAccessFile(file, "rw").use { raf ->
-                repeat(OPS_PER_TEST) { i ->
-                    val offset = (random.nextLong() and Long.MAX_VALUE) %
-                        (fileBytes - BLOCK_SIZE)
-                    raf.seek(offset)
-                    buf[0] = i.toByte()
-                    raf.write(buf)
-                }
-                raf.fd.sync()
-            }
-        }
-        if (readSum == Long.MIN_VALUE) error("x")
-        file.delete()
-
-        val readSec = readNs / 1e9
-        val writeSec = writeNs / 1e9
-        val readMb = OPS_PER_TEST * BLOCK_SIZE / 1024.0 / 1024.0
-        val writeMb = OPS_PER_TEST * BLOCK_SIZE / 1024.0 / 1024.0
-
-        RandomIOResult(
-            read4kIops = (OPS_PER_TEST / readSec).toInt(),
-            write4kIops = (OPS_PER_TEST / writeSec).toInt(),
-            readMbPerSec = readMb / readSec,
-            writeMbPerSec = writeMb / writeSec,
-            testFileSizeMb = FILE_SIZE_MB
-        )
+        jobs.awaitAll()
+        totalOps.get()
     }
 }

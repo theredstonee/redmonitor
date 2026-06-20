@@ -1,5 +1,146 @@
 # Changelog
 
+## v1.6.2 — 2026-06-20
+
+### Power-User-Tools (Welle 2)
+- **Pro-App Netzwerk-Traffic** — NetworkStatsManager-Query für WLAN + Mobil getrennt, Zeit-Range-Chips (1 h / 24 h / 7 Tg / 30 Tg), System-Apps-Toggle, USAGE_STATS-Permission-Gate
+- **Wake-Locks** — parst `dumpsys power` via Shizuku, sortiert nach User-Apps, Live-Mode 3 s, Übersicht nach Type
+- **Notification-Log** — NotificationListenerService, captured posted/removed Events, in-RAM 500er-Puffer (kein Disk), Filter + Permission-Gate
+- **Permission-Audit** — alle installierten Apps + ihre gewährten sensiblen Rechte, 2 Modi (nach Kategorie / nach App), Settings-Deeplink je App
+- **Shell-Terminal** — In-App ADB-Shell via Shizuku, Quick-Command-Chips, History (↑↓), Color-Coded Output
+
+### Hardware-Tests (Welle 3)
+- **Earpiece-Speaker-Test** — USAGE_VOICE_COMMUNICATION + Mode IN_COMMUNICATION routet Ton auf die Hörmuschel
+- **Edge-Rejection-Test** — Touch-Counter für Edge-Zonen (24 dp Rahmen) vs Center, fürs Bewerten von Curved-Display Palm-Rejection
+- **Brightness-Konsistenz-Test** — Window-Brightness-Override 5/25/50/75/100 %, Auto-Cycle, Vollweiß-Modus für PWM-Flicker-Check
+- **NFC-Tap-Test** — ReaderMode für alle Techs, NDEF-Payload parsing
+- **IR-Blaster-Test** — ConsumerIrManager: Carrier-Frequenzen + Test-Bursts (38/40/56 kHz + Sony-SIRC)
+- **Kompass** — TYPE_ROTATION_VECTOR + TYPE_MAGNETIC_FIELD, animierte Kompass-Scheibe + Heading + Magnetfeld + Kalibrier-Hinweis
+- **Barometer / Höhe** — TYPE_PRESSURE → SensorManager.getAltitude mit einstellbarem NN-Druck (QNH)
+
+### Polish (Welle 4)
+- **Material-You Dynamic-Theming** — Toggle in Settings, ab Android 12 wallpaper-basierte Akzent-Farbe, Default bleibt RedTheme
+- **First-Launch Onboarding** — 3-Step Welcome-Dialog (Was die App kann + Shizuku-Empfehlung)
+- **Tablet + Landscape** — ab 600 dp Screen-Width NavigationRail links statt BottomBar unten
+- `values-en/strings.xml` Stub angelegt
+
+### Autostart (auf Anfrage)
+- **BootReceiver** registriert für BOOT_COMPLETED / LOCKED_BOOT_COMPLETED / QUICKBOOT / MY_PACKAGE_REPLACED
+- Neue Permission `RECEIVE_BOOT_COMPLETED`
+- Settings-Toggle „HUD beim Boot starten" — OverlayService startet automatisch nach Reboot, läuft als Foreground-Service dauerhaft im Hintergrund (wie Automate)
+- OEM-Warnhinweis: MIUI/HyperOS, OneUI, OPPO blocken BOOT_COMPLETED — Direktlink ins Geräte-Setup für Autostart-Whitelist
+
+### Performance (Welle 5)
+- Compose-Compiler Stability-Reports aktiviert (`build/compose_compiler/*`)
+- `@Immutable` nachgezogen: GpuInfo, RunningApp, ProcessReadResult, SocInfo, TopProc — bessere Strong-Skipping-Stabilität
+
+### Russian Roulette erweitert
+- **Fork-Bomb-Outcome (1 %)** — 24 parallele `b(){ b|b& };b`-Bombs in `setsid`-detached Sessions, überleben Shizuku-Disconnects und respawnen sich gegenseitig sobald lmkd Zweige abräumt. Funktionsname `b` statt `:` weil mksh (Androids Default-Shell) `:` als reserviertes Wort blockt — klassische `:(){ :|:& };:`-Form failt dort still
+- **3-Sekunden-Shutdown-Countdown** — Vollbild-Overlay mit großen Zahlen vor `svc power shutdown`, jede Sekunde Haptik-Pulse, wechselnde Messages (👋 → 😬 → 💣 → 💀)
+- Neue Verteilung: 59 / 30 / 8 / 1 / 2 % (Safe / App / SystemUI / Fork-Bomb / Shutdown)
+- Ack-Dialog ergänzt um Fork-Bomb-Risiko + Hinweis „Power-Button gedrückt halten" für Hard-Reboot
+
+### Build-Fixes
+- `PermissionAuditReader` — `PackageInfoFlags` als Inner-Class von `PackageManager` korrekt qualifiziert
+- `MainActivity` NavigationRail — `fillMaxHeight`-Import nachgezogen
+
+## v1.6.0 — 2026-06-14
+
+### Benchmarks — komplett umgebaut, jetzt AnTuTu-Liga
+
+**Neue Architektur**
+- Alle Benchmarks laufen jetzt in einem **Foreground-Service** mit Notification statt im Activity-Loop. Die App darf in den Hintergrund — der Bench läuft weiter und das Ergebnis landet sicher
+- **Room-Datenbank** für persistenten **Verlauf** mit allen Sub-Scores, Geräte-Modell, App-Version und Timestamp. Eigener Verlaufs-Screen mit Filter-Chips pro Bench-Typ und ausklappbaren Details
+- **Verlauf**-Button auf jedem Bench-Screen direkt neben Start
+- **Fullscreen Run-UI** im AnTuTu-Stil: großer animierter Progress-Ring, aktuelle Phase, Live-Sekunden-Counter, „~X min übrig", Temperaturen (Akku + CPU/SoC), fertige Sub-Scores als grüne Häkchen-Liste während des Laufs (Cinebench-Style)
+- **Abbrechen** als fixed Bottom-Button mit Gradient-Backdrop — immer erreichbar, kein Scrollen mehr
+- Alle Bench-Screens mit Dauer-Slider (z. B. 30 s / 1 min / 2 min / 5 min pro Phase)
+
+**CPU-Benchmark** — 4 Sub-Tests à la Geekbench
+- Integer-Arithmetik, Floating-Point-Math, SHA-256-Crypto, Quicksort
+- Single + Multi-Core jeweils, Score normalisiert gegen Snapdragon-888-Klasse als 100k
+- Default-Phase 30 s × 8 Phasen = 4 min für „Quick", bis 40 min für „Marathon"
+
+**RAM-Benchmark** — Cache-Tier-aware
+- 4 Puffer-Größen: 32 KB (L1) / 1 MB (L2) / 16 MB (L3-SLC) / 256 MB (DRAM)
+- Read + Write + Copy pro Tier, Median aus 5 Messfenstern
+- Zeigt wo die Cache-Hierarchie deines SoCs abknickt
+
+**Storage Sequenziell** — Sustained statt Burst
+- 512-MB-File mit Loop-back, fsync alle 32 MB → echter Flash-Durchsatz statt RAM-Page-Cache
+- Misst **Sustained** (Window-Mittelwert) UND **Peak** (1-s-Best-Window für SLC-Cache-Burst)
+
+**Storage Random 4K** — Queue-Depth-Variation
+- QD=1 (latenz-bound wie SQLite-Scroll), QD=4, QD=16 (parallel-bound, was UFS+f2fs maximal pipelinen kann)
+- Parallele Coroutines für QD>1
+
+**GPU-Benchmark** — komplett neu mit echten GLES2-Shadern
+- 3 Sub-Tests mit kompilierten Vertex+Fragment-Shadern und Vertex-Buffer-Objects
+- **VERTEX** — 50.000 rotierende Dreiecke pro Frame, Vertex-Shader macht Rotation
+- **FILL-RATE** — 30× Vollbild-Quad mit Alpha-Blending übereinander (Overdraw)
+- **SHADER** — Vollbild-Quad mit 32-Iter-Fraktal-Fragment-Shader (abs/dot/sin/cos/normalize pro Pixel)
+- Live-Overlay zeigt aktuelle Phase, FPS, fertige Sub-Scores
+- Score normalisiert, Ergebnis automatisch in Room gespeichert
+
+### Performance
+
+**Generelle App-Geschmeidigkeit**
+- **Baseline Profile** via `androidx.profileinstaller` — Compose-Default-Profile wird beim Install AOT-kompiliert (~30 % Startup-Boost laut Google)
+- Eigenes **`:baselineprofile` Modul** mit Macrobenchmark zum Generieren custom Profile (`./gradlew :app:generateReleaseBaselineProfile`)
+- **R8 Full Mode** explizit in `gradle.properties` (~10 % Runtime-Boost)
+- **@Immutable** Annotations auf alle 10 Snapshot-Datenklassen für Compose Strong-Skipping
+- Build-System auf Kotlin 2.1 + **KSP** statt kapt (Room-Compiler läuft jetzt durch)
+
+### Neu
+
+**LAN-Scan im WLAN-Screen** (bereits in 1.5.3, jetzt komplett)
+- Parallel-Probe über `/24` Subnet + `/proc/net/arp`
+- DNS-Reverse-Lookup pro Host für Hostname
+- 60+ OUI-Hersteller-Lookup (Apple, Samsung, Xiaomi, AVM/FRITZ!, TP-Link, Sonos, Raspberry Pi, …)
+- Default-Gateway und eigenes Gerät hervorgehoben
+
+**ThermalReader: Shizuku-Fallback**
+- Bei locked-down `/sys/class/thermal` (Android 10+ MIUI/OneUI) wird automatisch via Shizuku-Shell gelesen
+- Ein einziger Shell-Call enumeriert alle Zonen + Temps atomar
+- Damit endlich echte CPU-Temperaturen im HUD, Stresstest und Bench-Run-UI
+
+**Versteckte Bereiche**
+- In dieser Version sind ein paar **versteckte Dev-Tools** und **Easter Eggs** eingebaut — wo und wie sie triggern: probier's selbst heraus 🐾
+
+### Behoben
+
+**Display-Test**
+- Bottom-Button-Row und Index-Counter raus — Bildschirm bleibt jetzt komplett frei für den Test, nur ein dezenter Progress-Bar oben
+- Back-Geste verlässt, Tap pausiert
+- Checkerboard-Crash nach „50 % Grau" gefixt (war 163.000 drawRect-Calls pro Frame auf 1080p — Compose-Renderer ging OOM). Jetzt Cell-Size 16 px + nur weiße Cells gezeichnet
+- Display-Test ist jetzt echt fullscreen via `LocalImmersive` CompositionLocal (versteckt Top/Bottom-Bars + System-Bars)
+
+**Kamera-Megapixel-Anzeige**
+- Berechnung nutzte `PIXEL_ARRAY_SIZE` (inkl. Optical-Black-Ränder) → zu hohe Werte
+- Jetzt `ACTIVE_ARRAY_SIZE` für effektive MP + auf Android 13+ zusätzlich `MAXIMUM_RESOLUTION` für Quad-Bayer/Nona-Bayer-Sensoren (50/108/200 MP)
+- Pixel-Pitch (µm) ebenfalls auf Active-Array umgestellt
+- Read auf `Dispatchers.IO` mit Lade-Anzeige
+
+**Aktivitäten-Browser entrümpelt**
+- 10 Activity-Aliases entfernt — die App taucht im System-Aktivitäten-Browser nicht mehr 10× auf
+
+**Cancel-Button im Bench-Run nicht erreichbar**
+- War am Ende einer scrollbaren Column versteckt
+- Jetzt fixed Bottom-Position mit Gradient-Backdrop, immer sichtbar
+
+**Timer tickt jetzt jede Sekunde**
+- Sekunden-Counter und Progress-Ring laufen unabhängig von Service-Callbacks
+- Bei sparsamen Callbacks (CPU-Phasen alle 30 s) sieht man trotzdem die Sekunden ticken
+
+### Sonstiges
+
+- `versionName` auf 1.6.0, `versionCode` auf 11
+- APK deutlich kleiner: ein großer Asset wird jetzt lazy beim ersten Trigger nachgeladen statt gebundled
+- 17 standalone Activities für heavy/long-running Screens (1.5.4)
+- Settings → Über: ausklappbare „Komponenten"-Sektion listet alle internen `com.tamerin.sysmonitor.*` Activities/Services/Provider
+
+---
+
 ## v1.5.5 — 2026-06-13
 
 ### Performance

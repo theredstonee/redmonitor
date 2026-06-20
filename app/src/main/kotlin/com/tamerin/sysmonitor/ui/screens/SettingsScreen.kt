@@ -43,6 +43,8 @@ fun SettingsScreen() {
     var notify by remember { mutableStateOf(UpdatePrefs.notificationsEnabled(context)) }
     var haptics by remember { mutableStateOf(AppPrefs.hapticFeedbackEnabled(context)) }
     var hapticIntensity by remember { mutableStateOf(AppPrefs.hapticIntensity(context)) }
+    var materialYou by remember { mutableStateOf(AppPrefs.isMaterialYouEnabled(context)) }
+    val supportsDynamic = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
@@ -153,6 +155,32 @@ fun SettingsScreen() {
             }
         }
 
+        StatCard("Design") {
+            if (supportsDynamic) {
+                ToggleRow(
+                    label = "Material-You Dynamic-Theming",
+                    description = "Übernimmt die Akzent-Farbe aus deinem Wallpaper (Android 12+). Sonst bleibt das Default-Rot.",
+                    checked = materialYou
+                ) {
+                    materialYou = it
+                    AppPrefs.setMaterialYouEnabled(context, it)
+                    // App-Restart nötig damit Theme greift — Hinweis als kurzer Text
+                }
+                if (materialYou) {
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Wirksam nach App-Neustart.",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                }
+            } else {
+                Text(
+                    "Material-You Dynamic-Theming braucht Android 12+ — dein Gerät läuft auf älterer Version.",
+                    color = OnSurfaceMuted, fontSize = 12.sp
+                )
+            }
+        }
+
         StatCard("Bug melden / Feedback") {
             Text(
                 "Wenn was nicht funktioniert oder du Wünsche hast — schreib ein Issue auf GitHub. Open Source, jeder kann mitlesen und mitschreiben.",
@@ -254,6 +282,19 @@ fun SettingsScreen() {
                     },
                     modifier = Modifier.fillMaxWidth()
                 ) { Text("CPU-Snake spielen") }
+                Spacer(Modifier.height(6.dp))
+                Button(
+                    onClick = {
+                        Haptic.perform(context, HapticType.DESTRUCTIVE)
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.RouletteStandaloneActivity::class.java)
+                        )
+                    },
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = com.tamerin.sysmonitor.ui.theme.GaugeRed
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) { Text("☠ Russian Roulette") }
                 Spacer(Modifier.height(6.dp))
                 OutlinedButton(
                     onClick = {

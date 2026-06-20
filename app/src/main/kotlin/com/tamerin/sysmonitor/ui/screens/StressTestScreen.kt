@@ -62,7 +62,7 @@ fun StressTestScreen() {
             val tick = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 val cpu = CpuReader.read(context, "stress")
                 val batt = BatteryReader.read(context)
-                val zones = ThermalReader.read()
+                val zones = ThermalReader.read(context)
                 val hottest = ThermalReader.hottestCpuZone(zones)
                 Triple(cpu, batt, hottest)
             }

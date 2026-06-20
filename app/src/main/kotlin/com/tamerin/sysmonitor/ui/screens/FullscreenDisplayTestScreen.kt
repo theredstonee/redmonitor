@@ -107,50 +107,37 @@ fun FullscreenDisplayTestScreen() {
                 Pattern.ColorBars -> FullColorBars()
                 Pattern.Crosshatch -> FullCrosshatch()
             }
-            // Progress bar at top
+            // Progress bar at top — einziges UI-Element über dem Test-Muster.
+            // Tap toggelt Pause, Back-Geste verlässt. Keine Bottom-Buttons mehr.
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(3.dp)
-                    .background(Color.Black.copy(alpha = 0.4f))
+                    .height(4.dp)
+                    .background(Color.Black.copy(alpha = 0.35f))
                     .align(Alignment.TopCenter)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(progress)
                         .fillMaxHeight()
-                        .background(Color.White.copy(alpha = 0.7f))
+                        .background(Color.White.copy(alpha = 0.85f))
                 )
             }
-            // Caption + controls
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(16.dp)
-            ) {
+            if (paused) {
                 val textColor = if (p is Pattern.Solid && p.color.luminance() > 0.6f)
                     Color.Black else Color.White
                 Text(
-                    "${p.title}  ·  ${index + 1}/${PATTERNS.size}${if (paused) "  ·  PAUSE" else ""}",
+                    "PAUSE",
                     color = textColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 24.dp)
                 )
-                Spacer(Modifier.height(6.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(onClick = {
-                        index = if (index - 1 >= 0) index - 1 else PATTERNS.lastIndex
-                    }) { Text("◀") }
-                    OutlinedButton(onClick = { paused = !paused }) {
-                        Text(if (paused) "▶ Weiter" else "⏸ Pause")
-                    }
-                    OutlinedButton(onClick = {
-                        index = if (index + 1 < PATTERNS.size) index + 1 else -1
-                    }) { Text("▶") }
-                    OutlinedButton(onClick = { index = -1 }) { Text("✕ Ende") }
-                }
             }
         }
+        androidx.activity.compose.BackHandler { index = -1 }
         return
     }
 

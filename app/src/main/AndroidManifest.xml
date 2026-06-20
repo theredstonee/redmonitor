@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
         tools:ignore="QueryAllPackagesPermission" />
@@ -57,121 +58,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <!-- Activity-Aliases: each top-level tab visible as its own Activity in
-             system Activity browsers + can be pinned to home screen as separate
-             shortcut. All point to MainActivity which detects which alias was
-             launched and opens the matching tab. -->
-        <activity-alias
-            android:name=".LiveActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Live"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".SystemActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · System"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".TasksActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Tasks"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".BenchmarkActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Benchmark"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".TestsActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Tests"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".InfoActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Info"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".SettingsActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Einstellungen"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".LogcatActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Logcat"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".HudActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · HUD"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".OemSetupActivity"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:label="RedMonitor · Geräte-Setup"
-            android:icon="@mipmap/ic_launcher">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity-alias>
 
         <!-- Standalone Activities for heavy/long-running screens. Each runs in
              its own composition tree so the system can pause/kill them
@@ -372,6 +258,115 @@
             android:label="RedMonitor · Dev-Tools"
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.RouletteStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Roulette"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.NetworkUsageStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Netzwerk-Traffic"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.WakelockStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Wake-Locks"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.NotificationLogStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Notification-Log"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.PermissionAuditStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Permission-Audit"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.ShellTerminalStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Shell-Terminal"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.EarpieceTestStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Earpiece"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.EdgeRejectionStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Edge-Rejection"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.BrightnessTestStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Brightness"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.NfcTapStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · NFC-Tap"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.IrBlasterStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · IR-Blaster"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.CompassStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Kompass"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.BarometerStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Barometer"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Boot-Receiver: startet OverlayService bei Boot wenn Autostart aktiviert -->
+        <receiver
+            android:name=".overlay.BootReceiver"
+            android:exported="true"
+            android:enabled="true">
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Notification-Listener Service: captures all posted/removed notifications -->
+        <service
+            android:name=".data.NotificationLoggerService"
+            android:exported="true"
+            android:label="RedMonitor Notification-Log"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <activity
+            android:name=".ui.BenchHistoryStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Benchmark-Verlauf"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
         <!-- 2nd easter egg: 7 taps on version row -> fullscreen video -->
         <activity
             android:name=".ui.SecretVideoActivity"
@@ -380,6 +375,31 @@
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden|screenLayout" />
 
+        <!-- Quick Settings Tile: Live CPU% -->
+        <service
+            android:name=".widget.CpuLiveTileService"
+            android:exported="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="RedMonitor CPU"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
+        <!-- Glance home-screen widget -->
+        <receiver
+            android:name=".widget.LiveStatsWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_description">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/live_stats_widget_info" />
+        </receiver>
+
         <service
             android:name=".overlay.OverlayService"
             android:exported="false"
@@ -387,6 +407,14 @@
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Live system monitor overlay" />
+        </service>
+        <service
+            android:name=".benchmark.BenchmarkService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Benchmark run" />
         </service>
 
         <provider

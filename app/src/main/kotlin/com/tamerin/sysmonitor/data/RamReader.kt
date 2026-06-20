@@ -5,6 +5,7 @@ import android.content.Context
 import android.os.Environment
 import android.os.StatFs
 
+@androidx.compose.runtime.Immutable
 data class RamSnapshot(
     val totalBytes: Long,
     val availableBytes: Long,
@@ -14,6 +15,7 @@ data class RamSnapshot(
     val threshold: Long
 )
 
+@androidx.compose.runtime.Immutable
 data class StorageSnapshot(
     val internalTotal: Long,
     val internalAvailable: Long,

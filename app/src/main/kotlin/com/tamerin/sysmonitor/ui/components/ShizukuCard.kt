@@ -74,7 +74,14 @@ fun ShizukuCard(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
-                LaunchedEffect(state) { onReady?.invoke() }
+                LaunchedEffect(state) {
+                    // Android 13+ Restricted-Settings auf allow setzen → System-Settings
+                    // entgrayed (Accessibility, Usage-Stats, Notification-Listener).
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        ShizukuHelper.unblockRestrictedSettings(context)
+                    }
+                    onReady?.invoke()
+                }
             }
         }
     }

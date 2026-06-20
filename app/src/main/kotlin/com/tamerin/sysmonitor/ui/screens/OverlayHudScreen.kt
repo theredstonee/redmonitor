@@ -9,13 +9,16 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.overlay.OverlayService
+import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -93,6 +96,40 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                     "Das HUD läuft als Foreground-Service mit dauerhafter Benachrichtigung — Android verlangt das.",
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
+                )
+            }
+
+            StatCard("Autostart") {
+                var autostart by remember { mutableStateOf(AppPrefs.isOverlayAutostartEnabled(context)) }
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("HUD beim Boot starten", fontSize = 14.sp)
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            "OverlayService startet automatisch nach Reboot — bleibt als " +
+                                "Foreground-Service dauerhaft im Hintergrund (wie Automate).",
+                            color = OnSurfaceMuted, fontSize = 11.sp
+                        )
+                    }
+                    Switch(
+                        checked = autostart,
+                        onCheckedChange = {
+                            haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                            autostart = it
+                            AppPrefs.setOverlayAutostartEnabled(context, it)
+                            if (it) OverlayService.start(context)
+                        }
+                    )
+                }
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "⚠ MIUI/HyperOS, OneUI, OPPO und Honor blocken BOOT_COMPLETED standardmäßig. " +
+                        "Im 'Geräte-Setup' (Info-Hub) findest du die Direktlinks zu den jeweiligen " +
+                        "Autostart-Listen — dort 'RedMonitor' aktivieren.",
+                    color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
 

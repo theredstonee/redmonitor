@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -54,16 +55,33 @@ fun SnakeGameScreen() {
     var food by remember { mutableStateOf(Cell(GRID / 2 + 4, GRID / 2)) }
     var score by remember { mutableIntStateOf(0) }
     var gameOver by remember { mutableStateOf(false) }
+    var pauseGameOver by remember { mutableStateOf(false) }  // 50% russian roulette
     var paused by remember { mutableStateOf(false) }
     var cpuPct by remember { mutableFloatStateOf(0f) }
+    var wattsNow by remember { mutableFloatStateOf(0f) }
+    var deviceFactor by remember { mutableFloatStateOf(1f) }
     var highScore by remember { mutableIntStateOf(AppPrefs.snakeHighScore(context)) }
+
+    // Once-per-game device factor based on cores × peak GHz.
+    // Snapdragon 888 (8c × ~2.85 GHz) ≈ baseline 1.0; flagships go up to ~1.5.
+    LaunchedEffect(Unit) {
+        val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "snake-init") }
+        val cores = cpu.coreCount.coerceAtLeast(1)
+        val maxGhzAvg = cpu.coreMaxFreqKHz
+            .filter { it > 0 }
+            .map { it / 1_000_000.0 }
+            .takeIf { it.isNotEmpty() }
+            ?.average() ?: 2.0
+        deviceFactor = ((cores * maxGhzAvg) / 22.0).toFloat().coerceIn(0.5f, 2.0f)
+    }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) { CpuReader.read(context, "snake") }
         while (true) {
-            cpuPct = withContext(Dispatchers.IO) {
-                CpuReader.read(context, "snake").totalPercent
-            }
+            val cpu = withContext(Dispatchers.IO) { CpuReader.read(context, "snake") }
+            val batt = withContext(Dispatchers.IO) { BatteryReader.read(context) }
+            cpuPct = cpu.totalPercent
+            wattsNow = batt.wattsNow
             delay(800)
         }
     }
@@ -71,9 +89,12 @@ fun SnakeGameScreen() {
     LaunchedEffect(gameOver, paused) {
         if (gameOver || paused) return@LaunchedEffect
         while (!gameOver && !paused) {
-            // Tick speed scales inversely with CPU load: higher CPU = faster snake.
-            // 0% CPU -> 380 ms (calm), 100% CPU -> 90 ms (frantic)
-            val tickMs = (380 - cpuPct * 2.9f).coerceIn(90f, 380f).toLong()
+            // Base speed from CPU load (0% → 380 ms, 100% → 90 ms)
+            val baseTick = (380 - cpuPct * 2.9f).coerceIn(90f, 380f)
+            // Watt boost: live power consumption — 5 W = +1× multiplier
+            val wattBoost = 1f + (wattsNow.coerceIn(0f, 30f) / 5f) * 0.4f
+            // Final = base / (deviceFactor × wattBoost) — clamped 50..400 ms
+            val tickMs = (baseTick / (deviceFactor * wattBoost)).coerceIn(50f, 400f).toLong()
             delay(tickMs)
             if (gameOver || paused) break
 
@@ -124,7 +145,24 @@ fun SnakeGameScreen() {
         food = spawnFood(snake)
         score = 0
         gameOver = false
+        pauseGameOver = false
         paused = false
+    }
+
+    /** Pause tap = 50% Chance dass die Runde sofort vorbei ist. Russian roulette. */
+    fun tryPause() {
+        if (gameOver) return
+        if (paused) { paused = false; return }
+        if (Random.nextFloat() < 0.5f) {
+            pauseGameOver = true
+            gameOver = true
+            if (score > highScore) {
+                highScore = score
+                AppPrefs.setSnakeHighScore(context, score)
+            }
+        } else {
+            paused = true
+        }
     }
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
@@ -145,36 +183,39 @@ fun SnakeGameScreen() {
                 Text("Best: $highScore", color = OnSurfaceMuted, fontSize = 11.sp)
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text("CPU-Boost", color = OnSurfaceMuted, fontSize = 11.sp)
-                val cpuColor = when {
-                    cpuPct < 25f -> GaugeGreen
-                    cpuPct < 50f -> AccentSoft
-                    cpuPct < 75f -> GaugeOrange
+                val wattBoost = 1f + (wattsNow.coerceIn(0f, 30f) / 5f) * 0.4f
+                val totalMult = deviceFactor * wattBoost
+                val multColor = when {
+                    totalMult < 1.0f -> AccentSoft
+                    totalMult < 1.4f -> GaugeGreen
+                    totalMult < 2.0f -> GaugeOrange
                     else -> GaugeRed
                 }
+                Text("Multiplier", color = OnSurfaceMuted, fontSize = 11.sp)
                 Text(
-                    "${cpuPct.toInt()} %",
-                    color = cpuColor,
+                    "×${"%.2f".format(totalMult)}",
+                    color = multColor,
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    when {
-                        cpuPct < 25f -> "lahm"
-                        cpuPct < 50f -> "normal"
-                        cpuPct < 75f -> "schnell"
-                        else -> "WILD"
-                    },
-                    color = cpuColor,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold
+                    "CPU ${cpuPct.toInt()}% · ${"%.1f".format(wattsNow)}W",
+                    color = OnSurfaceMuted,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+                Text(
+                    "Device ×${"%.2f".format(deviceFactor)}",
+                    color = OnSurfaceMuted,
+                    fontSize = 10.sp,
+                    fontFamily = FontFamily.Monospace
                 )
             }
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "Wisch zum Steuern · CPU-Last steuert die Geschwindigkeit",
+            "Wisch zum Steuern · Speed = CPU-Last × Device-Klasse × Watt-Boost · ⚠ Pause = 50 % Tod",
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(12.dp))
@@ -219,7 +260,7 @@ fun SnakeGameScreen() {
                     )
                 }
                 .pointerInput(Unit) {
-                    detectTapGestures(onTap = { paused = !paused && !gameOver })
+                    detectTapGestures(onTap = { tryPause() })
                 }
         ) {
             Canvas(modifier = Modifier.fillMaxSize().padding(4.dp)) {
@@ -263,12 +304,19 @@ fun SnakeGameScreen() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        "GAME OVER",
+                        if (pauseGameOver) "PAUSE = TOD" else "GAME OVER",
                         color = GaugeRed,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
+                    if (pauseGameOver) {
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Pech (50 % Chance)",
+                            color = GaugeOrange, fontSize = 12.sp
+                        )
+                    }
                     Spacer(Modifier.height(8.dp))
                     Text(
                         "Score: $score",
@@ -280,13 +328,22 @@ fun SnakeGameScreen() {
                     Button(onClick = { restart() }) { Text("Nochmal") }
                 }
             } else if (paused) {
-                Text(
-                    "PAUSE · tap zum Fortsetzen",
-                    color = MaterialTheme.colorScheme.onSurface,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                Column(
+                    modifier = Modifier.align(Alignment.Center),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        "PAUSE",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        "Glück gehabt · tap zum Fortsetzen",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                }
             }
         }
 

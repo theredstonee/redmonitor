@@ -8,6 +8,7 @@ import android.util.DisplayMetrics
 import android.view.WindowManager
 import kotlin.math.sqrt
 
+@androidx.compose.runtime.Immutable
 data class DisplaySnapshot(
     val widthPx: Int,
     val heightPx: Int,
@@ -16,6 +17,7 @@ data class DisplaySnapshot(
     val sizeInches: Float
 )
 
+@androidx.compose.runtime.Immutable
 data class DeviceInfoSnapshot(
     val manufacturer: String,
     val model: String,

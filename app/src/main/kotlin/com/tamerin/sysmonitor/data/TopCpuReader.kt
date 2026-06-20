@@ -1,7 +1,9 @@
 package com.tamerin.sysmonitor.data
 
 import android.content.Context
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class TopProc(
     val cpuPercent: Float,
     val pid: Int,

@@ -4,7 +4,9 @@ import android.app.ActivityManager
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import androidx.compose.runtime.Immutable
 
+@Immutable
 data class RunningApp(
     val pkg: String,
     val displayName: String,
@@ -17,6 +19,7 @@ data class RunningApp(
     val importanceLabel: String
 )
 
+@Immutable
 data class ProcessReadResult(
     val apps: List<RunningApp>,
     val source: String,

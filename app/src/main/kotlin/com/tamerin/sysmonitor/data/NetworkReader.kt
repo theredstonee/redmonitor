@@ -8,6 +8,7 @@ import android.net.wifi.WifiManager
 import android.os.Build
 import java.net.NetworkInterface
 
+@androidx.compose.runtime.Immutable
 data class NetworkSnapshot(
     val transportLabel: String,
     val ssid: String?,

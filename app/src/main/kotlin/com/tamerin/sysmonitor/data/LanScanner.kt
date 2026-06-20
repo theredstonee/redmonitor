@@ -16,6 +16,7 @@ import java.net.InetSocketAddress
 import java.net.NetworkInterface
 import java.net.Socket
 
+@androidx.compose.runtime.Immutable
 data class LanDevice(
     val ip: String,
     val mac: String?,

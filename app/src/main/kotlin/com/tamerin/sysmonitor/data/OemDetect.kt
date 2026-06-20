@@ -23,6 +23,7 @@ enum class OemRestrictionLevel {
     HIGH
 }
 
+@androidx.compose.runtime.Immutable
 data class OemSpec(
     val oem: Oem,
     val displayName: String,

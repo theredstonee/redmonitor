@@ -1,10 +1,12 @@
 package com.tamerin.sysmonitor.ui.screens
 
-import android.opengl.GLES20
+import android.content.Intent
 import android.opengl.GLSurfaceView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -13,204 +15,238 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.tamerin.sysmonitor.BuildConfig
+import com.tamerin.sysmonitor.benchmark.BenchmarkRepository
+import com.tamerin.sysmonitor.benchmark.GpuBenchmarkRenderer
+import com.tamerin.sysmonitor.benchmark.GpuBenchmarkResult
+import com.tamerin.sysmonitor.benchmark.GpuPhase
+import com.tamerin.sysmonitor.benchmark.GpuSubScore
+import com.tamerin.sysmonitor.benchmark.db.BenchmarkDatabase
+import com.tamerin.sysmonitor.benchmark.db.BenchmarkRun
+import com.tamerin.sysmonitor.benchmark.db.BenchmarkSubScore
+import com.tamerin.sysmonitor.benchmark.db.BenchmarkType
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
+import com.tamerin.sysmonitor.ui.theme.AccentSoft
+import com.tamerin.sysmonitor.ui.theme.GaugeGreen
+import com.tamerin.sysmonitor.ui.theme.GaugeOrange
+import com.tamerin.sysmonitor.ui.theme.GaugeRed
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun GpuBenchmarkScreen() {
-    var fpsCurrent by remember { mutableIntStateOf(0) }
-    var fpsAverage by remember { mutableIntStateOf(0) }
-    var fpsMin by remember { mutableIntStateOf(0) }
-    var fpsMax by remember { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val immersive = com.tamerin.sysmonitor.LocalImmersive.current
+    val scope = rememberCoroutineScope()
     var running by remember { mutableStateOf(false) }
-    var elapsed by remember { mutableIntStateOf(0) }
+    var currentPhase by remember { mutableStateOf<GpuPhase?>(null) }
+    var currentFps by remember { mutableIntStateOf(0) }
+    var phaseElapsed by remember { mutableIntStateOf(0) }
+    var partialScores by remember { mutableStateOf<List<GpuSubScore>>(emptyList()) }
+    var result by remember { mutableStateOf<GpuBenchmarkResult?>(null) }
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
-    val renderer = remember {
-        BenchmarkRenderer { current, avg, mn, mx, sec ->
-            fpsCurrent = current
-            fpsAverage = avg
-            fpsMin = mn
-            fpsMax = mx
-            elapsed = sec
-        }
+    DisposableEffect(running) {
+        immersive.value = running
+        onDispose { immersive.value = false }
     }
 
     if (running) {
-        // Fullscreen render mode — GLSurfaceView fills entire display, FPS overlay floats on top
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
             AndroidView(
                 modifier = Modifier.fillMaxSize(),
                 factory = { ctx ->
                     GLSurfaceView(ctx).apply {
                         setEGLContextClientVersion(2)
-                        setRenderer(renderer)
+                        setRenderer(GpuBenchmarkRenderer(
+                            onFrame = { phase, fps, elapsed ->
+                                currentPhase = phase
+                                currentFps = fps
+                                phaseElapsed = elapsed
+                            },
+                            onPhaseComplete = { sub ->
+                                partialScores = partialScores + sub
+                            },
+                            onFinish = { res ->
+                                result = res
+                                running = false
+                                scope.launch { saveGpuResult(context, res) }
+                            }
+                        ))
                         renderMode = GLSurfaceView.RENDERMODE_CONTINUOUSLY
                     }
                 }
             )
-            // FPS overlay top-left
             Box(
                 modifier = Modifier
                     .align(Alignment.TopStart)
                     .padding(16.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(Color.Black.copy(alpha = 0.6f))
+                    .background(Color.Black.copy(alpha = 0.65f))
                     .padding(horizontal = 14.dp, vertical = 10.dp)
             ) {
                 Column {
-                    Text("$fpsCurrent fps", color = Accent, fontSize = 32.sp)
-                    Text("avg $fpsAverage · min $fpsMin · max $fpsMax",
-                        color = Color.White, fontSize = 12.sp)
-                    Text("${elapsed}s", color = OnSurfaceMuted, fontSize = 11.sp)
+                    Text(
+                        currentPhase?.label ?: "Starte…",
+                        color = AccentSoft, fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "$currentFps fps",
+                        color = Accent, fontSize = 36.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text(
+                        "Phase $phaseElapsed / ${currentPhase?.seconds ?: 0}s",
+                        color = Color.White, fontSize = 11.sp,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    if (partialScores.isNotEmpty()) {
+                        Spacer(Modifier.height(6.dp))
+                        partialScores.forEach { p ->
+                            Text(
+                                "✓ ${p.phase.label}: ${p.score}",
+                                color = GaugeGreen,
+                                fontSize = 10.sp,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+                    }
                 }
             }
-            // Stop button bottom-center
             OutlinedButton(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     running = false
+                    partialScores = emptyList()
+                    currentPhase = null
                 },
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(24.dp)
-            ) { Text("Stopp", color = Color.White) }
+                modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp)
+            ) { Text("Abbrechen", color = Color.White) }
         }
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        StatCard("GPU-FPS Benchmark") {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        StatCard("GPU-Benchmark (echte GLES2-Shader)") {
             Text(
-                "Rendert 200 sich drehende Quadrate über den kompletten Bildschirm und misst die Framerate.",
+                "3 Sub-Tests à 15 s mit echten OpenGL-ES-2-Shadern (Vertex- und Fragment-Shader, VBOs). " +
+                    "Im Gegensatz zum alten Scissor-Trick wird hier wirklich gerendert.",
                 color = OnSurfaceMuted,
-                fontSize = 13.sp
+                fontSize = 12.sp
+            )
+            Spacer(Modifier.height(10.dp))
+            GpuPhase.values().forEach { phase ->
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text("· ${phase.label}", color = AccentSoft, fontSize = 12.sp)
+                    Text("${phase.seconds} s", color = OnSurfaceMuted, fontSize = 12.sp,
+                        fontFamily = FontFamily.Monospace)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "VERTEX: 50.000 rotierende Dreiecke pro Frame · " +
+                    "FILL-RATE: 30× Vollbild-Quad mit Alpha-Blending (Overdraw) · " +
+                    "SHADER: 32-Iter Fraktal-Fragment-Shader.",
+                color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(12.dp))
-            Button(onClick = {
-                haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
-                renderer.reset()
-                elapsed = 0
-                running = true
-            }) { Text("Vollbild-Test starten") }
-        }
-
-        Spacer(Modifier.height(16.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            FpsValue("Aktuell", fpsCurrent)
-            FpsValue("Schnitt", fpsAverage)
-        }
-        Spacer(Modifier.height(16.dp))
-        StatCard("Stats") {
-            KeyValueRow("Min FPS", fpsMin.toString())
-            KeyValueRow("Max FPS", fpsMax.toString())
-            KeyValueRow("Laufzeit", "$elapsed s")
-        }
-    }
-}
-
-@Composable
-private fun FpsValue(label: String, value: Int) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(value.toString(), color = Accent, fontSize = 42.sp)
-        Text(label, color = OnSurfaceMuted, fontSize = 12.sp)
-    }
-}
-
-private class BenchmarkRenderer(
-    val onSample: (current: Int, avg: Int, min: Int, max: Int, elapsedSec: Int) -> Unit
-) : GLSurfaceView.Renderer {
-
-    private var frames = 0
-    private var lastTimeNs = 0L
-    private var startNs = 0L
-    private var minFps = Int.MAX_VALUE
-    private var maxFps = 0
-    private var totalFrames = 0
-    private var rot = 0f
-    private var width = 0
-    private var height = 0
-
-    fun reset() {
-        frames = 0
-        lastTimeNs = 0L
-        startNs = 0L
-        minFps = Int.MAX_VALUE
-        maxFps = 0
-        totalFrames = 0
-    }
-
-    override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        GLES20.glClearColor(0f, 0f, 0f, 1f)
-        startNs = System.nanoTime()
-        lastTimeNs = startNs
-    }
-
-    override fun onSurfaceChanged(gl: GL10?, w: Int, h: Int) {
-        GLES20.glViewport(0, 0, w, h)
-        width = w
-        height = h
-    }
-
-    override fun onDrawFrame(gl: GL10?) {
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        rot += 0.02f
-
-        // Distribute shapes across the actual screen size
-        val cx = width / 2f
-        val cy = height / 2f
-        val radius = (minOf(width, height) / 3f).coerceAtLeast(100f)
-        val shapeSize = (minOf(width, height) / 30).coerceAtLeast(8)
-
-        GLES20.glEnable(GLES20.GL_SCISSOR_TEST)
-        for (i in 0 until 200) {
-            val a = rot + i * 0.05f
-            val r = radius * (0.3f + 0.7f * ((i % 11) / 10f))
-            val x = (cx + cos(a.toDouble()) * r).toInt()
-            val y = (cy + sin(a.toDouble()) * r).toInt()
-            GLES20.glScissor(
-                x.coerceIn(0, width - shapeSize),
-                y.coerceIn(0, height - shapeSize),
-                shapeSize, shapeSize
-            )
-            GLES20.glClearColor(
-                ((sin(a.toDouble()) + 1) / 2).toFloat(),
-                ((cos(a.toDouble()) + 1) / 2).toFloat(),
-                0.7f,
-                1f
-            )
-            GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT)
-        }
-        GLES20.glDisable(GLES20.GL_SCISSOR_TEST)
-
-        frames++
-        totalFrames++
-        val now = System.nanoTime()
-        val dt = now - lastTimeNs
-        if (dt >= 1_000_000_000L) {
-            val fps = (frames * 1_000_000_000L / dt).toInt()
-            if (fps in 1..999) {
-                if (fps < minFps) minFps = fps
-                if (fps > maxFps) maxFps = fps
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                        partialScores = emptyList()
+                        result = null
+                        running = true
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("Vollbild-Test starten", fontWeight = FontWeight.Bold) }
+                OutlinedButton(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        context.startActivity(
+                            Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
+                        )
+                    }
+                ) { Text("Verlauf") }
             }
-            val elapsedSec = ((now - startNs) / 1_000_000_000L).toInt().coerceAtLeast(1)
-            val avg = totalFrames / elapsedSec
-            onSample(fps, avg, if (minFps == Int.MAX_VALUE) 0 else minFps, maxFps, elapsedSec)
-            frames = 0
-            lastTimeNs = now
+        }
+
+        result?.let { r ->
+            StatCard("Gesamt-Score") {
+                Column(horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()) {
+                    val color = when {
+                        r.totalScore < 100_000 -> GaugeOrange
+                        r.totalScore < 500_000 -> AccentSoft
+                        else -> GaugeGreen
+                    }
+                    Text(
+                        "%,d".format(r.totalScore),
+                        color = color, fontSize = 48.sp, fontWeight = FontWeight.Bold,
+                        fontFamily = FontFamily.Monospace
+                    )
+                    Text("Mittelwert aus 3 Sub-Tests", color = OnSurfaceMuted, fontSize = 11.sp)
+                }
+            }
+            r.subScores.forEach { sub ->
+                StatCard(sub.phase.label) {
+                    KeyValueRow("Score", "%,d".format(sub.score))
+                    KeyValueRow("Avg FPS", sub.avgFps.toString())
+                    KeyValueRow("Min FPS", sub.minFps.toString())
+                    KeyValueRow("Max FPS", sub.maxFps.toString())
+                    KeyValueRow("Throughput", "${"%.1f".format(sub.rawThroughput)} ${sub.unit}")
+                }
+            }
         }
     }
+}
+
+/** Persist the GPU result into Room (the FGS-based path doesn't apply here
+ *  because GLSurfaceView needs a Window/Surface, so we save inline). */
+private suspend fun saveGpuResult(
+    context: android.content.Context,
+    res: GpuBenchmarkResult
+) = withContext(Dispatchers.IO) {
+    val dao = BenchmarkDatabase.get(context).benchmarkDao()
+    val run = BenchmarkRun(
+        type = BenchmarkType.GPU,
+        timestamp = System.currentTimeMillis(),
+        totalScore = res.totalScore,
+        durationMs = res.durationSec * 1000L,
+        phaseSeconds = res.durationSec / res.subScores.size.coerceAtLeast(1),
+        deviceModel = "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}",
+        androidSdk = android.os.Build.VERSION.SDK_INT,
+        appVersion = BuildConfig.VERSION_NAME
+    )
+    val subs = res.subScores.map { sub ->
+        BenchmarkSubScore(
+            runId = 0,
+            name = sub.phase.label,
+            singleScore = sub.avgFps,
+            multiScore = sub.score,
+            singleOpsPerSec = sub.rawThroughput,
+            multiOpsPerSec = sub.minFps.toDouble(),
+            unit = sub.unit
+        )
+    }
+    dao.insertRunWithSubs(run, subs)
+    BenchmarkRepository.reset()
 }

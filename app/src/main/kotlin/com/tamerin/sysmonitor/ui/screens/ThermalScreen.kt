@@ -17,12 +17,13 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun ThermalScreen() {
+    val context = androidx.compose.ui.platform.LocalContext.current
     var zones by remember { mutableStateOf<List<ThermalZone>>(emptyList()) }
 
     LaunchedEffect(Unit) {
         while (true) {
             zones = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                ThermalReader.read()
+                ThermalReader.read(context)
             }
             delay(1500)
         }

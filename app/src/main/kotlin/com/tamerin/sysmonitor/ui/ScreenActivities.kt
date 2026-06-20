@@ -1,25 +1,39 @@
 package com.tamerin.sysmonitor.ui
 
 import androidx.compose.runtime.Composable
+import com.tamerin.sysmonitor.ui.screens.BarometerScreen
 import com.tamerin.sysmonitor.ui.screens.BatteryScreen
+import com.tamerin.sysmonitor.ui.screens.BenchHistoryScreen
+import com.tamerin.sysmonitor.ui.screens.BrightnessTestScreen
+import com.tamerin.sysmonitor.ui.screens.CompassScreen
 import com.tamerin.sysmonitor.ui.screens.CpuBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.DevToolsScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayTestScreen
+import com.tamerin.sysmonitor.ui.screens.EarpieceTestScreen
+import com.tamerin.sysmonitor.ui.screens.EdgeRejectionScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
+import com.tamerin.sysmonitor.ui.screens.IrBlasterScreen
 import com.tamerin.sysmonitor.ui.screens.FullscreenDisplayTestScreen
 import com.tamerin.sysmonitor.ui.screens.GpuBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.ImageBenchScreen
 import com.tamerin.sysmonitor.ui.screens.MicTestScreen
 import com.tamerin.sysmonitor.ui.screens.MultiTouchScreen
 import com.tamerin.sysmonitor.ui.screens.NetworkSpeedScreen
+import com.tamerin.sysmonitor.ui.screens.NfcTapScreen
+import com.tamerin.sysmonitor.ui.screens.NetworkUsageScreen
+import com.tamerin.sysmonitor.ui.screens.NotificationLogScreen
+import com.tamerin.sysmonitor.ui.screens.PermissionAuditScreen
 import com.tamerin.sysmonitor.ui.screens.RamBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.RandomIOScreen
+import com.tamerin.sysmonitor.ui.screens.RouletteScreen
 import com.tamerin.sysmonitor.ui.screens.SensorDetailScreen
 import com.tamerin.sysmonitor.ui.screens.SensorsScreen
+import com.tamerin.sysmonitor.ui.screens.ShellTerminalScreen
 import com.tamerin.sysmonitor.ui.screens.SnakeGameScreen
 import com.tamerin.sysmonitor.ui.screens.SpeakerTestScreen
 import com.tamerin.sysmonitor.ui.screens.StorageBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.StressTestScreen
+import com.tamerin.sysmonitor.ui.screens.WakelockScreen
 
 class BatteryStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Akku & Drain-Test"
@@ -128,4 +142,74 @@ class SnakeGameStandaloneActivity : BaseScreenActivity() {
 class DevToolsStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Dev-Tools"
     @Composable override fun ScreenContent() { DevToolsScreen() }
+}
+
+class RouletteStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "☠ Russian Roulette"
+    @Composable override fun ScreenContent() { RouletteScreen() }
+}
+
+class NetworkUsageStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Pro-App Netzwerk-Traffic"
+    @Composable override fun ScreenContent() { NetworkUsageScreen() }
+}
+
+class WakelockStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Wake-Locks (dumpsys power)"
+    @Composable override fun ScreenContent() { WakelockScreen() }
+}
+
+class NotificationLogStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Notification-Log"
+    @Composable override fun ScreenContent() { NotificationLogScreen() }
+}
+
+class PermissionAuditStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Permission-Audit"
+    @Composable override fun ScreenContent() { PermissionAuditScreen() }
+}
+
+class ShellTerminalStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Shell-Terminal (Shizuku)"
+    @Composable override fun ScreenContent() { ShellTerminalScreen() }
+}
+
+class EarpieceTestStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Earpiece"
+    @Composable override fun ScreenContent() { EarpieceTestScreen() }
+}
+
+class EdgeRejectionStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Edge-Rejection"
+    @Composable override fun ScreenContent() { EdgeRejectionScreen() }
+}
+
+class BrightnessTestStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Brightness-Konsistenz"
+    @Composable override fun ScreenContent() { BrightnessTestScreen() }
+}
+
+class NfcTapStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "NFC-Tap-Test"
+    @Composable override fun ScreenContent() { NfcTapScreen() }
+}
+
+class IrBlasterStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "IR-Blaster"
+    @Composable override fun ScreenContent() { IrBlasterScreen() }
+}
+
+class CompassStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Kompass"
+    @Composable override fun ScreenContent() { CompassScreen() }
+}
+
+class BarometerStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Barometer / Höhe"
+    @Composable override fun ScreenContent() { BarometerScreen() }
+}
+
+class BenchHistoryStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Benchmark-Verlauf"
+    @Composable override fun ScreenContent() { BenchHistoryScreen() }
 }
