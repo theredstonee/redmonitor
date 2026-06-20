@@ -36,3 +36,14 @@ fun gaugeColor(percent: Float): Color = when {
     percent < 90f -> GaugeOrange
     else -> GaugeRed
 }
+
+/**
+ * Invertierte Skala für Akku-Prozent: hoch = gut (grün), niedrig = kritisch (rot).
+ * Schwellen entsprechen dem System-Akku-Warnungs-Verhalten (20 % low, 15 % critical).
+ */
+fun batteryGaugeColor(percent: Float): Color = when {
+    percent >= 50f -> GaugeGreen
+    percent >= 25f -> GaugeYellow
+    percent >= 10f -> GaugeOrange
+    else -> GaugeRed
+}

@@ -361,7 +361,8 @@ private fun BottomGauges(
         CircularGauge(
             percent = batteryPct,
             label = if (batteryCharging) "Lädt ${"%.1f".format(batteryWatts)} W" else "Akku",
-            sublabel = "${"%.1f".format(batteryTemp)} °C"
+            sublabel = "${"%.1f".format(batteryTemp)} °C",
+            colorOverride = com.tamerin.sysmonitor.ui.theme.batteryGaugeColor(batteryPct)
         )
         CircularGauge(
             percent = gpuPct ?: 0f,

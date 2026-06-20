@@ -164,7 +164,8 @@ fun BatteryScreen() {
             CircularGauge(
                 percent = snap.percent,
                 label = if (snap.isCharging) "Lädt (${snap.pluggedSource})" else snap.pluggedSource,
-                size = 180.dp
+                size = 180.dp,
+                colorOverride = com.tamerin.sysmonitor.ui.theme.batteryGaugeColor(snap.percent)
             )
         }
 

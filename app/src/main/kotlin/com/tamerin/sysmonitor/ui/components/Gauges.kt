@@ -28,6 +28,7 @@ import com.tamerin.sysmonitor.ui.theme.DividerWhite
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import com.tamerin.sysmonitor.ui.theme.SurfaceDark
 import com.tamerin.sysmonitor.ui.theme.SurfaceVariantDark
+import androidx.compose.ui.graphics.Color
 import com.tamerin.sysmonitor.ui.theme.gaugeColor
 
 @Composable
@@ -36,7 +37,8 @@ fun CircularGauge(
     label: String,
     sublabel: String? = null,
     modifier: Modifier = Modifier,
-    size: androidx.compose.ui.unit.Dp = 140.dp
+    size: androidx.compose.ui.unit.Dp = 140.dp,
+    colorOverride: Color? = null
 ) {
     val clamped = percent.coerceIn(0f, 100f)
     val animated by animateFloatAsState(
@@ -44,7 +46,7 @@ fun CircularGauge(
         animationSpec = tween(600),
         label = "gauge"
     )
-    val color = gaugeColor(animated)
+    val color = colorOverride ?: gaugeColor(animated)
 
     Box(modifier = modifier.size(size), contentAlignment = Alignment.Center) {
         Canvas(modifier = Modifier.fillMaxSize()) {
