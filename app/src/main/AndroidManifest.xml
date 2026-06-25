@@ -408,6 +408,18 @@
             android:label="RedMonitor · BG-Restrict"
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.PrivacyPolicyStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Datenschutz"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.TermsStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · AGB"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- Boot-Receiver: startet OverlayService bei Boot wenn Autostart aktiviert -->
         <receiver

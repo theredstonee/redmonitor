@@ -19,8 +19,10 @@ import com.tamerin.sysmonitor.ui.screens.DpiAnimScreen
 import com.tamerin.sysmonitor.ui.screens.GnssLiveScreen
 import com.tamerin.sysmonitor.ui.screens.PerfettoTraceScreen
 import com.tamerin.sysmonitor.ui.screens.PingMonitorScreen
+import com.tamerin.sysmonitor.ui.screens.PrivacyPolicyScreen
 import com.tamerin.sysmonitor.ui.screens.SpeedTestScreen
 import com.tamerin.sysmonitor.ui.screens.StorageAnalyzerScreen
+import com.tamerin.sysmonitor.ui.screens.TermsScreen
 import com.tamerin.sysmonitor.ui.screens.EarpieceTestScreen
 import com.tamerin.sysmonitor.ui.screens.EdgeRejectionScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
@@ -279,6 +281,16 @@ class DpiAnimStandaloneActivity : BaseScreenActivity() {
 class BackgroundRestrictStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Background-Restrict"
     @Composable override fun ScreenContent() { BackgroundRestrictScreen() }
+}
+
+class PrivacyPolicyStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Datenschutzerklärung"
+    @Composable override fun ScreenContent() { PrivacyPolicyScreen() }
+}
+
+class TermsStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Nutzungsbedingungen"
+    @Composable override fun ScreenContent() { TermsScreen() }
 }
 
 class BenchHistoryStandaloneActivity : BaseScreenActivity() {

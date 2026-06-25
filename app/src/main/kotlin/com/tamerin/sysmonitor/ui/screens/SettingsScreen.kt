@@ -316,6 +316,44 @@ fun SettingsScreen() {
             ) { Text("Bewertungen ansehen") }
         }
 
+        StatCard("Rechtliches") {
+            Text(
+                "Datenschutzerklärung v${com.tamerin.sysmonitor.legal.LegalConstants.PRIVACY_VERSION} · " +
+                    "AGB v${com.tamerin.sysmonitor.legal.LegalConstants.TERMS_VERSION} · " +
+                    "Stand ${com.tamerin.sysmonitor.legal.LegalConstants.LEGAL_LAST_UPDATED}",
+                color = OnSurfaceMuted, fontSize = 11.sp
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                OutlinedButton(
+                    onClick = {
+                        Haptic.perform(context, HapticType.TAP)
+                        context.startActivity(Intent(context,
+                            com.tamerin.sysmonitor.ui.PrivacyPolicyStandaloneActivity::class.java))
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("Datenschutz", fontSize = 11.sp) }
+                OutlinedButton(
+                    onClick = {
+                        Haptic.perform(context, HapticType.TAP)
+                        context.startActivity(Intent(context,
+                            com.tamerin.sysmonitor.ui.TermsStandaloneActivity::class.java))
+                    },
+                    modifier = Modifier.weight(1f)
+                ) { Text("AGB", fontSize = 11.sp) }
+            }
+            Spacer(Modifier.height(6.dp))
+            OutlinedButton(
+                onClick = {
+                    Haptic.perform(context, HapticType.TAP)
+                    context.startActivity(Intent(Intent.ACTION_VIEW,
+                        Uri.parse(com.tamerin.sysmonitor.legal.LegalConstants.IMPRINT_URL))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Volles Impressum (theredstonee.de)") }
+        }
+
         StatCard("Über") {
             VersionRow(context)
             KeyValueRow("Build", BuildConfig.VERSION_CODE.toString())

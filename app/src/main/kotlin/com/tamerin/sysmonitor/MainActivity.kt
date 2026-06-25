@@ -113,7 +113,8 @@ class MainActivity : ComponentActivity() {
         com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
         com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
         com.tamerin.sysmonitor.data.battery.BatterySamplerWorker.schedule(this)
-        com.tamerin.sysmonitor.cloud.CloudSyncWorker.schedule(this)
+        // Cloud-Sync wird ERST nach Legal-Acceptance gescheduled (siehe Composable),
+        // sonst feuern Heartbeats bevor der User der Datenverarbeitung zugestimmt hat.
         // Plus one sample now so first run already has data
         lifecycleScope.launch {
             com.tamerin.sysmonitor.data.battery.BatteryHistoryTracker.sample(this@MainActivity)
@@ -375,6 +376,39 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
     val config = androidx.compose.ui.platform.LocalConfiguration.current
     val useRail = config.screenWidthDp >= 600
+
+    // Legal-Gate: ohne Akzeptanz nichts zeigen ausser dem Acceptance-Dialog
+    var legalAccepted by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf(
+            com.tamerin.sysmonitor.legal.LegalPrefs.hasAcceptedCurrent(context)
+        )
+    }
+    if (!legalAccepted) {
+        com.tamerin.sysmonitor.ui.components.LegalAcceptanceDialog(
+            onAccepted = {
+                com.tamerin.sysmonitor.legal.LegalPrefs.markAccepted(context)
+                if (com.tamerin.sysmonitor.cloud.CloudPrefs.isEnabled(context)) {
+                    com.tamerin.sysmonitor.cloud.CloudSyncWorker.schedule(context)
+                }
+                legalAccepted = true
+            },
+            onOpenPrivacy = {
+                context.startActivity(android.content.Intent(
+                    context, com.tamerin.sysmonitor.ui.PrivacyPolicyStandaloneActivity::class.java))
+            },
+            onOpenTerms = {
+                context.startActivity(android.content.Intent(
+                    context, com.tamerin.sysmonitor.ui.TermsStandaloneActivity::class.java))
+            }
+        )
+        return
+    }
+    // Nach Akzeptanz: Cloud-Sync sicherstellen
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        if (com.tamerin.sysmonitor.cloud.CloudPrefs.isEnabled(context)) {
+            com.tamerin.sysmonitor.cloud.CloudSyncWorker.schedule(context)
+        }
+    }
 
     androidx.compose.runtime.CompositionLocalProvider(LocalImmersive provides immersive) {
     Scaffold(
