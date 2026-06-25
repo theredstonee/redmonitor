@@ -113,6 +113,7 @@ class MainActivity : ComponentActivity() {
         com.tamerin.sysmonitor.update.UpdateWorker.schedulePeriodic(this)
         com.tamerin.sysmonitor.update.UpdateNotifier.ensureChannel(this)
         com.tamerin.sysmonitor.data.battery.BatterySamplerWorker.schedule(this)
+        com.tamerin.sysmonitor.cloud.CloudSyncWorker.schedule(this)
         // Plus one sample now so first run already has data
         lifecycleScope.launch {
             com.tamerin.sysmonitor.data.battery.BatteryHistoryTracker.sample(this@MainActivity)
@@ -326,6 +327,18 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
         androidx.compose.runtime.mutableStateOf(
             !com.tamerin.sysmonitor.settings.AppPrefs.isFirstLaunchOnboardingDone(context)
         )
+    }
+    var restoreAvailable by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<com.tamerin.sysmonitor.cloud.RestoreChecker.Available?>(null)
+    }
+    var restoreSummary by androidx.compose.runtime.remember {
+        androidx.compose.runtime.mutableStateOf<com.tamerin.sysmonitor.cloud.BackupSerializer.RestoreSummary?>(null)
+    }
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        // First-Launch-Restore-Probe — feuert nur einmal, danach CloudPrefs.restoreChecked=true
+        restoreAvailable = runCatching {
+            com.tamerin.sysmonitor.cloud.RestoreChecker.probe(context)
+        }.getOrNull()
     }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         // First-launch OEM onboarding for restrictive ROMs — feuert NUR beim allerersten
@@ -597,6 +610,63 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
             com.tamerin.sysmonitor.settings.AppPrefs.setFirstLaunchOnboardingDone(context, true)
             showOnboarding = false
         })
+    }
+
+    // Cloud-Backup-Restore-Prompt (only if a fresh install found a matching backup)
+    val avail = restoreAvailable
+    if (avail != null && startupUpdate == null && !showRatePrompt && !showOnboarding) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = {
+                com.tamerin.sysmonitor.cloud.RestoreChecker.decline(context, avail)
+                restoreAvailable = null
+            },
+            title = { androidx.compose.material3.Text("Cloud-Backup gefunden") },
+            text = {
+                val date = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
+                    .format(java.util.Date(avail.createdAt))
+                androidx.compose.material3.Text(
+                    "Für dieses Gerät liegt ein verschlüsseltes Backup vom $date " +
+                        "(App ${avail.sourceVersion}) auf dem Server. Wiederherstellen?"
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                    val a = avail
+                    restoreAvailable = null
+                    kotlinx.coroutines.MainScope().launch {
+                        restoreSummary = com.tamerin.sysmonitor.cloud.RestoreChecker
+                            .applyAndMark(context, a)
+                    }
+                }) { androidx.compose.material3.Text("Wiederherstellen") }
+            },
+            dismissButton = {
+                androidx.compose.material3.TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    com.tamerin.sysmonitor.cloud.RestoreChecker.decline(context, avail)
+                    restoreAvailable = null
+                }) { androidx.compose.material3.Text("Nein, neu starten") }
+            }
+        )
+    }
+
+    val summary = restoreSummary
+    if (summary != null) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { restoreSummary = null },
+            title = { androidx.compose.material3.Text("Wiederherstellung fertig") },
+            text = {
+                androidx.compose.material3.Text(
+                    "${summary.prefsApplied} Settings + ${summary.batterySamplesInserted} " +
+                        "Akku-Samples übernommen."
+                )
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(onClick = { restoreSummary = null }) {
+                    androidx.compose.material3.Text("OK")
+                }
+            }
+        )
     }
     } // CompositionLocalProvider
 }

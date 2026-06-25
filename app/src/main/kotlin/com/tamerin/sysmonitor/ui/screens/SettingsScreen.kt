@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.BuildConfig
 import com.tamerin.sysmonitor.settings.AppPrefs
+import kotlinx.coroutines.launch
 import com.tamerin.sysmonitor.settings.Haptic
 import com.tamerin.sysmonitor.settings.HapticIntensity
 import com.tamerin.sysmonitor.settings.HapticType
@@ -177,6 +178,77 @@ fun SettingsScreen() {
                 Text(
                     "Material-You Dynamic-Theming braucht Android 12+ — dein Gerät läuft auf älterer Version.",
                     color = OnSurfaceMuted, fontSize = 12.sp
+                )
+            }
+        }
+
+        StatCard("Cloud-Backup") {
+            var cbEnabled by remember { mutableStateOf(com.tamerin.sysmonitor.cloud.CloudPrefs.isEnabled(context)) }
+            val lastHb = com.tamerin.sysmonitor.cloud.CloudPrefs.lastHeartbeatMs(context)
+            val lastBu = com.tamerin.sysmonitor.cloud.CloudPrefs.lastBackupMs(context)
+            ToggleRow(
+                label = "Cloud-Sync aktiv",
+                description = "Sendet anonymen Heartbeat + verschlüsseltes Backup (App-Settings + Akku-Verlauf) " +
+                    "an redmonitor.redst.de. Schlüssel wird aus Hardware abgeleitet — Server kann NICHTS lesen. " +
+                    "Nach Reinstall wird Backup automatisch zurückgespielt.",
+                checked = cbEnabled
+            ) {
+                cbEnabled = it
+                com.tamerin.sysmonitor.cloud.CloudPrefs.setEnabled(context, it)
+                if (it) com.tamerin.sysmonitor.cloud.CloudSyncWorker.schedule(context)
+                else com.tamerin.sysmonitor.cloud.CloudSyncWorker.cancel(context)
+            }
+            if (cbEnabled) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Letzter Heartbeat: " + if (lastHb > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
+                        java.util.Locale.getDefault()).format(java.util.Date(lastHb)) else "—",
+                    color = OnSurfaceMuted, fontSize = 11.sp
+                )
+                Text(
+                    "Letztes Backup: " + if (lastBu > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
+                        java.util.Locale.getDefault()).format(java.util.Date(lastBu)) else "—",
+                    color = OnSurfaceMuted, fontSize = 11.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                val scope = androidx.compose.runtime.rememberCoroutineScope()
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    OutlinedButton(
+                        onClick = {
+                            Haptic.perform(context, HapticType.TAP)
+                            scope.launch {
+                                val r = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    com.tamerin.sysmonitor.cloud.BackendClient.heartbeat(context)
+                                }
+                                if (r.ok) com.tamerin.sysmonitor.cloud.CloudPrefs
+                                    .setLastHeartbeatMs(context, System.currentTimeMillis())
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Heartbeat jetzt", fontSize = 11.sp) }
+                    OutlinedButton(
+                        onClick = {
+                            Haptic.perform(context, HapticType.TAP)
+                            scope.launch {
+                                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                    val plain = com.tamerin.sysmonitor.cloud.BackupSerializer.collect(context)
+                                    val fp = com.tamerin.sysmonitor.cloud.DeviceIdProvider.hardwareFingerprint(context)
+                                    val enc = com.tamerin.sysmonitor.cloud.BackupCrypto.encrypt(plain, fp)
+                                    val r = com.tamerin.sysmonitor.cloud.BackendClient.uploadBackup(context, enc)
+                                    if (r.ok) com.tamerin.sysmonitor.cloud.CloudPrefs
+                                        .setLastBackupMs(context, System.currentTimeMillis())
+                                }
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) { Text("Backup jetzt", fontSize = 11.sp) }
+                }
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Device-ID (Hardware-Hash, opak): " +
+                        com.tamerin.sysmonitor.cloud.DeviceIdProvider.deviceId(context).take(16) + "…",
+                    color = OnSurfaceMuted, fontSize = 10.sp,
+                    fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 )
             }
         }
