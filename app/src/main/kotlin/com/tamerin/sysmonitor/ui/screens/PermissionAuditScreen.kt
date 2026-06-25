@@ -25,6 +25,7 @@ import com.tamerin.sysmonitor.data.AppPermissions
 import com.tamerin.sysmonitor.data.CategoryGroup
 import com.tamerin.sysmonitor.data.PermCategory
 import com.tamerin.sysmonitor.data.PermissionAuditReader
+import kotlinx.coroutines.launch
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.AccentBubble
@@ -217,14 +218,46 @@ private fun AppCard(app: AppPermissions, onOpenSettings: (String) -> Unit) {
         )
         if (expanded) {
             Spacer(Modifier.height(4.dp))
+            val context = androidx.compose.ui.platform.LocalContext.current
+            val scope = androidx.compose.runtime.rememberCoroutineScope()
+            val shizukuReady = com.tamerin.sysmonitor.data.ShizukuHelper.state(context) ==
+                com.tamerin.sysmonitor.data.ShizukuHelper.State.Ready
+            var refreshTick by remember { mutableStateOf(0) }
+            val grantedSet = remember(app.granted, refreshTick) { app.granted.toSet() }
+
             app.requested.forEach { perm ->
-                val isGranted = perm in app.granted
-                Text(
-                    (if (isGranted) "✓ " else "· ") + perm.removePrefix("android.permission."),
-                    color = if (isGranted) AccentSoft else OnSurfaceMuted,
-                    fontSize = 10.sp,
-                    fontFamily = FontFamily.Monospace
-                )
+                val isGranted = perm in grantedSet
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        (if (isGranted) "✓ " else "· ") + perm.removePrefix("android.permission."),
+                        color = if (isGranted) AccentSoft else OnSurfaceMuted,
+                        fontSize = 10.sp,
+                        fontFamily = FontFamily.Monospace,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (shizukuReady) {
+                        Text(
+                            if (isGranted) "revoke" else "grant",
+                            color = Accent, fontSize = 10.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            modifier = Modifier.clickable {
+                                scope.launch {
+                                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                        com.tamerin.sysmonitor.data.ShizukuHelper.runCommand(
+                                            context,
+                                            "pm", if (isGranted) "revoke" else "grant",
+                                            app.packageName, perm
+                                        )
+                                    }
+                                    refreshTick += 1
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
     }

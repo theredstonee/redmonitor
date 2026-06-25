@@ -113,6 +113,131 @@ object ShizukuHelper {
         return res.ok
     }
 
+    data class AutoGrantReport(
+        val granted: List<String>,
+        val failed: List<Pair<String, String>>,
+        val skipped: List<String>
+    ) {
+        val total: Int get() = granted.size + failed.size + skipped.size
+    }
+
+    /**
+     * Vergibt automatisch alle Runtime- und Special-Permissions die RedMonitor
+     * deklariert — der User muss damit nichts mehr durch die Settings klicken.
+     *
+     * Drei Pfade:
+     *   1. `pm grant <pkg> <perm>` für klassische Runtime-Permissions
+     *   2. `appops set <pkg> <op> allow` für Special-Ops (Overlay, Usage-Stats,
+     *      Install-Packages, Restricted-Settings)
+     *   3. `settings put secure enabled_notification_listeners` für den
+     *      Notification-Listener-Service (additiv, vorhandene Liste bleibt erhalten)
+     *
+     * Idempotent. Wenn eine Permission nicht im Manifest steht, wird sie
+     * still übersprungen (pm grant failed → kategorisiert als skipped).
+     */
+    fun autoGrantAllPermissions(context: Context): AutoGrantReport {
+        if (state(context) != State.Ready) {
+            return AutoGrantReport(emptyList(), emptyList(),
+                listOf("Shizuku nicht bereit"))
+        }
+        val pkg = context.packageName
+        val granted = mutableListOf<String>()
+        val failed = mutableListOf<Pair<String, String>>()
+        val skipped = mutableListOf<String>()
+
+        // 1. Runtime-Permissions via pm grant
+        val runtimePerms = listOf(
+            "android.permission.READ_PHONE_STATE",
+            "android.permission.CAMERA",
+            "android.permission.RECORD_AUDIO",
+            "android.permission.ACCESS_FINE_LOCATION",
+            "android.permission.ACCESS_COARSE_LOCATION",
+            "android.permission.BLUETOOTH_CONNECT",
+            "android.permission.BLUETOOTH_SCAN",
+            "android.permission.POST_NOTIFICATIONS"
+        )
+        for (perm in runtimePerms) {
+            val res = runCommand(context, "pm", "grant", pkg, perm)
+            when {
+                res.ok -> granted += perm.substringAfterLast(".")
+                res.stderr.contains("has not requested permission", true) ||
+                    res.stderr.contains("not declared", true) ->
+                    skipped += perm.substringAfterLast(".")
+                else -> failed += perm.substringAfterLast(".") to res.stderr.take(80)
+            }
+        }
+
+        // 2. App-Ops für Special-Permissions
+        val appOps = mutableListOf(
+            "ACCESS_RESTRICTED_SETTINGS",
+            "SYSTEM_ALERT_WINDOW",
+            "GET_USAGE_STATS",
+            "REQUEST_INSTALL_PACKAGES",
+            "RUN_ANY_IN_BACKGROUND",
+            "RUN_IN_BACKGROUND",
+            "SCHEDULE_EXACT_ALARM"
+        )
+        // MIUI/HyperOS hat extra Hersteller-Ops für Autostart und Pop-up — die meisten
+        // sind im Vanilla-AOSP-appops nicht definiert, aber Xiaomi hat sie hinzugefügt.
+        // Wir probieren sie blind — bei Nicht-Xiaomi failed das einzelne Op silent.
+        val mfg = (android.os.Build.MANUFACTURER ?: "").lowercase()
+        val brand = (android.os.Build.BRAND ?: "").lowercase()
+        val isXiaomi = mfg.contains("xiaomi") || brand.contains("xiaomi") ||
+            brand.contains("redmi") || brand.contains("poco")
+        if (isXiaomi) {
+            appOps += listOf(
+                "AUTO_START",                 // MIUI: in Autostart-Liste aufnehmen
+                "BACKGROUND_START_ACTIVITY",  // MIUI: Aktivität aus Hintergrund starten
+                "SHOW_WHEN_LOCKED",           // MIUI: über Sperrbildschirm anzeigen
+                "POPUP_BACKGROUND"            // MIUI: Pop-up aus Hintergrund
+            )
+            // Zusätzlich: MIUI Security Center "Permission Manager" Content-Provider
+            // — der ECHTE Autostart-Switch hängt dort drin, nicht im normalen appops.
+            runCatching {
+                val r = runShell(context,
+                    "content insert --uri content://com.lbe.security.miui.permissionmanager." +
+                        "AutoStartContentProvider --bind packageName:s:$pkg --bind isAutoStart:i:1")
+                if (r.ok) granted += "miui:AutoStart-Provider"
+            }
+        }
+        for (op in appOps) {
+            val res = runCommand(context, "appops", "set", pkg, op, "allow")
+            when {
+                res.ok -> granted += "op:$op"
+                res.stderr.contains("Unknown operation", true) -> skipped += "op:$op"
+                else -> failed += "op:$op" to res.stderr.take(80)
+            }
+        }
+
+        // 3. Notification-Listener-Service additiv in Secure-Settings eintragen
+        val nlComponent = "$pkg/$pkg.data.NotificationLoggerService"
+        val nlExisting = runShell(
+            context,
+            "settings get secure enabled_notification_listeners"
+        ).stdout.trim()
+        val needsAdd = nlExisting == "null" ||
+            nlExisting.isEmpty() ||
+            !nlExisting.split(':').any { it == nlComponent }
+        if (needsAdd) {
+            val merged = if (nlExisting.isEmpty() || nlExisting == "null") {
+                nlComponent
+            } else {
+                "$nlExisting:$nlComponent"
+            }
+            val res = runShell(
+                context,
+                "settings put secure enabled_notification_listeners '$merged'"
+            )
+            if (res.ok) granted += "NotificationListener" else {
+                failed += "NotificationListener" to res.stderr.take(80)
+            }
+        } else {
+            skipped += "NotificationListener (bereits aktiv)"
+        }
+
+        return AutoGrantReport(granted, failed, skipped)
+    }
+
     data class DumpsysBattery(
         val maxChargingCurrentUa: Long,
         val maxChargingVoltageUv: Long,

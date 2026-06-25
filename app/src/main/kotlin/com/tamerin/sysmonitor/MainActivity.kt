@@ -117,12 +117,13 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             com.tamerin.sysmonitor.data.battery.BatteryHistoryTracker.sample(this@MainActivity)
         }
-        // Wenn Shizuku schon ready: Android-13-Restricted-Settings sofort entsperren,
-        // damit der User danach Accessibility/Usage-Stats/Notification-Listener in
-        // den System-Settings überhaupt antippen kann.
+        // Wenn Shizuku schon ready: einmal alle App-Permissions automatisch
+        // freischalten — Runtime-Perms via pm grant, Special-Ops via appops,
+        // Notification-Listener via secure-settings. User muss nichts mehr
+        // durch die System-Settings klicken.
         lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             runCatching {
-                com.tamerin.sysmonitor.data.ShizukuHelper.unblockRestrictedSettings(this@MainActivity)
+                com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(this@MainActivity)
             }
         }
         com.tamerin.sysmonitor.settings.AppPrefs.incrementLaunchCount(this)
@@ -327,17 +328,19 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
         )
     }
     androidx.compose.runtime.LaunchedEffect(Unit) {
-        // First-launch OEM onboarding for restrictive ROMs (Xiaomi, Oppo, Vivo, Huawei, ...)
-        if (!com.tamerin.sysmonitor.settings.AppPrefs.isOemOnboardingDone(context)) {
+        // First-launch OEM onboarding for restrictive ROMs — feuert NUR beim allerersten
+        // App-Start. Nach diesem einen Versuch wird isOemOnboardingDone gesetzt — auch
+        // wenn der User den Screen wegswiped. Er findet den OEM-Setup-Screen jederzeit
+        // über Info-Hub → 'Geräte-Setup' wieder.
+        if (com.tamerin.sysmonitor.settings.AppPrefs.launchCount(context) <= 1 &&
+            !com.tamerin.sysmonitor.settings.AppPrefs.isOemOnboardingDone(context)) {
             val spec = com.tamerin.sysmonitor.data.OemDetect.detect()
             if (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.HIGH ||
-                (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.MEDIUM &&
-                    com.tamerin.sysmonitor.settings.AppPrefs.launchCount(context) <= 1)) {
+                spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.MEDIUM) {
                 navController.navigate(Routes.OEM_SETUP)
-            } else if (spec.restrictionLevel == com.tamerin.sysmonitor.data.OemRestrictionLevel.LOW) {
-                // Stock Android: nothing to do, mark as done so we don't re-check.
-                com.tamerin.sysmonitor.settings.AppPrefs.setOemOnboardingDone(context, true)
             }
+            // In jedem Fall flaggen — kein zweiter Auto-Navigate, egal wie der User reagiert
+            com.tamerin.sysmonitor.settings.AppPrefs.setOemOnboardingDone(context, true)
         }
         val state = com.tamerin.sysmonitor.update.UpdateChecker.check(
             context,

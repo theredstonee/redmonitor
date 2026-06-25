@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.launch
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,6 +69,7 @@ fun ShizukuCard(
             ShizukuHelper.State.NotRunning -> NotRunningBlock(context, haptic)
             ShizukuHelper.State.NeedsPermission -> NeedsPermBlock(haptic)
             ShizukuHelper.State.Ready -> {
+                var report by remember { mutableStateOf<ShizukuHelper.AutoGrantReport?>(null) }
                 Text(
                     "Perfekt. Setup abgeschlossen.",
                     color = GaugeGreen,
@@ -75,12 +77,32 @@ fun ShizukuCard(
                     fontWeight = FontWeight.Medium
                 )
                 LaunchedEffect(state) {
-                    // Android 13+ Restricted-Settings auf allow setzen → System-Settings
-                    // entgrayed (Accessibility, Usage-Stats, Notification-Listener).
-                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                        ShizukuHelper.unblockRestrictedSettings(context)
+                    // Vollständiges Auto-Setup: alle Runtime-Perms + Special-Ops
+                    // + Notification-Listener in einem Rutsch freischalten.
+                    report = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        ShizukuHelper.autoGrantAllPermissions(context)
                     }
                     onReady?.invoke()
+                }
+                report?.let { r ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(
+                        "Auto-Grant: ${r.granted.size} erteilt · " +
+                            "${r.failed.size} failed · ${r.skipped.size} skipped",
+                        color = OnSurfaceMuted, fontSize = 11.sp
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    OutlinedButton(
+                        onClick = {
+                            // Re-run für Debug oder nach Permission-Revoke
+                            kotlinx.coroutines.GlobalScope.launch(
+                                kotlinx.coroutines.Dispatchers.IO
+                            ) {
+                                report = ShizukuHelper.autoGrantAllPermissions(context)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("Auto-Grant erneut ausführen", fontSize = 11.sp) }
                 }
             }
         }

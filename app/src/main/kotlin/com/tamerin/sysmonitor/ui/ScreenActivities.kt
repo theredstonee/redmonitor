@@ -7,8 +7,20 @@ import com.tamerin.sysmonitor.ui.screens.BenchHistoryScreen
 import com.tamerin.sysmonitor.ui.screens.BrightnessTestScreen
 import com.tamerin.sysmonitor.ui.screens.CompassScreen
 import com.tamerin.sysmonitor.ui.screens.CpuBenchmarkScreen
+import com.tamerin.sysmonitor.ui.screens.ApkExtractorScreen
+import com.tamerin.sysmonitor.ui.screens.BackgroundRestrictScreen
+import com.tamerin.sysmonitor.ui.screens.BatteryDoctorScreen
+import com.tamerin.sysmonitor.ui.screens.ChargingLimitScreen
+import com.tamerin.sysmonitor.ui.screens.CrashLogScreen
 import com.tamerin.sysmonitor.ui.screens.DevToolsScreen
+import com.tamerin.sysmonitor.ui.screens.DischargeCurveScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayTestScreen
+import com.tamerin.sysmonitor.ui.screens.DpiAnimScreen
+import com.tamerin.sysmonitor.ui.screens.GnssLiveScreen
+import com.tamerin.sysmonitor.ui.screens.PerfettoTraceScreen
+import com.tamerin.sysmonitor.ui.screens.PingMonitorScreen
+import com.tamerin.sysmonitor.ui.screens.SpeedTestScreen
+import com.tamerin.sysmonitor.ui.screens.StorageAnalyzerScreen
 import com.tamerin.sysmonitor.ui.screens.EarpieceTestScreen
 import com.tamerin.sysmonitor.ui.screens.EdgeRejectionScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
@@ -207,6 +219,66 @@ class CompassStandaloneActivity : BaseScreenActivity() {
 class BarometerStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Barometer / Höhe"
     @Composable override fun ScreenContent() { BarometerScreen() }
+}
+
+class DischargeCurveStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Akku-Verlauf"
+    @Composable override fun ScreenContent() { DischargeCurveScreen() }
+}
+
+class ChargingLimitStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Smart Charging Limit"
+    @Composable override fun ScreenContent() { ChargingLimitScreen() }
+}
+
+class BatteryDoctorStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Akku-Doktor"
+    @Composable override fun ScreenContent() { BatteryDoctorScreen() }
+}
+
+class StorageAnalyzerStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Storage-Analyzer"
+    @Composable override fun ScreenContent() { StorageAnalyzerScreen() }
+}
+
+class ApkExtractorStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "APK-Extractor"
+    @Composable override fun ScreenContent() { ApkExtractorScreen() }
+}
+
+class CrashLogStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Crash-Logs"
+    @Composable override fun ScreenContent() { CrashLogScreen() }
+}
+
+class SpeedTestStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Speed-Test"
+    @Composable override fun ScreenContent() { SpeedTestScreen() }
+}
+
+class PingMonitorStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Multi-Server-Ping"
+    @Composable override fun ScreenContent() { PingMonitorScreen() }
+}
+
+class GnssLiveStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "GNSS Live"
+    @Composable override fun ScreenContent() { GnssLiveScreen() }
+}
+
+class PerfettoTraceStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Perfetto-Trace"
+    @Composable override fun ScreenContent() { PerfettoTraceScreen() }
+}
+
+class DpiAnimStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "DPI / Animation"
+    @Composable override fun ScreenContent() { DpiAnimScreen() }
+}
+
+class BackgroundRestrictStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Background-Restrict"
+    @Composable override fun ScreenContent() { BackgroundRestrictScreen() }
 }
 
 class BenchHistoryStandaloneActivity : BaseScreenActivity() {

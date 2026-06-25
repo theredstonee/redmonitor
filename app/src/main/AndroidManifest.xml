@@ -336,6 +336,78 @@
             android:label="RedMonitor · Barometer"
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.DischargeCurveStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Akku-Verlauf"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.ChargingLimitStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Charging-Limit"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.BatteryDoctorStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Akku-Doktor"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.StorageAnalyzerStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Storage"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.ApkExtractorStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · APK-Extract"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.CrashLogStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Crash-Logs"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.SpeedTestStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Speed-Test"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.PingMonitorStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Ping"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.GnssLiveStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · GNSS"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.PerfettoTraceStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Perfetto"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.DpiAnimStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · DPI/Anim"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.BackgroundRestrictStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · BG-Restrict"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- Boot-Receiver: startet OverlayService bei Boot wenn Autostart aktiviert -->
         <receiver

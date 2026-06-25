@@ -19,13 +19,38 @@ import androidx.compose.material.icons.filled.NetworkCheck
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Security
+import androidx.compose.material.icons.filled.ShowChart
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Terminal
+import androidx.compose.material.icons.filled.Timeline
+import androidx.compose.material.icons.filled.BatteryChargingFull
+import androidx.compose.material.icons.filled.HealthAndSafety
+import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.GetApp
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.NetworkPing
+import androidx.compose.material.icons.filled.Satellite
+import androidx.compose.material.icons.filled.AutoGraph
+import androidx.compose.material.icons.filled.AspectRatio
+import androidx.compose.material.icons.filled.Block
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
+import com.tamerin.sysmonitor.ui.ApkExtractorStandaloneActivity
+import com.tamerin.sysmonitor.ui.BackgroundRestrictStandaloneActivity
+import com.tamerin.sysmonitor.ui.BatteryDoctorStandaloneActivity
+import com.tamerin.sysmonitor.ui.ChargingLimitStandaloneActivity
+import com.tamerin.sysmonitor.ui.CrashLogStandaloneActivity
+import com.tamerin.sysmonitor.ui.DischargeCurveStandaloneActivity
+import com.tamerin.sysmonitor.ui.DpiAnimStandaloneActivity
+import com.tamerin.sysmonitor.ui.GnssLiveStandaloneActivity
 import com.tamerin.sysmonitor.ui.NetworkUsageStandaloneActivity
 import com.tamerin.sysmonitor.ui.NotificationLogStandaloneActivity
+import com.tamerin.sysmonitor.ui.PerfettoTraceStandaloneActivity
 import com.tamerin.sysmonitor.ui.PermissionAuditStandaloneActivity
+import com.tamerin.sysmonitor.ui.PingMonitorStandaloneActivity
 import com.tamerin.sysmonitor.ui.ShellTerminalStandaloneActivity
+import com.tamerin.sysmonitor.ui.SpeedTestStandaloneActivity
+import com.tamerin.sysmonitor.ui.StorageAnalyzerStandaloneActivity
 import com.tamerin.sysmonitor.ui.WakelockStandaloneActivity
 import com.tamerin.sysmonitor.ui.components.HubEntry
 import com.tamerin.sysmonitor.ui.components.HubGrid
@@ -54,7 +79,31 @@ private val INFO_ENTRIES = listOf(
     HubEntry("info/perm-audit", "Permission-Audit", "Wer hat welche Rechte", Icons.Filled.Security,
         activityClass = PermissionAuditStandaloneActivity::class.java, badge = "NEU"),
     HubEntry("info/shell", "Shell-Terminal", "ADB-Shell in-app via Shizuku", Icons.Filled.Terminal,
-        activityClass = ShellTerminalStandaloneActivity::class.java, badge = "NEU")
+        activityClass = ShellTerminalStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/discharge", "Akku-Verlauf", "Discharge-Kurve aus History", Icons.Filled.ShowChart,
+        activityClass = DischargeCurveStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/charging-limit", "Charging-Limit", "Auto-Stop bei X % via Shizuku", Icons.Filled.BatteryChargingFull,
+        activityClass = ChargingLimitStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/battery-doctor", "Akku-Doktor", "Wer killt deinen Akku?", Icons.Filled.HealthAndSafety,
+        activityClass = BatteryDoctorStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/storage", "Storage-Analyzer", "Was frisst deinen Speicher", Icons.Filled.FolderOpen,
+        activityClass = StorageAnalyzerStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/apk-extract", "APK-Extract", "Installierte App als APK ziehen", Icons.Filled.GetApp,
+        activityClass = ApkExtractorStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/crash-logs", "Crash-Logs", "Tombstones + Dropbox-Reports", Icons.Filled.BugReport,
+        activityClass = CrashLogStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/speed-test", "Speed-Test", "Cloudflare Down/Up + Latency", Icons.Filled.Speed,
+        activityClass = SpeedTestStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/ping", "Ping-Monitor", "4 Server live + Jitter-Graph", Icons.Filled.NetworkPing,
+        activityClass = PingMonitorStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/gnss", "GNSS Live", "Satelliten-Status + SNR", Icons.Filled.Satellite,
+        activityClass = GnssLiveStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/perfetto", "Perfetto-Trace", "System-Trace für ui.perfetto.dev", Icons.Filled.Timeline,
+        activityClass = PerfettoTraceStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/dpi-anim", "DPI / Animation", "wm density + animator-scales", Icons.Filled.AspectRatio,
+        activityClass = DpiAnimStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/bg-restrict", "BG-Restrict", "Bulk RUN_ANY_IN_BACKGROUND-Toggle", Icons.Filled.Block,
+        activityClass = BackgroundRestrictStandaloneActivity::class.java, badge = "NEU")
 )
 
 @Composable
