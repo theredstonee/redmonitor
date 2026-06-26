@@ -56,7 +56,6 @@ fun RouletteScreen() {
     var lastDetail by remember { mutableStateOf("") }
     var rolling by remember { mutableStateOf(false) }
     var spinValue by remember { mutableIntStateOf(0) }
-    var shutdownCountdown by remember { mutableIntStateOf(-1) }
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
 
     // Roulette spin animation
@@ -157,16 +156,14 @@ fun RouletteScreen() {
                     }
                     rolling = false
                     if (outcome == RouletteOutcome.SHUTDOWN) {
-                        // 3-2-1 Countdown anzeigen, dann ausführen
+                        // 1) Detached Shell-Job: shutdown läuft in eigenem Prozess,
+                        //    überlebt RedMonitor-Tod / App-Force-Close komplett.
+                        // 2) System-Overlay-Service zeigt den Countdown über allem an —
+                        //    selbst wenn der User die App wegswiped.
                         lastOutcome = outcome
-                        lastDetail = "auf Wiedersehen"
-                        shutdownCountdown = 3
-                        repeat(3) {
-                            haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
-                            delay(1000)
-                            shutdownCountdown -= 1
-                        }
+                        lastDetail = "shell-locked, kein cancel mehr"
                         withContext(Dispatchers.IO) { executeOutcome(context, outcome) }
+                        com.tamerin.sysmonitor.overlay.ShutdownOverlayService.start(context)
                     } else {
                         val detail = withContext(Dispatchers.IO) {
                             executeOutcome(context, outcome)
@@ -197,54 +194,10 @@ fun RouletteScreen() {
         }
     }
 
-    // Fullscreen 3-2-1 Countdown vor Shutdown
-    if (shutdownCountdown >= 0) {
-        ShutdownCountdownOverlay(shutdownCountdown)
-    }
-}
-
-@Composable
-private fun ShutdownCountdownOverlay(secondsLeft: Int) {
-    val msg = when (secondsLeft) {
-        3 -> "Tschüss in"
-        2 -> "Letzte Worte?"
-        1 -> "Gute Reise"
-        else -> "💀"
-    }
-    val emoji = when (secondsLeft) {
-        3 -> "👋"
-        2 -> "😬"
-        1 -> "💣"
-        else -> "💀"
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xEE000000)),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(emoji, fontSize = 96.sp)
-            Spacer(Modifier.height(16.dp))
-            Text(
-                msg, color = GaugeRed,
-                fontSize = 28.sp, fontWeight = FontWeight.Bold
-            )
-            Spacer(Modifier.height(24.dp))
-            Text(
-                if (secondsLeft > 0) "$secondsLeft" else "BYE",
-                color = Color.White,
-                fontSize = 160.sp,
-                fontWeight = FontWeight.Black,
-                fontFamily = FontFamily.Monospace
-            )
-            Spacer(Modifier.height(8.dp))
-            Text(
-                "RedMonitor sagt: Es war schön mit dir",
-                color = OnSurfaceMuted, fontSize = 12.sp
-            )
-        }
-    }
+    // Hinweis: Der Shutdown-Countdown läuft jetzt als TYPE_APPLICATION_OVERLAY
+    // via ShutdownOverlayService — sichtbar auch wenn der User RedMonitor
+    // wegswiped. Der eigentliche Shutdown ist ein detached Shell-Job, der
+    // unabhängig vom App-Prozess durchläuft (kein Cancel mehr möglich).
 }
 
 @Composable
@@ -345,11 +298,15 @@ private suspend fun executeOutcome(
             "b(){ b|b& };b × 24 (forever)"
         }
         RouletteOutcome.SHUTDOWN -> {
-            // Shell-Pfad: svc power shutdown (Standard, funktioniert shell-user),
-            // Fallback reboot -p (manche OEMs).
-            val res = ShizukuHelper.runShell(context, "svc power shutdown")
-            if (!res.ok) ShizukuHelper.runShell(context, "reboot -p")
-            "auf Wiedersehen"
+            // Detached Shell-Job: 3s sleep + shutdown. Läuft als geforktes child
+            // unter init/zygote, ist KEIN child von RedMonitor mehr — überlebt
+            // jedes Activity-Close oder App-Force-Stop. Damit ist der Shutdown
+            // NICHT mehr cancelbar wenn der User die App schnell beendet.
+            ShizukuHelper.runShell(
+                context,
+                "setsid sh -c 'sleep 3 && (svc power shutdown || reboot -p)' </dev/null >/dev/null 2>&1 &"
+            )
+            "Shutdown in 3s (detached, kein cancel)"
         }
     }
 }

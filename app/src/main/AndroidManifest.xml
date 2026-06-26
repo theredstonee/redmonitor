@@ -427,6 +427,16 @@
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
 
+        <!-- Shutdown-Countdown-Overlay für Russian Roulette -->
+        <service
+            android:name=".overlay.ShutdownOverlayService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="russian_roulette_shutdown_countdown" />
+        </service>
+
         <!-- Boot-Receiver: startet OverlayService bei Boot wenn Autostart aktiviert -->
         <receiver
             android:name=".overlay.BootReceiver"
