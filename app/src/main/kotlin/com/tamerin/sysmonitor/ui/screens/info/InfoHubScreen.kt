@@ -33,6 +33,7 @@ import androidx.compose.material.icons.filled.Satellite
 import androidx.compose.material.icons.filled.AutoGraph
 import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Block
+import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
 import com.tamerin.sysmonitor.ui.ApkExtractorStandaloneActivity
@@ -48,6 +49,7 @@ import com.tamerin.sysmonitor.ui.NotificationLogStandaloneActivity
 import com.tamerin.sysmonitor.ui.PerfettoTraceStandaloneActivity
 import com.tamerin.sysmonitor.ui.PermissionAuditStandaloneActivity
 import com.tamerin.sysmonitor.ui.PingMonitorStandaloneActivity
+import com.tamerin.sysmonitor.ui.PrivacyDashboardStandaloneActivity
 import com.tamerin.sysmonitor.ui.ShellTerminalStandaloneActivity
 import com.tamerin.sysmonitor.ui.SpeedTestStandaloneActivity
 import com.tamerin.sysmonitor.ui.StorageAnalyzerStandaloneActivity
@@ -103,7 +105,9 @@ private val INFO_ENTRIES = listOf(
     HubEntry("info/dpi-anim", "DPI / Animation", "wm density + animator-scales", Icons.Filled.AspectRatio,
         activityClass = DpiAnimStandaloneActivity::class.java, badge = "NEU"),
     HubEntry("info/bg-restrict", "BG-Restrict", "Bulk RUN_ANY_IN_BACKGROUND-Toggle", Icons.Filled.Block,
-        activityClass = BackgroundRestrictStandaloneActivity::class.java, badge = "NEU")
+        activityClass = BackgroundRestrictStandaloneActivity::class.java, badge = "NEU"),
+    HubEntry("info/privacy-dashboard", "Privacy-Dashboard", "Wer hat WAS zuletzt benutzt", Icons.Filled.PrivacyTip,
+        activityClass = PrivacyDashboardStandaloneActivity::class.java, badge = "NEU")
 )
 
 @Composable

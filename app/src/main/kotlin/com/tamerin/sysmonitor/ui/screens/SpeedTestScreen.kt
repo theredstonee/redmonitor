@@ -39,29 +39,40 @@ fun SpeedTestScreen() {
     var jitterMs by remember { mutableIntStateOf(0) }
     var downloadResult by remember { mutableStateOf<PhaseResult?>(null) }
     var uploadResult by remember { mutableStateOf<PhaseResult?>(null) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
 
     fun start() {
         running = true
+        errorMsg = null
         downloadResult = null; uploadResult = null
         scope.launch {
-            // 1. Latency: 10 pings via HTTP HEAD zu speed.cloudflare.com
-            currentPhase = "Latency ..."
-            val (lat, jit) = withContext(Dispatchers.IO) { measureLatency() }
-            latencyMs = lat; jitterMs = jit
+            try {
+                currentPhase = "Latency ..."
+                val (lat, jit) = withContext(Dispatchers.IO) { measureLatency() }
+                latencyMs = lat; jitterMs = jit
 
-            // 2. Download
-            currentPhase = "Download ..."
-            downloadResult = withContext(Dispatchers.IO) {
-                downloadTest { mbps -> liveMbps = mbps }
-            }
+                currentPhase = "Download ..."
+                downloadResult = withContext(Dispatchers.IO) {
+                    runCatching { downloadTest { mbps -> liveMbps = mbps } }
+                        .onFailure { errorMsg = "Download: ${it.message ?: it::class.simpleName}" }
+                        .getOrNull()
+                }
 
-            // 3. Upload
-            currentPhase = "Upload ..."
-            uploadResult = withContext(Dispatchers.IO) {
-                uploadTest { mbps -> liveMbps = mbps }
+                if (errorMsg == null) {
+                    currentPhase = "Upload ..."
+                    uploadResult = withContext(Dispatchers.IO) {
+                        runCatching { uploadTest { mbps -> liveMbps = mbps } }
+                            .onFailure { errorMsg = "Upload: ${it.message ?: it::class.simpleName}" }
+                            .getOrNull()
+                    }
+                }
+                currentPhase = if (errorMsg != null) "Fehler" else "Fertig"
+            } catch (t: Throwable) {
+                errorMsg = t.message ?: t::class.simpleName ?: "Unbekannter Fehler"
+                currentPhase = "Fehler"
+            } finally {
+                running = false
             }
-            currentPhase = "Fertig"
-            running = false
         }
     }
 
@@ -80,6 +91,13 @@ fun SpeedTestScreen() {
             KeyValueRow("Phase", currentPhase)
             if (running) {
                 KeyValueRow("Live", "${"%.1f".format(liveMbps)} Mbps")
+            }
+        }
+
+        errorMsg?.let {
+            StatCard("Fehler") {
+                Text(it, color = androidx.compose.ui.graphics.Color(0xFFDC2626),
+                    fontSize = 12.sp, fontFamily = FontFamily.Monospace)
             }
         }
 
@@ -139,62 +157,70 @@ private fun measureLatency(): Pair<Int, Int> {
 }
 
 private suspend fun downloadTest(onProgress: (Double) -> Unit): PhaseResult {
-    val bytes = 100L * 1024 * 1024  // 100 MB
+    val bytes = 50L * 1024 * 1024  // 50 MB - genug für realistische Messung, aber nicht so viel dass Mobile-Daten leiden
     val url = URL("https://speed.cloudflare.com/__down?bytes=$bytes")
     val c = url.openConnection() as HttpURLConnection
-    c.connectTimeout = 5000
-    c.readTimeout = 15000
-    c.inputStream.use { input ->
-        val buf = ByteArray(64 * 1024)
-        var total = 0L
-        val start = System.nanoTime()
-        var lastReport = start
-        while (true) {
-            val n = input.read(buf)
-            if (n < 0) break
-            total += n
-            val now = System.nanoTime()
-            val seconds = (now - start) / 1_000_000_000.0
-            if (seconds > 12.0) break  // cap test at 12 s
-            if (now - lastReport > 200_000_000L) {
-                onProgress(total * 8.0 / 1_000_000.0 / max(seconds, 0.05))
-                lastReport = now
+    c.connectTimeout = 8000
+    c.readTimeout = 20000
+    c.setRequestProperty("Accept-Encoding", "identity")  // kein gzip - sonst lügen die Zahlen
+    try {
+        c.inputStream.use { input ->
+            val buf = ByteArray(64 * 1024)
+            var total = 0L
+            val start = System.nanoTime()
+            var lastReport = start
+            while (true) {
+                val n = input.read(buf)
+                if (n < 0) break
+                total += n
+                val now = System.nanoTime()
+                val seconds = (now - start) / 1_000_000_000.0
+                if (seconds > 12.0) break
+                if (now - lastReport > 200_000_000L) {
+                    onProgress(total * 8.0 / 1_000_000.0 / max(seconds, 0.05))
+                    lastReport = now
+                }
             }
+            val seconds = (System.nanoTime() - start) / 1_000_000_000.0
+            val mbps = total * 8.0 / 1_000_000.0 / max(seconds, 0.05)
+            return PhaseResult(mbps, total / (1024.0 * 1024.0), seconds)
         }
-        c.disconnect()
-        val seconds = (System.nanoTime() - start) / 1_000_000_000.0
-        val mbps = total * 8.0 / 1_000_000.0 / seconds
-        return PhaseResult(mbps, total / (1024.0 * 1024.0), seconds)
+    } finally {
+        runCatching { c.disconnect() }
     }
 }
 
 private suspend fun uploadTest(onProgress: (Double) -> Unit): PhaseResult {
-    val payload = ByteArray(8 * 1024 * 1024)  // 8 MB chunk repeated
+    val payload = ByteArray(4 * 1024 * 1024)  // 4 MB chunk
+    val chunks = 4
     val url = URL("https://speed.cloudflare.com/__up")
     val c = url.openConnection() as HttpURLConnection
     c.requestMethod = "POST"
     c.doOutput = true
-    c.connectTimeout = 5000
-    c.readTimeout = 15000
-    c.setFixedLengthStreamingMode(payload.size.toLong() * 4)
-    c.outputStream.use { out ->
-        var total = 0L
-        val start = System.nanoTime()
-        var lastReport = start
-        repeat(4) {
-            out.write(payload); out.flush()
-            total += payload.size
-            val now = System.nanoTime()
-            if (now - lastReport > 200_000_000L) {
-                val secs = (now - start) / 1_000_000_000.0
-                onProgress(total * 8.0 / 1_000_000.0 / max(secs, 0.05))
-                lastReport = now
+    c.connectTimeout = 8000
+    c.readTimeout = 20000
+    c.setFixedLengthStreamingMode(payload.size.toLong() * chunks)
+    try {
+        c.outputStream.use { out ->
+            var total = 0L
+            val start = System.nanoTime()
+            var lastReport = start
+            repeat(chunks) {
+                out.write(payload); out.flush()
+                total += payload.size
+                val now = System.nanoTime()
+                if (now - lastReport > 200_000_000L) {
+                    val secs = (now - start) / 1_000_000_000.0
+                    onProgress(total * 8.0 / 1_000_000.0 / max(secs, 0.05))
+                    lastReport = now
+                }
             }
+            val seconds = (System.nanoTime() - start) / 1_000_000_000.0
+            runCatching { c.responseCode }
+            val mbps = total * 8.0 / 1_000_000.0 / max(seconds, 0.05)
+            return PhaseResult(mbps, total / (1024.0 * 1024.0), seconds)
         }
-        val seconds = (System.nanoTime() - start) / 1_000_000_000.0
-        c.responseCode
-        c.disconnect()
-        val mbps = total * 8.0 / 1_000_000.0 / seconds
-        return PhaseResult(mbps, total / (1024.0 * 1024.0), seconds)
+    } finally {
+        runCatching { c.disconnect() }
     }
 }

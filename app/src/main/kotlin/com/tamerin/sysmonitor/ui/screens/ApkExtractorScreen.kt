@@ -156,13 +156,24 @@ private fun extractApk(context: android.content.Context, app: ExtractApp): Boole
     val paths = ShizukuHelper.runShell(context, "pm path ${app.pkg}")
     if (!paths.ok || paths.stdout.isBlank()) return false
     val out = "/sdcard/Download/redmonitor-apks/${app.pkg}"
-    ShizukuHelper.runShell(context, "mkdir -p '$out'")
+    ShizukuHelper.runShell(context, "mkdir -p '$out' && chmod 777 '$out'")
     var allOk = true
+    val copiedFiles = mutableListOf<String>()
     for (line in paths.stdout.lines()) {
         val p = line.removePrefix("package:").trim()
         if (p.isEmpty()) continue
-        val res = ShizukuHelper.runShell(context, "cp '$p' '$out/'")
-        if (!res.ok) allOk = false
+        val fname = p.substringAfterLast('/')
+        val dst = "$out/$fname"
+        // cp + chmod + chown media_rw, sonst kriegt der File-Manager des Users die Datei nicht zu sehen
+        val res = ShizukuHelper.runShell(context,
+            "cp '$p' '$dst' && chmod 666 '$dst' && " +
+                "chown media_rw:media_rw '$dst' 2>/dev/null; echo done")
+        if (!res.ok) allOk = false else copiedFiles += dst
+    }
+    // Media-Scan triggern, damit MediaStore die neuen APKs indexiert
+    for (f in copiedFiles) {
+        ShizukuHelper.runShell(context,
+            "am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d 'file://$f' >/dev/null 2>&1")
     }
     return allOk
 }

@@ -420,6 +420,12 @@
             android:label="RedMonitor · AGB"
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+        <activity
+            android:name=".ui.PrivacyDashboardStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Privacy-Dashboard"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
 
         <!-- Boot-Receiver: startet OverlayService bei Boot wenn Autostart aktiviert -->
         <receiver

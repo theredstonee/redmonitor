@@ -30,7 +30,7 @@ import kotlinx.coroutines.delay
 fun ChargingLimitScreen() {
     val context = LocalContext.current
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
-    var probe by remember { mutableStateOf<ChargingControl.ProbeResult?>(null) }
+    var probe by remember { mutableStateOf<ChargingControl.Probe?>(null) }
     var limit by remember { mutableFloatStateOf(80f) }
     var autoMode by remember { mutableStateOf(false) }
     var pct by remember { mutableFloatStateOf(0f) }
@@ -80,17 +80,34 @@ fun ChargingLimitScreen() {
 
         StatCard("Smart Charging Limit") {
             KeyValueRow("Akku jetzt", "${pct.toInt()} % " + if (charging) "(lädt)" else "(nicht am Strom)")
-            KeyValueRow("Kernel-Pfad", probe?.path?.substringAfterLast('/') ?: "nicht gefunden")
+            KeyValueRow("Methode", when (probe?.strategy) {
+                ChargingControl.Strategy.KERNEL_SYSFS -> "Hardware-Stop (Sysfs)"
+                ChargingControl.Strategy.DUMPSYS_SOFT -> "Soft-Stop (dumpsys)"
+                else -> "—"
+            })
+            KeyValueRow("Pfad", probe?.path?.substringAfterLast('/') ?: "—")
             if (probe == null) {
                 Text(
-                    "Auf deinem Gerät konnte kein beschreibbarer Charge-Enable-Pfad gefunden " +
-                        "werden. Mögliche Ursache: Hersteller-Lock (Samsung Knox), kein Kernel-Support, " +
-                        "oder anderer Sysfs-Pfad. Im Shell-Terminal kannst du selbst suchen: " +
-                        "find /sys/class/power_supply -name '*charg*enable*' 2>/dev/null",
+                    "Konnte weder Sysfs noch dumpsys-Fallback einrichten. Shizuku-shell down?",
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 return@StatCard
             }
+            Spacer(Modifier.height(4.dp))
+            Text(probe.description, color = OnSurfaceMuted, fontSize = 11.sp)
+            if (probe.strategy == ChargingControl.Strategy.DUMPSYS_SOFT) {
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "ℹ Auf modernem MIUI/HyperOS und Samsung Knox sind die Kernel-Pfade " +
+                        "gelocked — selbst mit root nicht aushebelbar ohne Kernel-Patch. " +
+                        "Wir nehmen daher den OS-Level-Soft-Stop: `dumpsys battery set ac/usb/wireless 0`. " +
+                        "Android stoppt seine Charging-Top-Up-Loop. Status-Icon zeigt entladen, " +
+                        "der PMIC bekommt kein 'weiter laden'-Kommando. Wirksamkeit variiert je nach " +
+                        "Vendor — manche PMICs fahren trotzdem mit minimaler Erhaltungsladung weiter.",
+                    color = OnSurfaceMuted, fontSize = 11.sp
+                )
+            }
+            Spacer(Modifier.height(4.dp))
             KeyValueRow("Letzte Aktion", lastAction)
         }
 

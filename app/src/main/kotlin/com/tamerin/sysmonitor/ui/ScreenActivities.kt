@@ -19,6 +19,7 @@ import com.tamerin.sysmonitor.ui.screens.DpiAnimScreen
 import com.tamerin.sysmonitor.ui.screens.GnssLiveScreen
 import com.tamerin.sysmonitor.ui.screens.PerfettoTraceScreen
 import com.tamerin.sysmonitor.ui.screens.PingMonitorScreen
+import com.tamerin.sysmonitor.ui.screens.PrivacyDashboardScreen
 import com.tamerin.sysmonitor.ui.screens.PrivacyPolicyScreen
 import com.tamerin.sysmonitor.ui.screens.SpeedTestScreen
 import com.tamerin.sysmonitor.ui.screens.StorageAnalyzerScreen
@@ -291,6 +292,11 @@ class PrivacyPolicyStandaloneActivity : BaseScreenActivity() {
 class TermsStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Nutzungsbedingungen"
     @Composable override fun ScreenContent() { TermsScreen() }
+}
+
+class PrivacyDashboardStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Privacy-Dashboard"
+    @Composable override fun ScreenContent() { PrivacyDashboardScreen() }
 }
 
 class BenchHistoryStandaloneActivity : BaseScreenActivity() {

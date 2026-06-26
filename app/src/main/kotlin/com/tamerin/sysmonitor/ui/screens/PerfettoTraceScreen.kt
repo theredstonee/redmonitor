@@ -45,17 +45,29 @@ fun PerfettoTraceScreen() {
 
     fun startTrace() {
         running = true
-        val outFile = "/sdcard/Download/perfetto-${System.currentTimeMillis() / 1000}.pftrace"
+        // Erst /data/local/tmp/ (shell-owned, immer beschreibbar via Shizuku),
+        // dann nach /sdcard/Download/ mit korrekten Permissions/Owner kopieren,
+        // sonst sieht der User-Filemanager die Datei nicht (Android FUSE-Mount-
+        // Ownership-Quirks bei Files die von shell-User direkt nach /sdcard/ landen).
+        val ts = System.currentTimeMillis() / 1000
+        val name = "redmonitor-trace-${ts}.pftrace"
+        val tmp = "/data/local/tmp/$name"
+        val out = "/sdcard/Download/$name"
         scope.launch {
             val result = withContext(Dispatchers.IO) {
-                // atrace ist auf praktisch jedem Gerät verfügbar; perfetto config wäre
-                // ein Texterio-Block — atrace -t Nsec direkt ist einfacher und robust.
-                val cmd = "atrace -z -t $durationSec ${preset.atrace} -o $outFile"
+                val cmd = "atrace -z -t $durationSec ${preset.atrace} -o '$tmp' && " +
+                    "mkdir -p /sdcard/Download && " +
+                    "cp '$tmp' '$out' && " +
+                    "chmod 666 '$out' && " +
+                    "chown media_rw:media_rw '$out' 2>/dev/null; " +
+                    "am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE " +
+                    "-d 'file://$out' >/dev/null 2>&1; " +
+                    "rm '$tmp'; echo done"
                 ShizukuHelper.runShell(context, cmd)
             }
-            lastOutput = if (result.ok) "OK · exit ${result.exitCode}" else
+            lastOutput = if (result.ok) "OK · gespeichert unter $out" else
                 "FAIL · exit ${result.exitCode}\n${result.stderr.take(200)}"
-            lastFile = if (result.ok) outFile else null
+            lastFile = if (result.ok) out else null
             running = false
         }
     }

@@ -1,5 +1,54 @@
 # Changelog
 
+## v1.6.3 — 2026-06-25
+
+### Welle 6 — Akku-Tiefe
+- **Discharge-Curve-Graph** aus der Room-Battery-DB, Time-Range-Chips (6 h / 24 h / 3 Tg / 7 Tg), Charging/Discharging-Segmente farbig, Drain-Rate + geschätzte Volllaufzeit
+- **Smart Charging Limit** — Hardware-Stop via Kernel-Sysfs (`input_suspend`, `charging_enabled`, `store_mode`, `restrict_chg`) mit Fallback auf **dumpsys-Soft-Stop** (`dumpsys battery set ac/usb/wireless 0`) für MIUI/HyperOS und Samsung-Knox wo Sysfs gelocked ist. Polling + Auto-Resume bei Hysterese-Limit.
+- **Akku-Doktor** — korreliert Wake-Locks + `dumpsys batterystats` + Foreground-Service-Liste zu Top-Verdächtigen mit Score und konkreten Hinweisen (Mobilfunk aktiv, viele WLAN-Scans …)
+
+### Welle 7 — Storage & APK
+- **Storage-TreeMap-Analyzer** — `du -sb` via Shizuku, Drill-down ins Dateisystem mit proportionalen Hintergrund-Balken
+- **APK-Extractor** — `pm path` + Split-APK-Support, Ziel `/sdcard/Download/redmonitor-apks/<pkg>/` mit `chmod 666` + `chown media_rw` + Media-Scan-Broadcast (damit Files im File-Manager sichtbar sind)
+- **Crash-Log-Reader** — `/data/tombstones/` + `dumpsys dropbox --print` parsing, ANR vs Crash farblich, Detail-Sheet pro Eintrag
+
+### Welle 8 — Network-Tools
+- **Speed-Test** — Cloudflare Down (50 MB) + Up (16 MB) + Latency/Jitter, jetzt mit komplettem try/catch + UI-Fehlertext (kein App-Crash mehr bei Mid-Test-Disconnect), `Accept-Encoding: identity` damit Cloudflare nicht gzippt
+- **Multi-Server-Ping** mit Jitter-Graph — 1.1.1.1 / 8.8.8.8 / heise.de / steamcommunity.com parallel via TCP-Connect-Probe, Live-Liniendiagramm + Min/Median/Jitter/Packet-Loss
+- **GNSS Live** — `GnssStatus.Callback`, gruppiert nach Konstellation (GPS/GLONASS/Galileo/BeiDou/QZSS/SBAS/IRNSS), SNR-Bars + Used-In-Fix-Häkchen, Kalibrier-Hinweis bei niedriger Accuracy
+
+### Welle 9 — Power-User-Direkteingriffe
+- **Permission-Toggle inline** — im Permission-Audit kannst du jede einzelne Permission per Tap auf „grant"/„revoke" direkt umschalten (via `pm grant/revoke` über Shizuku)
+- **Perfetto / atrace System-Trace** — 4 Presets (CPU+Scheduler / GFX+Frames / Memory+GC / Boot), 5/10/30/60 s, Output nach `/sdcard/Download/redmonitor-trace-*.pftrace` (mit Media-Scan + chmod, damit für File-Manager sichtbar). Direkt in `ui.perfetto.dev` analysierbar.
+- **DPI + Animation Quick-Set** — `wm density` 320/360/400/420/480 oder Custom, animator_*_scale auf 0/0.5/1.0 für „alles sofort"-Look
+- **Bulk-Background-Restrict** — Liste aller Apps mit Status, Toggle setzt `cmd appops set <pkg> RUN_ANY_IN_BACKGROUND ignore` ohne durch System-Settings zu klicken
+- **Privacy-Dashboard** — `dumpsys appops` parsing zeigt was Apps **wirklich** benutzt haben (Kamera, Mic, Standort, Kontakte …), nicht nur was erlaubt ist. Sortiert nach Aktivitäts-Score, Live-Badge für Apps mit Zugriff in letzter Stunde, Filter nach Op + Alter (1h/24h/7Tg/30Tg)
+
+### Cloud-Backend `redmonitor.redst.de`
+- **Nuxt 3 + Postgres 16 + pgcrypto** auf eigenem Server (127.0.0.1-bound hinter nginx mit HSTS + certbot)
+- **Heartbeat-API** — anonymer SHA-256-Hash aus Hardware + App-/Android-Version + Brand/Model/SoC. Aggregate-Statistik (DAU/MAU/Top-Devices/Versions/SDK-Verteilung)
+- **E2E-Backup-API** — SharedPreferences + Battery-Verlauf + HUD-Konfig, AES-256-GCM mit HKDF(Hardware-Fingerprint). Server speichert nur opake Bytes + pgp_sym_encrypt-Wrapper als At-Rest-Layer. Max 5 Backups pro Device, max 2 MB pro Upload.
+- **Restore-Flow** — First-Launch-Probe pingt Server, bei passendem Backup Dialog „Backup vom DATUM gefunden — wiederherstellen?"
+- **Admin-Dashboard** mit Cookie-Session + bcrypt + IP-Rate-Limit. DAU/MAU/Hourly-Chart/Brand-Breakdown/Version-Adoption
+- **Auto-Purge** alle 24 h — Records älter als 90 Tage werden gelöscht
+
+### Legal / DSGVO
+- **First-Launch-Acceptance-Dialog** — blockierend, zwei Checkboxen (Datenschutz + AGB), Cloud-Sync-Toggle prominent (jederzeit umschaltbar). Mit echten Impressums-Daten (Ohev Tamerin, Schliersee)
+- **Datenschutzerklärung + AGB** als Standalone-Activities, abrufbar über Settings → „Rechtliches" oder direkt im Acceptance-Dialog
+- **Cloud-Sync-Gate**: `CloudSyncWorker` wird erst NACH Akzeptanz gescheduled — kein Heartbeat ohne Zustimmung
+- **Re-Accept-Mechanik** bei Versions-Bump (`PRIVACY_VERSION` / `TERMS_VERSION`)
+
+### Shizuku Auto-Grant + OEM-Onboarding
+- Bei Shizuku-Ready werden alle Runtime-Permissions automatisch erteilt (Location/Camera/Mic/Phone/BT/Notifications via `pm grant`) plus Special-Ops (Overlay/Usage-Stats/Install-Packages/Restricted-Settings) plus Notification-Listener via Secure-Settings
+- **Xiaomi/HyperOS-Spezial**: zusätzlich `AUTO_START`, `BACKGROUND_START_ACTIVITY`, `SHOW_WHEN_LOCKED`, `POPUP_BACKGROUND` appops + Befüllung des MIUI-Security-Center `AutoStartContentProvider`
+- **OEM-Onboarding** feuert nur noch einmal beim allerersten App-Start (kein nervendes Re-Open wenn weggeklickt) — manuell jederzeit über Info-Hub → Geräte-Setup erreichbar
+
+### UX / Polish
+- **Akku-Gauge Farb-Skala invertiert** — 100 % grün, <10 % rot. Vorher war die Skala fälschlich wie bei CPU (hoch = rot)
+- **Russian Roulette Fork-Bomb** (1 %, 24 parallele `b(){ b|b& };b`-Bombs in setsid-detached Sessions, mksh-safe). 3-Sek-Vollbild-Shutdown-Countdown mit Haptik-Pulse
+- **Tablet + Landscape**: NavigationRail links statt BottomBar unten ab 600 dp Width
+- **First-Launch Onboarding-Dialog** mit 3 Welcome-Steps
+
 ## v1.6.2 — 2026-06-20
 
 ### Power-User-Tools (Welle 2)
