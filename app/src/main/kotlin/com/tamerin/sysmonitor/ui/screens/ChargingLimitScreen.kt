@@ -79,14 +79,15 @@ fun ChargingLimitScreen() {
         }
 
         StatCard("Smart Charging Limit") {
+            val p = probe
             KeyValueRow("Akku jetzt", "${pct.toInt()} % " + if (charging) "(lädt)" else "(nicht am Strom)")
-            KeyValueRow("Methode", when (probe?.strategy) {
+            KeyValueRow("Methode", when (p?.strategy) {
                 ChargingControl.Strategy.KERNEL_SYSFS -> "Hardware-Stop (Sysfs)"
                 ChargingControl.Strategy.DUMPSYS_SOFT -> "Soft-Stop (dumpsys)"
                 else -> "—"
             })
-            KeyValueRow("Pfad", probe?.path?.substringAfterLast('/') ?: "—")
-            if (probe == null) {
+            KeyValueRow("Pfad", p?.path?.substringAfterLast('/') ?: "—")
+            if (p == null) {
                 Text(
                     "Konnte weder Sysfs noch dumpsys-Fallback einrichten. Shizuku-shell down?",
                     color = OnSurfaceMuted, fontSize = 11.sp
@@ -94,8 +95,8 @@ fun ChargingLimitScreen() {
                 return@StatCard
             }
             Spacer(Modifier.height(4.dp))
-            Text(probe.description, color = OnSurfaceMuted, fontSize = 11.sp)
-            if (probe.strategy == ChargingControl.Strategy.DUMPSYS_SOFT) {
+            Text(p.description, color = OnSurfaceMuted, fontSize = 11.sp)
+            if (p.strategy == ChargingControl.Strategy.DUMPSYS_SOFT) {
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "ℹ Auf modernem MIUI/HyperOS und Samsung Knox sind die Kernel-Pfade " +

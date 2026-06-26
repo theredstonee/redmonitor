@@ -139,7 +139,7 @@ fun LegalAcceptanceDialog(
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Auch jederzeit in den Einstellungen unter „Rechtliches" abrufbar.",
+                        "Auch jederzeit in den Einstellungen unter 'Rechtliches' abrufbar.",
                         color = OnSurfaceMuted, fontSize = 10.sp
                     )
                     Spacer(Modifier.height(16.dp))
