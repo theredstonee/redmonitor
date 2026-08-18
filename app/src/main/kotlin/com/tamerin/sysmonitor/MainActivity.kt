@@ -66,6 +66,7 @@ import com.tamerin.sysmonitor.ui.screens.DozeWhitelistScreen
 import com.tamerin.sysmonitor.ui.screens.FeaturesScreen
 import com.tamerin.sysmonitor.ui.screens.FlashlightScreen
 import com.tamerin.sysmonitor.ui.screens.FullscreenDisplayTestScreen
+import com.tamerin.sysmonitor.ui.screens.GlyphMatrixScreen
 import com.tamerin.sysmonitor.ui.screens.GpsTestScreen
 import com.tamerin.sysmonitor.ui.screens.GpuBenchmarkScreen
 import com.tamerin.sysmonitor.ui.screens.GpuScreen
@@ -174,6 +175,7 @@ object Routes {
     const val NETWORK = "system/network"
     const val DISPLAY = "system/display"
     const val HUD = "system/hud"
+    const val GLYPH = "system/glyph"
     const val HUD_SETTINGS = "system/hud/settings"
 
     const val BM_CPU = "bench/cpu"
@@ -249,6 +251,7 @@ private fun titleFor(route: String?): String = when {
     route == Routes.NETWORK -> "Netzwerk"
     route == Routes.DISPLAY -> "Display & Gerät"
     route == Routes.HUD -> "Floating HUD"
+    route == Routes.GLYPH -> "Glyph Matrix"
     route == Routes.HUD_SETTINGS -> "HUD anpassen"
     route == Routes.BM_CPU -> "CPU-Benchmark"
     route == Routes.BM_RAM -> "RAM-Speed"
@@ -560,6 +563,7 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
             composable(Routes.DISPLAY) { DisplayScreen() }
             composable(Routes.HUD) { OverlayHudScreen { navController.navigate(Routes.HUD_SETTINGS) } }
             composable(Routes.HUD_SETTINGS) { HudSettingsScreen() }
+            composable(Routes.GLYPH) { GlyphMatrixScreen() }
 
             composable(Routes.BM_CPU) { CpuBenchmarkScreen() }
             composable(Routes.BM_RAM) { RamBenchmarkScreen() }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vorschaubild des Glyph-Toys in Nothings Toys-Manager: Ring-Gauge mit Balken. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24,5 a19,19 0 1,1 -0.01,0"
+        android:strokeColor="#33FFFFFF"
+        android:strokeWidth="4" />
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M24,5 a19,19 0 0,1 16.45,28.5"
+        android:strokeColor="#DC2626"
+        android:strokeWidth="4" />
+    <path
+        android:fillColor="#F3F4F6"
+        android:pathData="M16,20 h3 v9 h-3 z M22.5,16 h3 v13 h-3 z M29,23 h3 v6 h-3 z" />
+</vector>

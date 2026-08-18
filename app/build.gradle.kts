@@ -6,6 +6,13 @@ plugins {
     alias(libs.plugins.androidx.baselineprofile)
 }
 
+// Das Nothing Glyph Matrix SDK ist proprietaer (EULA verbietet Weiterverteilung),
+// liegt deshalb nur lokal in app/libs/ und ist gitignored. Fehlt die AAR, wird
+// statt der echten Anbindung die No-Op-Variante aus src/noglyph kompiliert —
+// die App baut also auch aus einem frischen Clone heraus, nur ohne Glyph-Support.
+val glyphAar = file("libs/glyph-matrix-sdk-2.0.aar")
+val hasGlyphSdk = glyphAar.exists()
+
 android {
     namespace = "com.tamerin.sysmonitor"
     compileSdk = 35
@@ -29,6 +36,8 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("boolean", "HAS_GLYPH_SDK", hasGlyphSdk.toString())
     }
 
     buildTypes {
@@ -69,6 +78,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    // Genau eine der beiden Glyph-Varianten kommt in den Build.
+    sourceSets.getByName("main") {
+        java.srcDir(if (hasGlyphSdk) "src/glyph/kotlin" else "src/noglyph/kotlin")
     }
 
     composeCompiler {
@@ -116,6 +130,8 @@ dependencies {
     implementation(libs.androidx.glance.material3)
     implementation(libs.androidx.profileinstaller)
     baselineProfile(project(":baselineprofile"))
+
+    if (hasGlyphSdk) implementation(files(glyphAar))
 
     debugImplementation(libs.androidx.ui.tooling)
 }

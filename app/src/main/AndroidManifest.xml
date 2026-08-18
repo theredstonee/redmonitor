@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!-- Das Glyph-SDK deklariert minSdk 33, RedMonitor laeuft ab 29. Der Override ist
+         hier sicher, weil SDK-Klassen ausschliesslich auf dem Nothing Phone (3)
+         angefasst werden (Android 15) — GlyphSupport prueft Hersteller UND SDK_INT,
+         bevor irgendeine com.nothing.ketchum-Klasse geladen wird. -->
+    <uses-sdk tools:overrideLibrary="com.nothing.thirdparty" />
+
+    <!-- Nothing Glyph Matrix (Phone 3). Ohne das SDK in app/libs/ ist der Toy-Service
+         eine No-Op-Klasse, die Permission bleibt auf Fremdgeraeten wirkungslos. -->
+    <uses-permission android:name="com.nothing.ketchum.permission.ENABLE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
@@ -426,6 +435,40 @@
             android:label="RedMonitor · Privacy-Dashboard"
             android:theme="@style/Theme.SysMonitor"
             android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <activity
+            android:name=".ui.GlyphMatrixStandaloneActivity"
+            android:exported="false"
+            android:label="RedMonitor · Glyph Matrix"
+            android:theme="@style/Theme.SysMonitor"
+            android:configChanges="orientation|screenSize|keyboardHidden" />
+
+        <!-- Glyph-Toy fuer das Nothing Phone (3): Live-Werte auf der 25x25-Matrix.
+             Nothing OS bindet den Service, sobald der User den Toy per Glyph-Button
+             auswaehlt. longpress=1 aktiviert EVENT_CHANGE (Metrik umschalten),
+             aod_support=1 den Always-On-Betrieb. -->
+        <service
+            android:name=".glyph.RedMonitorGlyphToyService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.nothing.glyph.TOY" />
+            </intent-filter>
+            <meta-data
+                android:name="com.nothing.glyph.toy.name"
+                android:resource="@string/glyph_toy_name" />
+            <meta-data
+                android:name="com.nothing.glyph.toy.image"
+                android:resource="@drawable/ic_glyph_toy_preview" />
+            <meta-data
+                android:name="com.nothing.glyph.toy.summary"
+                android:resource="@string/glyph_toy_summary" />
+            <meta-data
+                android:name="com.nothing.glyph.toy.longpress"
+                android:value="1" />
+            <meta-data
+                android:name="com.nothing.glyph.toy.aod_support"
+                android:value="1" />
+        </service>
 
         <!-- Shutdown-Countdown-Overlay für Russian Roulette -->
         <service

@@ -54,6 +54,9 @@ Bonus: **Floating-HUD** über allen Apps und ein **Akku-Drainer** mit 24 paralle
 - **GPS** — Live-Position + Satelliten-Status
 - **Proximity & Licht** — interaktive Live-Anzeige
 
+### Nothing Phone (3)
+- **Glyph Matrix** — Live-CPU, -RAM, -Akku und -Temperatur als Ring-Gauge auf der 25×25-Matrix der Rückseite. Langer Druck auf den Glyph-Button schaltet die Metrik um, Always-On wird unterstützt. In der App gibt es eine 1:1-Vorschau, die auch ohne Nothing-Gerät funktioniert.
+
 ### Info
 - **Thermalzonen** — alle Live-Temperaturen
 - **SIM & Telefonie** — Operator, Netz-Typ (4G/5G), Roaming
@@ -80,6 +83,21 @@ APK liegt unter `app/build/outputs/apk/debug/app-debug.apk`.
 Oder einfach in **Android Studio** öffnen → grünen Run-Knopf drücken.
 
 ---
+
+## Glyph Matrix SDK (optional)
+
+Der Glyph-Support braucht Nothings **Glyph Matrix SDK**. Das ist proprietär — seine EULA
+verbietet die Weiterverteilung, deshalb liegt es **nicht** im Repo:
+
+```bash
+# glyph-matrix-sdk-2.0.aar hier holen:
+#   https://github.com/Nothing-Developer-Programme/GlyphMatrix-Developer-Kit
+cp glyph-matrix-sdk-2.0.aar app/libs/
+```
+
+Ohne die Datei baut die App ganz normal durch — dann wird die No-Op-Variante aus
+`app/src/noglyph/` kompiliert und `BuildConfig.HAS_GLYPH_SDK` ist `false`. Die
+Matrix-Vorschau im System-Tab funktioniert auch dann, sie braucht kein SDK.
 
 ## Tech
 

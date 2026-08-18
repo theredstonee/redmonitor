@@ -16,6 +16,7 @@ import com.tamerin.sysmonitor.ui.screens.DevToolsScreen
 import com.tamerin.sysmonitor.ui.screens.DischargeCurveScreen
 import com.tamerin.sysmonitor.ui.screens.DisplayTestScreen
 import com.tamerin.sysmonitor.ui.screens.DpiAnimScreen
+import com.tamerin.sysmonitor.ui.screens.GlyphMatrixScreen
 import com.tamerin.sysmonitor.ui.screens.GnssLiveScreen
 import com.tamerin.sysmonitor.ui.screens.PerfettoTraceScreen
 import com.tamerin.sysmonitor.ui.screens.PingMonitorScreen
@@ -297,6 +298,11 @@ class TermsStandaloneActivity : BaseScreenActivity() {
 class PrivacyDashboardStandaloneActivity : BaseScreenActivity() {
     override val screenTitle = "Privacy-Dashboard"
     @Composable override fun ScreenContent() { PrivacyDashboardScreen() }
+}
+
+class GlyphMatrixStandaloneActivity : BaseScreenActivity() {
+    override val screenTitle = "Glyph Matrix"
+    @Composable override fun ScreenContent() { GlyphMatrixScreen() }
 }
 
 class BenchHistoryStandaloneActivity : BaseScreenActivity() {

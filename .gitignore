@@ -40,3 +40,9 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 .copilotignore
+
+# --- Nothing Glyph Matrix SDK (propietaer, EULA verbietet Weiterverteilung) ---
+# Selbst holen: https://github.com/Nothing-Developer-Programme/GlyphMatrix-Developer-Kit
+# -> glyph-matrix-sdk-2.0.aar nach app/libs/ kopieren. Ohne die Datei baut die App
+#    weiter, nur ohne Glyph-Support (BuildConfig.HAS_GLYPH_SDK = false).
+app/libs/*.aar

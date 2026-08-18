@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">RedMonitor</string>
     <string name="widget_description">Live CPU · RAM · Akku-Temperatur</string>
+    <string name="glyph_toy_name">RedMonitor</string>
+    <string name="glyph_toy_summary">Live CPU, RAM, Akku und Temperatur auf der Glyph Matrix. Langer Druck schaltet die Metrik um.</string>
 </resources>

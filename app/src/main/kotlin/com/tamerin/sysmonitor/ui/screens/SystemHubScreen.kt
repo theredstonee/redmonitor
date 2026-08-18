@@ -3,6 +3,7 @@ package com.tamerin.sysmonitor.ui.screens
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BatteryFull
 import androidx.compose.material.icons.filled.DeveloperBoard
+import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.NetworkCheck
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
 import com.tamerin.sysmonitor.Routes
 import com.tamerin.sysmonitor.ui.BatteryStandaloneActivity
+import com.tamerin.sysmonitor.ui.GlyphMatrixStandaloneActivity
 import com.tamerin.sysmonitor.ui.SensorsStandaloneActivity
 import com.tamerin.sysmonitor.ui.components.HubEntry
 import com.tamerin.sysmonitor.ui.components.HubGrid
@@ -28,6 +30,8 @@ private val SYSTEM_ENTRIES = listOf(
     HubEntry(Routes.NETWORK, "Netzwerk", "WLAN, Signal, IP, Traffic", Icons.Filled.NetworkCheck),
     HubEntry(Routes.DISPLAY, "Display & Gerät", "Build, Uptime, Display", Icons.Filled.PhoneAndroid),
     HubEntry(Routes.HUD, "Floating HUD", "Live-Overlay über allen Apps", Icons.Filled.Layers),
+    HubEntry(Routes.GLYPH, "Glyph Matrix", "Live-Werte auf der Rückseite", Icons.Filled.GridView,
+        badge = "Phone (3)", activityClass = GlyphMatrixStandaloneActivity::class.java),
     HubEntry(Routes.SYSTEM_TWEAKS, "Display-Tweaks", "DPI, Auflösung, Animationen", Icons.Filled.Tune)
 )
 
