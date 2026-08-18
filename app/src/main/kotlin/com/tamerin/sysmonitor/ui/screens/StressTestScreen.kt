@@ -13,12 +13,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.benchmark.StressEngine
+import com.tamerin.sysmonitor.benchmark.ThrottleAnalyzer
+import com.tamerin.sysmonitor.benchmark.ThrottleResult
+import com.tamerin.sysmonitor.benchmark.ThrottleSample
 import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.data.ThermalReader
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.Sparkline
 import com.tamerin.sysmonitor.ui.components.StatCard
+import com.tamerin.sysmonitor.ui.theme.GaugeGreen
 import com.tamerin.sysmonitor.ui.theme.GaugeOrange
 import com.tamerin.sysmonitor.ui.theme.GaugeRed
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -40,6 +44,9 @@ fun StressTestScreen() {
     var avgFreqMhz by remember { mutableIntStateOf(0) }
     val tempHistory = remember { mutableStateListOf<Float>() }
     val cpuHistory = remember { mutableStateListOf<Float>() }
+    val opsHistory = remember { mutableStateListOf<Float>() }
+    val throttleSamples = remember { mutableStateListOf<ThrottleSample>() }
+    var throttle by remember { mutableStateOf<ThrottleResult?>(null) }
 
     val activity = context as? android.app.Activity
     DisposableEffect(running) {
@@ -58,6 +65,9 @@ fun StressTestScreen() {
         kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             CpuReader.read(context, "stress")
         }
+        // Durchsatz-Tracking: Delta des Iterationszaehlers der StressEngine pro Sekunde
+        var lastOps = 0L
+        var lastOpsMs = 0L
         while (true) {
             val tick = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                 val cpu = CpuReader.read(context, "stress")
@@ -85,6 +95,28 @@ fun StressTestScreen() {
                 cpuHistory.add(cpuPct)
                 if (tempHistory.size > 120) tempHistory.removeAt(0)
                 if (cpuHistory.size > 120) cpuHistory.removeAt(0)
+
+                val nowMs = android.os.SystemClock.elapsedRealtime()
+                val ops = engine.opsCount()
+                val delta = ops - lastOps
+                if (lastOpsMs > 0L && delta >= 0L) {
+                    val dtSec = (nowMs - lastOpsMs).coerceAtLeast(1L) / 1000.0
+                    val opsPerSec = delta / dtSec
+                    if (opsPerSec > 0.0) {
+                        throttleSamples.add(
+                            ThrottleSample(elapsedSec, opsPerSec, displayTemp, avgFreqMhz)
+                        )
+                        opsHistory.add((opsPerSec / 1_000_000.0).toFloat())
+                        if (opsHistory.size > 120) opsHistory.removeAt(0)
+                        throttle = ThrottleAnalyzer.analyze(throttleSamples)
+                    }
+                }
+                lastOps = ops
+                lastOpsMs = nowMs
+            } else {
+                // Nach dem Stopp den Zaehler neu einlesen, damit der naechste Lauf sauber startet
+                lastOps = engine.opsCount()
+                lastOpsMs = 0L
             }
             delay(1000)
         }
@@ -116,6 +148,9 @@ fun StressTestScreen() {
                 } else {
                     tempHistory.clear()
                     cpuHistory.clear()
+                    opsHistory.clear()
+                    throttleSamples.clear()
+                    throttle = null
                     elapsedSec = 0
                     engine.start(context)
                     running = true
@@ -165,6 +200,62 @@ fun StressTestScreen() {
                 Spacer(Modifier.height(6.dp))
                 Text(
                     "Hinweis: Keine CPU-Thermalzone lesbar — zeige stattdessen Akku-Temperatur (auf Emulatoren oft fix bei 25 °C).",
+                    color = OnSurfaceMuted,
+                    fontSize = 11.sp
+                )
+            }
+        }
+
+        throttle?.let { r ->
+            StatCard("Sustained Performance") {
+                Text(
+                    "${r.sustainedPercent} %",
+                    color = when {
+                        r.sustainedRatio >= 0.95f -> GaugeGreen
+                        r.sustainedRatio >= 0.85f -> GaugeOrange
+                        else -> GaugeRed
+                    },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 34.sp
+                )
+                Text(r.verdict, color = OnSurfaceMuted, fontSize = 13.sp)
+                Spacer(Modifier.height(10.dp))
+                KeyValueRow(
+                    "Throttling ab",
+                    r.throttleAtSec?.let { "${it / 60}:${"%02d".format(it % 60)} min" }
+                        ?: "bisher nicht"
+                )
+                KeyValueRow("Schlechtester Wert", "${(r.minRatio * 100).toInt()} %")
+                KeyValueRow(
+                    "Takt Start → jetzt",
+                    if (r.baselineFreqMhz > 0) "${r.baselineFreqMhz} → ${r.currentFreqMhz} MHz" else "—"
+                )
+                KeyValueRow(
+                    "Spitzentemperatur",
+                    if (!r.peakTempC.isNaN() && r.peakTempC > 0f) "${"%.1f".format(r.peakTempC)} °C" else "—"
+                )
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Gemessen wird der echte Durchsatz der Stress-Threads, nicht die " +
+                        "Auslastung — die bleibt beim Drosseln bei 100 %. Die ersten " +
+                        "${ThrottleAnalyzer.WARMUP_SEC} Sekunden sind Anlauf und zählen nicht.",
+                    color = OnSurfaceMuted,
+                    fontSize = 11.sp
+                )
+            }
+        }
+
+        if (opsHistory.size > 1) {
+            StatCard("Verlauf Durchsatz") {
+                Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
+                    Sparkline(
+                        values = opsHistory.toList(),
+                        color = MaterialTheme.colorScheme.primary,
+                        minY = 0f
+                    )
+                }
+                Text(
+                    "Mio. Iterationen/s · höher ist besser",
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )

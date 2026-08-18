@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.PowerManager
 import android.os.Process
 import kotlinx.coroutines.CoroutineScope
+import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.sqrt
 
 /**
@@ -13,10 +14,21 @@ import kotlin.math.sqrt
  */
 class StressEngine {
     @Volatile private var running = false
+
+    /**
+     * Summe der von allen Stress-Threads abgearbeiteten Iterationen. Daraus laesst
+     * sich der Durchsatz und damit das Throttling ableiten: die CPU-Auslastung bleibt
+     * unter Volllast bei 100 %, der Durchsatz sinkt aber, sobald der Takt faellt.
+     * Ein atomarer Add pro 50k-Batch — im Vergleich zur Arbeit selbst kostenlos.
+     */
+    private val opsCounter = AtomicLong(0)
     private val threads = mutableListOf<Thread>()
     private var wakeLock: PowerManager.WakeLock? = null
 
     val isRunning: Boolean get() = running
+
+    /** Bisher abgearbeitete Iterationen ueber alle Threads. */
+    fun opsCount(): Long = opsCounter.get()
 
     fun start(scope: CoroutineScope) {
         // scope kept for API-compat; actual work is on raw threads
@@ -30,6 +42,7 @@ class StressEngine {
     private fun startInternal(context: Context?) {
         if (running) return
         running = true
+        opsCounter.set(0)
         // Keep CPU awake while stress runs
         if (context != null) {
             runCatching {
@@ -60,6 +73,8 @@ class StressEngine {
                         n += (i.toLong() * 17L) xor (n shr 5)
                         i++
                     }
+                    // Erst nach dem Batch zaehlen, damit der innere Loop unangetastet bleibt
+                    opsCounter.addAndGet(50_000L)
                     if (x == Double.NaN) return@Thread
                 }
             }, "RedMonitor-Stress-$idx").apply {
