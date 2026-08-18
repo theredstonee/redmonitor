@@ -9,7 +9,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
@@ -28,7 +34,9 @@ import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.overlay.HudColor
 import com.tamerin.sysmonitor.overlay.HudConfig
 import com.tamerin.sysmonitor.overlay.HudMetric
+import com.tamerin.sysmonitor.data.ForegroundAppReader
 import com.tamerin.sysmonitor.overlay.HudPrefs
+import com.tamerin.sysmonitor.overlay.HudProfileMode
 import com.tamerin.sysmonitor.overlay.HudSize
 import com.tamerin.sysmonitor.overlay.OverlayService
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -113,6 +121,8 @@ fun HudSettingsScreen() {
                 }
             }
         }
+
+        HudProfileCard(config = config, onChange = { apply(it) })
 
         // Größe
         StatCard("Größe") {
@@ -293,4 +303,168 @@ private fun sampleFor(metric: HudMetric): Pair<String, String> = when (metric) {
     HudMetric.NETWORK -> "↓↑" to "1.2MB/s  248KB/s"
     HudMetric.FPS -> "FPS" to "120"
     HudMetric.CLOCK -> "⌚" to "14:32  2h47m"
+}
+
+/** Ein installiertes, startbares Paket - Label + Paketname. */
+private data class LaunchableApp(val pkg: String, val label: String)
+
+/**
+ * HUD-Profile: das Overlay nur in bestimmten Apps zeigen (z. B. Spielen) oder
+ * gezielt in bestimmten Apps unterdruecken.
+ */
+@Composable
+private fun HudProfileCard(config: HudConfig, onChange: (HudConfig) -> Unit) {
+    val context = LocalContext.current
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    var showPicker by remember { mutableStateOf(false) }
+    var hasUsagePerm by remember { mutableStateOf(ForegroundAppReader.hasPermission(context)) }
+
+    StatCard("Profil") {
+        Text(
+            "Steuert, in welchen Apps das HUD auftaucht.",
+            color = OnSurfaceMuted, fontSize = 12.sp
+        )
+        Spacer(Modifier.height(10.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            HudProfileMode.entries.forEach { mode ->
+                val selected = config.profileMode == mode
+                OutlinedButton(
+                    onClick = {
+                        haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                        hasUsagePerm = ForegroundAppReader.hasPermission(context)
+                        onChange(config.copy(profileMode = mode))
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    border = if (selected) BorderStroke(2.dp, Accent) else null
+                ) {
+                    Text(
+                        mode.label,
+                        color = if (selected) Accent else Color.Unspecified,
+                        fontSize = 13.sp
+                    )
+                }
+            }
+        }
+
+        if (config.profileMode != HudProfileMode.ALWAYS) {
+            Spacer(Modifier.height(12.dp))
+            if (!hasUsagePerm) {
+                Text(
+                    "Dafuer braucht RedMonitor Zugriff auf Nutzungsdaten - sonst laesst " +
+                        "sich die Vordergrund-App nicht ermitteln. Solange die Berechtigung " +
+                        "fehlt, bleibt das HUD immer sichtbar.",
+                    color = OnSurfaceMuted, fontSize = 12.sp
+                )
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
+                    runCatching { context.startActivity(ForegroundAppReader.permissionIntent()) }
+                }) { Text("Zugriff erteilen") }
+                Spacer(Modifier.height(10.dp))
+            }
+            OutlinedButton(
+                onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+                    showPicker = true
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text("Apps auswaehlen (" + config.profileApps.size + ")") }
+        }
+    }
+
+    if (showPicker) {
+        AppPickerDialog(
+            selected = config.profileApps,
+            onDismiss = { showPicker = false },
+            onConfirm = { picked ->
+                onChange(config.copy(profileApps = picked))
+                showPicker = false
+            }
+        )
+    }
+}
+
+@Composable
+private fun AppPickerDialog(
+    selected: Set<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (Set<String>) -> Unit
+) {
+    val context = LocalContext.current
+    var apps by remember { mutableStateOf<List<LaunchableApp>>(emptyList()) }
+    var query by remember { mutableStateOf("") }
+    val picked = remember { mutableStateListOf<String>().apply { addAll(selected) } }
+
+    LaunchedEffect(Unit) {
+        apps = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                val pm = context.packageManager
+                val intent = android.content.Intent(android.content.Intent.ACTION_MAIN)
+                    .addCategory(android.content.Intent.CATEGORY_LAUNCHER)
+                pm.queryIntentActivities(intent, 0)
+                    .mapNotNull { ri ->
+                        val pkg = ri.activityInfo?.packageName ?: return@mapNotNull null
+                        LaunchableApp(pkg, ri.loadLabel(pm).toString())
+                    }
+                    .distinctBy { it.pkg }
+                    .sortedBy { it.label.lowercase() }
+            }.getOrDefault(emptyList())
+        }
+    }
+
+    val visible = remember(apps, query) {
+        if (query.isBlank()) apps
+        else apps.filter { it.label.contains(query, true) || it.pkg.contains(query, true) }
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Apps auswaehlen") },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = { Text("Suchen") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(Modifier.height(8.dp))
+                if (apps.isEmpty()) {
+                    Text("Lade Apps ...", color = OnSurfaceMuted, fontSize = 12.sp)
+                } else {
+                    LazyColumn(modifier = Modifier.height(320.dp)) {
+                        items(visible, key = { it.pkg }) { app ->
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (app.pkg in picked) picked.remove(app.pkg)
+                                        else picked.add(app.pkg)
+                                    }
+                            ) {
+                                Checkbox(
+                                    checked = app.pkg in picked,
+                                    onCheckedChange = {
+                                        if (it) picked.add(app.pkg) else picked.remove(app.pkg)
+                                    }
+                                )
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(app.label, fontSize = 13.sp, maxLines = 1)
+                                    Text(app.pkg, color = OnSurfaceMuted, fontSize = 10.sp, maxLines = 1)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(picked.toSet()) }) { Text("Uebernehmen") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+        }
+    )
 }

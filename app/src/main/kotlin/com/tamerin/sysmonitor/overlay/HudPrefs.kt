@@ -16,6 +16,16 @@ enum class HudMetric(val key: String, val label: String) {
     CLOCK("clock", "Uhrzeit + Uptime")
 }
 
+/**
+ * Wann das HUD sichtbar ist. Braucht ausser bei [ALWAYS] den Nutzungsdaten-Zugriff,
+ * weil sonst die Vordergrund-App nicht ermittelbar ist.
+ */
+enum class HudProfileMode(val label: String) {
+    ALWAYS("Immer sichtbar"),
+    ONLY_IN("Nur in ausgewaehlten Apps"),
+    EXCEPT_IN("Ueberall ausser in ausgewaehlten Apps")
+}
+
 enum class HudSize(val scale: Float, val label: String) {
     SMALL(0.85f, "Klein"),
     MEDIUM(1.0f, "Mittel"),
@@ -39,8 +49,23 @@ data class HudConfig(
     val color: HudColor,
     val edgeSnap: Boolean,
     val x: Int,
-    val y: Int
+    val y: Int,
+    val profileMode: HudProfileMode,
+    val profileApps: Set<String>
 ) {
+    /**
+     * Soll das HUD bei dieser Vordergrund-App sichtbar sein?
+     * [foregroundPackage] null = unbekannt; dann bleibt das HUD sichtbar, damit ein
+     * fehlender Nutzungsdaten-Zugriff es nicht dauerhaft verschwinden laesst.
+     */
+    fun isVisibleFor(foregroundPackage: String?): Boolean = when (profileMode) {
+        HudProfileMode.ALWAYS -> true
+        HudProfileMode.ONLY_IN ->
+            if (foregroundPackage == null) true else foregroundPackage in profileApps
+        HudProfileMode.EXCEPT_IN ->
+            if (foregroundPackage == null) true else foregroundPackage !in profileApps
+    }
+
     companion object {
         val DEFAULT = HudConfig(
             enabledMetrics = setOf(HudMetric.CPU_PERCENT, HudMetric.RAM_PERCENT, HudMetric.BATTERY, HudMetric.CPU_TEMP),
@@ -49,7 +74,9 @@ data class HudConfig(
             color = HudColor.BRAND_RED,
             edgeSnap = true,
             x = 16,
-            y = 80
+            y = 80,
+            profileMode = HudProfileMode.ALWAYS,
+            profileApps = emptySet()
         )
     }
 }
@@ -63,6 +90,8 @@ object HudPrefs {
     private const val K_SNAP = "edge_snap"
     private const val K_X = "pos_x"
     private const val K_Y = "pos_y"
+    private const val K_PROFILE_MODE = "profile_mode"
+    private const val K_PROFILE_APPS = "profile_apps"
 
     fun load(context: Context): HudConfig {
         val sp = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -81,7 +110,11 @@ object HudPrefs {
                 .getOrDefault(HudColor.BRAND_RED),
             edgeSnap = sp.getBoolean(K_SNAP, true),
             x = sp.getInt(K_X, 16),
-            y = sp.getInt(K_Y, 80)
+            y = sp.getInt(K_Y, 80),
+            profileMode = runCatching {
+                HudProfileMode.valueOf(sp.getString(K_PROFILE_MODE, HudProfileMode.ALWAYS.name)!!)
+            }.getOrDefault(HudProfileMode.ALWAYS),
+            profileApps = sp.getStringSet(K_PROFILE_APPS, null)?.toSet() ?: emptySet()
         )
     }
 
@@ -94,6 +127,8 @@ object HudPrefs {
             putBoolean(K_SNAP, config.edgeSnap)
             putInt(K_X, config.x)
             putInt(K_Y, config.y)
+            putString(K_PROFILE_MODE, config.profileMode.name)
+            putStringSet(K_PROFILE_APPS, config.profileApps.toSet())
         }.apply()
     }
 

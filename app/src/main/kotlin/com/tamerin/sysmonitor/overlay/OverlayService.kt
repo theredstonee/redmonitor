@@ -34,6 +34,7 @@ import com.tamerin.sysmonitor.MainActivity
 import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
+import com.tamerin.sysmonitor.data.ForegroundAppReader
 import com.tamerin.sysmonitor.data.MemoryReader
 import com.tamerin.sysmonitor.data.ThermalReader
 import java.text.SimpleDateFormat
@@ -51,6 +52,8 @@ class OverlayService : Service() {
         private const val NOTIFICATION_ID = 4242
         /** Wie lange der Inhalt schmaler bleiben muss, bevor das HUD Breite freigibt. */
         private const val SHRINK_DELAY_MS = 5_000L
+        /** Vordergrund-App nur alle 3 s abfragen — das ist ein Binder-Call. */
+        private const val FG_POLL_MS = 3_000L
 
         fun start(context: Context) {
             val i = Intent(context, OverlayService::class.java).setAction(ACTION_START)
@@ -83,6 +86,11 @@ class OverlayService : Service() {
     private var shrinkCandidatePx = 0
     private var shrinkSinceMs = 0L
 
+    // HUD-Profile: Sichtbarkeit abhaengig von der Vordergrund-App
+    private var lastFgCheckMs = 0L
+    private var lastFgPackage: String? = null
+    private var hudVisible = true
+
     // FPS counter
     private var frames = 0
     private var lastFpsSnapshot = 0L
@@ -110,7 +118,9 @@ class OverlayService : Service() {
 
     private val tick = object : Runnable {
         override fun run() {
-            updateText()
+            applyProfileVisibility()
+            // Ist das HUD ausgeblendet, sparen wir uns die sysfs-Leserei komplett
+            if (hudVisible) updateText()
             handler.postDelayed(this, 1500)
         }
     }
@@ -272,7 +282,34 @@ class OverlayService : Service() {
         shrinkCandidatePx = 0
         shrinkSinceMs = 0L
         textView.minWidth = 0
+        applyProfileVisibility()
         updateText()
+    }
+
+    /**
+     * Blendet das HUD je nach Profil ein oder aus. Ohne Nutzungsdaten-Zugriff liefert
+     * [ForegroundAppReader] null — dann bleibt das HUD bewusst sichtbar, statt dem User
+     * kommentarlos zu verschwinden.
+     */
+    private fun applyProfileVisibility() {
+        val v = view ?: return
+        if (config.profileMode == HudProfileMode.ALWAYS) {
+            if (!hudVisible) {
+                hudVisible = true
+                v.visibility = View.VISIBLE
+            }
+            return
+        }
+        val now = SystemClock.elapsedRealtime()
+        if (now - lastFgCheckMs >= FG_POLL_MS) {
+            lastFgPackage = ForegroundAppReader.current(this)
+            lastFgCheckMs = now
+        }
+        val shouldShow = config.isVisibleFor(lastFgPackage)
+        if (shouldShow != hudVisible) {
+            hudVisible = shouldShow
+            v.visibility = if (shouldShow) View.VISIBLE else View.GONE
+        }
     }
 
     private fun screenWidth(): Int {
