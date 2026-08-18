@@ -71,6 +71,115 @@ object BackendClient {
         }
     }
 
+    /**
+     * Laedt ein Benchmark-Ergebnis fuer den Geraete-Vergleich hoch.
+     *
+     * Wird ausschliesslich nach ausdruecklicher Bestaetigung des Users aufgerufen —
+     * pro Upload einzeln, nicht einmalig gemerkt. Es gibt hier absichtlich keinen
+     * automatischen Aufruf aus Worker oder Service.
+     */
+    suspend fun uploadBenchmark(
+        context: Context,
+        benchType: String,
+        totalScore: Int,
+        singleScore: Int?,
+        multiScore: Int?,
+        subScores: List<SubScoreUpload>
+    ): Result = withContext(Dispatchers.IO) {
+        val body = JSONObject().apply {
+            put("deviceId", DeviceIdProvider.deviceId(context))
+            put("benchType", benchType)
+            put("totalScore", totalScore)
+            singleScore?.let { put("singleScore", it) }
+            multiScore?.let { put("multiScore", it) }
+            put("soc", socName())
+            put("brand", Build.BRAND.orEmpty())
+            put("model", Build.MODEL.orEmpty())
+            put("androidSdk", Build.VERSION.SDK_INT)
+            put("appVersion", appVersion(context))
+            put("subScores", org.json.JSONArray().apply {
+                subScores.forEach { sub ->
+                    put(JSONObject().apply {
+                        put("name", sub.name)
+                        put("singleScore", sub.singleScore)
+                        put("multiScore", sub.multiScore)
+                        put("unit", sub.unit)
+                    })
+                }
+            })
+        }
+        postJson("/api/benchmark", body.toString().toByteArray(Charsets.UTF_8), context)
+    }
+
+    /**
+     * Holt die Vergleichswerte fuer einen Score. Sendet **keine** Device-ID und
+     * speichert serverseitig nichts — lesen darf also auch, wer nie hochlaedt.
+     */
+    suspend fun fetchPercentile(
+        context: Context,
+        benchType: String,
+        totalScore: Int
+    ): PercentileResponse? = withContext(Dispatchers.IO) {
+        val soc = java.net.URLEncoder.encode(socName(), "UTF-8")
+        val type = java.net.URLEncoder.encode(benchType, "UTF-8")
+        val url = URL(
+            CloudConfig.BACKEND_BASE +
+                "/api/benchmark/percentile?benchType=$type&soc=$soc&score=$totalScore"
+        )
+        val c = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "GET"
+            connectTimeout = TIMEOUT_MS
+            readTimeout = TIMEOUT_MS
+            setRequestProperty("User-Agent", UA_PREFIX + appVersion(context))
+        }
+        try {
+            if (c.responseCode !in 200..299) return@withContext null
+            val o = JSONObject(c.inputStream.bufferedReader().use { it.readText() })
+            if (!o.optBoolean("ok", false)) return@withContext null
+            PercentileResponse(
+                enoughData = o.optBoolean("enoughData", false),
+                sampleCount = o.optInt("sampleCount", 0),
+                percentile = if (o.isNull("percentile")) null else o.optInt("percentile"),
+                averageScore = if (o.isNull("averageScore")) null else o.optInt("averageScore"),
+                bestScore = if (o.isNull("bestScore")) null else o.optInt("bestScore")
+            )
+        } catch (_: Throwable) {
+            null
+        } finally {
+            c.disconnect()
+        }
+    }
+
+    /** Loescht alle hochgeladenen Scores dieses Geraets (DSGVO Art. 17). */
+    suspend fun deleteBenchmarks(context: Context): Result = withContext(Dispatchers.IO) {
+        val url = URL(
+            CloudConfig.BACKEND_BASE + "/api/benchmark/" + DeviceIdProvider.deviceId(context)
+        )
+        val c = (url.openConnection() as HttpURLConnection).apply {
+            requestMethod = "DELETE"
+            connectTimeout = TIMEOUT_MS
+            readTimeout = TIMEOUT_MS
+            setRequestProperty("User-Agent", UA_PREFIX + appVersion(context))
+        }
+        try {
+            val code = c.responseCode
+            val msg = if (code in 200..299) {
+                c.inputStream.bufferedReader().use { it.readText() }
+            } else {
+                runCatching { c.errorStream.bufferedReader().use { it.readText() } }.getOrDefault("")
+            }
+            Result(code in 200..299, code, msg)
+        } catch (t: Throwable) {
+            Result(false, -1, t.message.orEmpty())
+        } finally {
+            c.disconnect()
+        }
+    }
+
+    /** Geraeteklasse fuer den Vergleich — gleiche Bildung wie beim Heartbeat. */
+    private fun socName(): String =
+        (Build.HARDWARE.orEmpty() + " " + Build.BOARD.orEmpty()).trim()
+
     private fun postJson(path: String, body: ByteArray, context: Context): Result {
         val url = URL(CloudConfig.BACKEND_BASE + path)
         val c = (url.openConnection() as HttpURLConnection).apply {
@@ -124,6 +233,21 @@ object BackendClient {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) pi.longVersionCode
         else @Suppress("DEPRECATION") pi.versionCode.toLong()
     }.getOrDefault(0L)
+
+    data class SubScoreUpload(
+        val name: String,
+        val singleScore: Int,
+        val multiScore: Int,
+        val unit: String
+    )
+
+    data class PercentileResponse(
+        val enoughData: Boolean,
+        val sampleCount: Int,
+        val percentile: Int?,
+        val averageScore: Int?,
+        val bestScore: Int?
+    )
 
     data class Result(val ok: Boolean, val httpCode: Int, val body: String)
 

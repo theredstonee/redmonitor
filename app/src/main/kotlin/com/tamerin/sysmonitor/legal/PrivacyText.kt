@@ -88,11 +88,34 @@ liegt der Blob in der Postgres-Datenbank mit pgcrypto-Spalten-Verschlüsselung
 Zweck: Wiederherstellung deiner Settings nach App-Neuinstallation oder
 Geräte-Reset auf derselben Hardware.
 
+### 4.3 Benchmark-Vergleich (nur auf ausdrückliche Bestätigung)
+
+Im Benchmark-Verlauf kannst du ein einzelnes Ergebnis beitragen, um dein Gerät
+mit anderen zu vergleichen. Das passiert **nie automatisch**: du bestätigst
+jeden einzelnen Upload in einem Dialog, der vorher auflistet, was übertragen
+wird. Es gibt keine gemerkte Einwilligung und kein „nicht mehr fragen".
+
+Übertragen werden: Benchmark-Typ, Gesamt-Score, Single- und Multi-Core-Score,
+die Sub-Scores des Laufs, Gerätemodell, Hersteller, SoC-Bezeichnung,
+Android-SDK-Level und App-Version — verknüpft mit derselben anonymen
+Geräte-Kennung wie in Abschnitt 4.1.
+
+Nicht übertragen werden: Name, Konto, Standort, installierte Apps oder
+sonstige Nutzungsdaten.
+
+Das Abrufen der Vergleichswerte ist davon getrennt: dabei gehen nur
+Benchmark-Typ, SoC-Bezeichnung und der zu vergleichende Score als Anfrage
+an den Server, **ohne** Geräte-Kennung, und es wird dabei nichts gespeichert.
+Du kannst die Vergleichswerte also auch sehen, ohne selbst etwas beizutragen.
+
+Rechtsgrundlage: Art. 6 Abs. 1 lit. a DSGVO (Einwilligung, pro Upload einzeln).
+
 ## 5. Speicherdauer
 
 Daten auf dem Backend werden automatisch gelöscht:
 - Heartbeats: 90 Tage nach Eingang
 - Backups: 90 Tage nach Upload
+- Beigetragene Benchmark-Scores: 90 Tage nach Upload
 - Device-Records: 90 Tage nach letztem Heartbeat
 - Admin-Sessions: nach Ablauf (max. 14 Tage)
 
@@ -126,7 +149,9 @@ Kontakt für DSGVO-Anfragen: ${L.PROVIDER_EMAIL}
 
 Sofortige Löschung deines Backends-Records:
 1. App öffnen → Einstellungen → Cloud-Backup → Toggle AUS, oder
-2. E-Mail an ${L.PROVIDER_EMAIL} mit deiner Device-ID (anzeigbar
+2. Beigetragene Benchmark-Scores: Info → Privacy-Dashboard →
+   „Hochgeladene Benchmark-Scores löschen" (wirkt sofort und endgültig), oder
+3. E-Mail an ${L.PROVIDER_EMAIL} mit deiner Device-ID (anzeigbar
    in den App-Einstellungen unter „Cloud-Backup")
 
 Nach automatischer 90-Tage-Inaktivität werden die Daten ohnehin gelöscht.

@@ -20,6 +20,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.TextButton
+import com.tamerin.sysmonitor.cloud.BackendClient
 import com.tamerin.sysmonitor.data.AppPermissionUsage
 import com.tamerin.sysmonitor.data.OpAccess
 import com.tamerin.sysmonitor.data.PermissionUsageReader
@@ -65,6 +69,11 @@ fun PrivacyDashboardScreen() {
     LaunchedEffect(shizukuReady) { if (shizukuReady) refresh() }
 
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
+        // Bewusst VOR dem Shizuku-Gate: das Loeschen der eigenen Cloud-Daten darf
+        // nicht daran haengen, ob Shizuku laeuft.
+        CloudDataCard()
+        Spacer(Modifier.height(12.dp))
+
         if (!shizukuReady) {
             ShizukuCard(
                 title = "Shizuku für Privacy-Dashboard",
@@ -225,5 +234,70 @@ private fun OpRow(o: OpAccess) {
         Text(PermissionUsageReader.formatAgo(o.lastAccessAgoMs),
             color = color, fontSize = 11.sp,
             fontFamily = FontFamily.Monospace, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/**
+ * Selbstbedienung fuer DSGVO Art. 17: loescht alle freiwillig hochgeladenen
+ * Benchmark-Scores dieses Geraets vom Server.
+ */
+@Composable
+private fun CloudDataCard() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
+    var showConfirm by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+
+    StatCard("Meine Cloud-Daten") {
+        Text(
+            "Benchmark-Ergebnisse landen nur auf dem Server, wenn du sie im " +
+                "Benchmark-Verlauf ausdruecklich beitraegst. Hier kannst du alles " +
+                "wieder loeschen.",
+            color = OnSurfaceMuted, fontSize = 12.sp
+        )
+        Spacer(Modifier.height(10.dp))
+        OutlinedButton(onClick = {
+            haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
+            showConfirm = true
+        }) { Text("Hochgeladene Benchmark-Scores loeschen") }
+        status?.let {
+            Spacer(Modifier.height(6.dp))
+            Text(it, color = OnSurfaceMuted, fontSize = 12.sp)
+        }
+    }
+
+    if (showConfirm) {
+        AlertDialog(
+            onDismissRequest = { showConfirm = false },
+            title = { Text("Scores loeschen?") },
+            text = {
+                Text(
+                    "Loescht alle Benchmark-Ergebnisse, die von diesem Geraet " +
+                        "hochgeladen wurden, endgueltig vom Server. Deine lokale " +
+                        "Benchmark-Historie in der App bleibt unberuehrt."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
+                    showConfirm = false
+                    status = "Loesche ..."
+                    scope.launch {
+                        val res = runCatching {
+                            BackendClient.deleteBenchmarks(context)
+                        }.getOrNull()
+                        status = if (res?.ok == true) {
+                            "Geloescht."
+                        } else {
+                            "Loeschen fehlgeschlagen. Spaeter nochmal versuchen."
+                        }
+                    }
+                }) { Text("Loeschen") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showConfirm = false }) { Text("Abbrechen") }
+            }
+        )
     }
 }

@@ -64,3 +64,36 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
 );
 
 CREATE INDEX IF NOT EXISTS idx_admin_sessions_expires ON admin_sessions(expires_at);
+
+-- Anonyme Benchmark-Scores für den Geräte-Vergleich (Percentile).
+-- Freiwillig: der Client lädt nur hoch, wenn der User es pro Upload bestätigt.
+CREATE TABLE IF NOT EXISTS benchmark_scores (
+  id                   BIGSERIAL PRIMARY KEY,
+  device_id            TEXT NOT NULL REFERENCES devices(device_id) ON DELETE CASCADE,
+  created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  bench_type           TEXT NOT NULL,           -- CPU / RAM / STORAGE_SEQUENTIAL / ...
+  total_score          INT NOT NULL,
+  single_score         INT,
+  multi_score          INT,
+  soc                  TEXT,
+  brand                TEXT,
+  model                TEXT,
+  android_sdk          INT,
+  app_version          TEXT
+);
+
+-- Percentile-Query filtert auf (bench_type, soc) und gruppiert nach device_id
+CREATE INDEX IF NOT EXISTS idx_bench_type_soc ON benchmark_scores(bench_type, soc);
+CREATE INDEX IF NOT EXISTS idx_bench_device ON benchmark_scores(device_id);
+CREATE INDEX IF NOT EXISTS idx_bench_created ON benchmark_scores(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS benchmark_sub_scores (
+  id                   BIGSERIAL PRIMARY KEY,
+  score_id             BIGINT NOT NULL REFERENCES benchmark_scores(id) ON DELETE CASCADE,
+  name                 TEXT NOT NULL,
+  single_score         INT NOT NULL,
+  multi_score          INT NOT NULL,
+  unit                 TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_bench_sub_score ON benchmark_sub_scores(score_id);
