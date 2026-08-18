@@ -264,7 +264,9 @@ object ShizukuHelper {
         }.getOrNull()
     }
 
-    private fun parseDumpsys(out: String): DumpsysBattery {
+    /** Reines Parsing der `dumpsys battery`-Ausgabe. `internal` statt `private`,
+     *  damit es ohne Geraet und ohne Shizuku getestet werden kann. */
+    internal fun parseDumpsys(out: String): DumpsysBattery {
         var maxI = 0L
         var maxV = 0L
         var ac = false

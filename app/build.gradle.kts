@@ -133,5 +133,7 @@ dependencies {
 
     if (hasGlyphSdk) implementation(files(glyphAar))
 
+    testImplementation(libs.junit)
+
     debugImplementation(libs.androidx.ui.tooling)
 }

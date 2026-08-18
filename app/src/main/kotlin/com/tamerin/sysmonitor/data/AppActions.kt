@@ -128,9 +128,17 @@ object AppActions {
     fun getAppOpsState(context: Context, pkg: String): AppOpsState {
         val res = ShizukuHelper.runCommand(context, "cmd", "appops", "get", pkg)
         if (!res.ok) return AppOpsState(null, null)
+        return parseAppOps(res.stdout)
+    }
+
+    /**
+     * Reines Parsing der `cmd appops get`-Ausgabe. Aus [getAppOpsState] herausgeloest,
+     * damit es ohne Shell/Shizuku testbar ist.
+     */
+    internal fun parseAppOps(stdout: String): AppOpsState {
         var run: String? = null
         var any: String? = null
-        for (line in res.stdout.lineSequence()) {
+        for (line in stdout.lineSequence()) {
             val l = line.trim()
             // Lines look like: "RUN_IN_BACKGROUND: allow"  or  "RUN_IN_BACKGROUND: deny;"
             if (l.startsWith("RUN_IN_BACKGROUND:")) run = l.substringAfter(":").substringBefore(";").trim()
