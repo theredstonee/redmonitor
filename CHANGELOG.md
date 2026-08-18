@@ -1,5 +1,36 @@
 # Changelog
 
+## v1.7.0 — 2026-08-18
+
+### Nothing Phone (3) — Glyph Matrix
+- **Glyph-Toy** zeigt CPU, RAM, Akku oder Temperatur live auf der 25×25-Matrix der Rückseite: Ring-Gauge für den Prozentwert, große Ziffern in der Mitte, kleiner Buchstabe als Metrik-Marker. **Langer Druck** auf den Glyph-Button schaltet die Metrik um, **Always-On** wird unterstützt (dort mit eigener, dunklerer Helligkeit).
+- **25×25-Vorschau in der App** (System → Glyph Matrix) — benutzt exakt denselben Renderer wie der Toy, funktioniert also auch ohne Nothing-Gerät.
+- Das Glyph-SDK ist proprietär und darf nicht weiterverteilt werden, liegt deshalb **nicht im Repo**. Fehlt es, baut die App weiterhin durch — dann wird eine No-Op-Variante kompiliert (`BuildConfig.HAS_GLYPH_SDK`). Setup-Schritt steht im README.
+- Das SDK verlangt minSdk 33, RedMonitor läuft ab 29: gelöst per `tools:overrideLibrary` plus Laufzeit-Guard, der Hersteller und SDK-Level prüft, **bevor** eine SDK-Klasse geladen wird.
+
+### Sustained Performance / Throttling-Score
+- Der Stresstest misst jetzt den **echten Durchsatz** der Stress-Threads statt nur der Auslastung — die bleibt beim Drosseln bei 100 % und sagt deshalb nichts aus.
+- Neue Kennzahl **Sustained Performance** (aktueller Durchsatz ÷ Anfangsdurchsatz) samt Einordnung, **Zeitpunkt des Throttling-Einbruchs**, schlechtestem Wert im Lauf, Taktabfall Start → jetzt und Spitzentemperatur.
+- Ein einzelner Ausreißer zählt nicht als Throttling — erst drei Messungen in Folge unter 90 % der Baseline. Die ersten fünf Sekunden sind Anlauf und fließen nicht in die Baseline ein.
+- Neuer Verlaufsgraph für den Durchsatz.
+
+### Benchmark-Vergleich über das Backend
+- Im Benchmark-Verlauf zeigt jeder Lauf jetzt **„schneller als X % der Geräte"** mit gleichem SoC, dazu Durchschnitt und Bestwert. Das **Abrufen sendet keine Geräte-Kennung** und speichert nichts — der Vergleich ist auch ohne eigenen Beitrag sichtbar.
+- **Beitragen nur auf Knopfdruck und mit Bestätigung bei jedem einzelnen Upload.** Der Dialog listet vorher auf, was rausgeht. Keine gemerkte Einwilligung, kein „nicht mehr fragen".
+- Statistik gruppiert auf das **beste Ergebnis pro Gerät** — sonst würde ein einzelner Vielbenchmarker die Verteilung verzerren. Unter fünf Vergleichsgeräten wird bewusst kein Percentil gezeigt.
+- **Lösch-Knopf** im Privacy-Dashboard (DSGVO Art. 17) entfernt alle beigetragenen Scores endgültig vom Server. Bewusst oberhalb des Shizuku-Gates platziert, damit er ohne Shizuku erreichbar bleibt.
+- Datenschutzerklärung um Abschnitt 4.3 erweitert. **Kein Re-Accept-Dialog** für Bestandsnutzer — ohne aktive Bestätigung geht ohnehin nichts raus.
+
+### HUD-Profile
+- Das Floating-HUD kann jetzt **nur in ausgewählten Apps** erscheinen (z. B. Spielen) oder umgekehrt **überall außer** in bestimmten Apps. App-Auswahl mit Suche in den HUD-Einstellungen.
+- Ist das HUD ausgeblendet, entfällt auch das Auslesen der Messwerte — spart Akku statt nur zu verstecken.
+- Fehlt der Zugriff auf Nutzungsdaten, bleibt das HUD **sichtbar** statt kommentarlos zu verschwinden. Die Berechtigung lässt sich direkt aus den Einstellungen anfordern.
+
+### Tests
+- Erstmals **Unit-Tests** im Projekt (`app/src/test/kotlin/`, 50 Stück): Versionsvergleich des Updaters, `dumpsys battery`- und `appops`-Parsing, Backup-Verschlüsselung (Roundtrip, fremde Hardware, manipulierter Ciphertext), Glyph-Renderer und HUD-Profil-Logik.
+- Dabei ist ein echter Fehler aufgefallen und behoben worden: die Throttling-Baseline hatte die letzte Anlaufsekunde noch mitgezählt und dadurch spätere Messungen geschönt.
+- `ShizukuHelper.parseDumpsys` und das appops-Parsing sind dafür aus ihren Shell-Aufrufen herausgelöst worden.
+
 ## v1.6.4 — 2026-08-18
 
 ### Floating-HUD-Fixes
