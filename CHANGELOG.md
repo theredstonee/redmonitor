@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.6.4 — 2026-08-18
+
+### Floating-HUD-Fixes
+- **HUD wird wieder schmaler** — die TextView lief mit der LinearLayout-Default-Breite `MATCH_PARENT`; dadurch nahm `TextView.checkForRelayout()` den „static width“-Pfad und baute das Text-Layout stumm auf der **alten** Breite neu, ohne Relayout. Das Fenster wuchs zwar bei langem Text (z. B. „— (gesperrt, Shizuku?)“ nach Shizuku-Disconnect, weil der Umbruch eine Zeile mehr erzeugt), schrumpfte danach aber nie wieder — auch nicht wenn Shizuku wieder verbunden war. Jetzt `WRAP_CONTENT` → das Overlay misst sich bei jeder Textänderung neu.
+- **Ruhige Breite statt Zappeln** — das HUD wächst sofort mit, gibt Breite aber erst frei, wenn der Inhalt 5 s lang schmaler bleibt (Hysterese über `minWidth`). Sonst hätte die Breite im 1,5-s-Tick mit den Netzwerk-Werten („0KB/s“ ↔ „1.5MB/s“) gesprungen.
+- **Edge-Snap folgt der Breite** — ein rechts angedocktes HUD zieht seine X-Position nach, wenn sich die Breite ändert. Vorher blieb eine Lücke zum Rand bzw. das HUD ragte über den Bildschirmrand hinaus.
+
 ## v1.6.3 — 2026-06-25
 
 ### Welle 6 — Akku-Tiefe

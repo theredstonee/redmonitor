@@ -17,6 +17,7 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
+import android.text.Layout
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -38,6 +39,7 @@ import com.tamerin.sysmonitor.data.ThermalReader
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.ceil
 
 class OverlayService : Service() {
 
@@ -47,6 +49,8 @@ class OverlayService : Service() {
         const val ACTION_RELOAD = "com.tamerin.sysmonitor.overlay.RELOAD"
         private const val CHANNEL_ID = "sysmonitor_overlay"
         private const val NOTIFICATION_ID = 4242
+        /** Wie lange der Inhalt schmaler bleiben muss, bevor das HUD Breite freigibt. */
+        private const val SHRINK_DELAY_MS = 5_000L
 
         fun start(context: Context) {
             val i = Intent(context, OverlayService::class.java).setAction(ACTION_START)
@@ -71,6 +75,13 @@ class OverlayService : Service() {
     private lateinit var background: GradientDrawable
     private lateinit var params: WindowManager.LayoutParams
     private var config: HudConfig = HudConfig.DEFAULT
+
+    // Breiten-Hysterese: sofort mitwachsen, aber erst schrumpfen wenn der Inhalt
+    // SHRINK_DELAY_MS lang schmaler bleibt. Sonst zappelt die HUD-Breite im
+    // 1,5-s-Tick mit den Netzwerk-Werten ("0KB/s" <-> "1.5MB/s").
+    private var pinnedWidthPx = 0
+    private var shrinkCandidatePx = 0
+    private var shrinkSinceMs = 0L
 
     // FPS counter
     private var frames = 0
@@ -148,7 +159,20 @@ class OverlayService : Service() {
             text = "starte…"
             setLineSpacing(2f, 1f)
         }
-        container.addView(textView)
+        // Breite MUSS WRAP_CONTENT sein. Mit der LinearLayout-Default-Breite
+        // (MATCH_PARENT) nimmt TextView.checkForRelayout() den "static width"-Pfad:
+        // es baut das Text-Layout stumm auf der ALTEN Breite neu und ruft kein
+        // requestLayout, solange die Zeilenzahl gleich bleibt. Das WRAP_CONTENT-Fenster
+        // wuchs dadurch zwar (langer Text bricht um -> Zeile mehr -> Relayout), wurde
+        // aber nie wieder schmaler. WRAP_CONTENT erzwingt den "dynamic width"-Pfad
+        // (nullLayouts + requestLayout) -> Fenster misst sich bei jeder Textaenderung neu.
+        container.addView(
+            textView,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+        )
         view = container
 
         val type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
@@ -208,6 +232,26 @@ class OverlayService : Service() {
             }
         }
 
+        // Rechts angedockt + Breite aendert sich: X nachziehen, sonst klafft eine
+        // Luecke zum Rand bzw. das HUD ragt ueber den Bildschirmrand hinaus.
+        container.addOnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
+            if (!config.edgeSnap) return@addOnLayoutChangeListener
+            val newW = right - left
+            val oldW = oldRight - oldLeft
+            if (oldW <= 0 || newW == oldW) return@addOnLayoutChangeListener
+            val screenW = screenWidth()
+            // War es vor der Aenderung buendig am rechten Rand?
+            if (params.x + oldW < screenW - 1) return@addOnLayoutChangeListener
+            val newX = screenW - newW
+            if (newX == params.x) return@addOnLayoutChangeListener
+            // post(), damit wir nicht mitten im laufenden Layout-Pass relayouten
+            container.post {
+                params.x = newX
+                runCatching { windowManager?.updateViewLayout(container, params) }
+                HudPrefs.savePosition(this, (newX / density).toInt(), (params.y / density).toInt())
+            }
+        }
+
         runCatching { windowManager?.addView(container, params) }
         CpuReader.read()
         lastRx = TrafficStats.getTotalRxBytes()
@@ -223,14 +267,23 @@ class OverlayService : Service() {
         background.alpha = (config.opacity * 255).toInt()
         background.setStroke(1, config.color.hex.toInt())
         textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f * config.size.scale)
+        // Textgroesse/Metriken koennen sich geaendert haben -> Breite frisch einmessen
+        pinnedWidthPx = 0
+        shrinkCandidatePx = 0
+        shrinkSinceMs = 0L
+        textView.minWidth = 0
         updateText()
     }
 
-    private fun snapToEdge() {
+    private fun screenWidth(): Int {
         val dm = DisplayMetrics()
         @Suppress("DEPRECATION")
         windowManager?.defaultDisplay?.getMetrics(dm)
-        val screenW = dm.widthPixels
+        return dm.widthPixels
+    }
+
+    private fun snapToEdge() {
+        val screenW = screenWidth()
         val viewW = view?.width ?: 0
         params.x = if (params.x + viewW / 2 < screenW / 2) {
             0
@@ -361,6 +414,37 @@ class OverlayService : Service() {
 
         if (sb.isEmpty()) sb.append("(keine Metriken aktiv)")
         textView.text = sb
+        applyWidthHysteresis(sb)
+    }
+
+    /**
+     * Haelt die HUD-Breite ruhig: waechst sofort mit dem Inhalt, gibt Breite aber
+     * erst wieder frei, wenn der Text SHRINK_DELAY_MS lang schmaler geblieben ist.
+     * Laeuft ueber minWidth der TextView — das Fenster selbst bleibt WRAP_CONTENT.
+     */
+    private fun applyWidthHysteresis(text: CharSequence) {
+        val desired = ceil(Layout.getDesiredWidth(text, textView.paint)).toInt()
+        val now = SystemClock.elapsedRealtime()
+        if (desired >= pinnedWidthPx) {
+            // Breiter (oder gleich): sofort uebernehmen, Schrumpf-Fenster verwerfen
+            pinnedWidthPx = desired
+            shrinkSinceMs = 0L
+            shrinkCandidatePx = 0
+        } else {
+            if (shrinkSinceMs == 0L) {
+                shrinkSinceMs = now
+                shrinkCandidatePx = desired
+            } else {
+                // Breitesten Wert im Wartefenster merken, damit wir nicht zu eng werden
+                shrinkCandidatePx = maxOf(shrinkCandidatePx, desired)
+            }
+            if (now - shrinkSinceMs >= SHRINK_DELAY_MS) {
+                pinnedWidthPx = shrinkCandidatePx
+                shrinkSinceMs = 0L
+                shrinkCandidatePx = 0
+            }
+        }
+        if (textView.minWidth != pinnedWidthPx) textView.minWidth = pinnedWidthPx
     }
 
     override fun onDestroy() {
