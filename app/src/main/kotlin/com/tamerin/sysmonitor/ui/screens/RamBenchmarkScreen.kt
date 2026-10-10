@@ -10,6 +10,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -44,14 +46,13 @@ fun RamBenchmarkScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("RAM-Bandbreite (tier-aware)") {
+        StatCard(stringResource(R.string.bench_ram_title)) {
             Text(
-                "Misst Lesen/Schreiben/Kopieren über 4 Puffer-Größen: 32 KB (L1), 1 MB (L2), 16 MB (L3/SLC) und 256 MB (DRAM). " +
-                    "Läuft im Foreground-Service.",
+                stringResource(R.string.bench_ram_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
-            Text("Dauer pro Operation × Tier", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.bench_ram_duration_per_op), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 DURATION_OPTIONS.forEach { (sec, short) ->
@@ -67,7 +68,7 @@ fun RamBenchmarkScreen() {
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Gesamt: 4 Tiers × 3 Ops × ${perTestSeconds}s = ${4 * 3 * perTestSeconds}s",
+                stringResource(R.string.bench_ram_total, perTestSeconds, 4 * 3 * perTestSeconds),
                 color = AccentSoft, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -79,7 +80,7 @@ fun RamBenchmarkScreen() {
                         BenchmarkService.start(context, BenchmarkType.RAM, perTestSeconds)
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Test starten", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.bench_start_test), fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -87,7 +88,7 @@ fun RamBenchmarkScreen() {
                             Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
                         )
                     }
-                ) { Text("Verlauf") }
+                ) { Text(stringResource(R.string.bench_history)) }
             }
         }
     }

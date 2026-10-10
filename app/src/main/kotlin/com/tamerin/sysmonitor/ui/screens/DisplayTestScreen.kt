@@ -8,21 +8,23 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 
-private data class ColorTest(val name: String, val color: Color)
+private data class ColorTest(val nameRes: Int, val color: Color)
 
 private val COLORS = listOf(
-    ColorTest("Rot", Color.Red),
-    ColorTest("Grün", Color.Green),
-    ColorTest("Blau", Color.Blue),
-    ColorTest("Weiß", Color.White),
-    ColorTest("Schwarz", Color.Black),
-    ColorTest("Cyan", Color.Cyan),
-    ColorTest("Magenta", Color.Magenta),
-    ColorTest("Gelb", Color.Yellow)
+    ColorTest(R.string.hw_color_red, Color.Red),
+    ColorTest(R.string.hw_color_green, Color.Green),
+    ColorTest(R.string.hw_color_blue, Color.Blue),
+    ColorTest(R.string.hw_color_white, Color.White),
+    ColorTest(R.string.hw_color_black, Color.Black),
+    ColorTest(R.string.hw_color_cyan, Color.Cyan),
+    ColorTest(R.string.hw_color_magenta, Color.Magenta),
+    ColorTest(R.string.hw_color_yellow, Color.Yellow)
 )
 
 @Composable
@@ -50,7 +52,7 @@ fun DisplayTestScreen() {
                 }
         ) {
             Text(
-                "${c.name}  ·  Tap = nächste Farbe, Letzte = zurück",
+                stringResource(R.string.hw_disptest_fullscreen_hint, stringResource(c.nameRes)),
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(24.dp),
@@ -69,7 +71,7 @@ fun DisplayTestScreen() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            "Tippe auf eine Farbe, um den Screen vollflächig damit zu füllen. Im Vollbild bringt jeder Tap die nächste Farbe.",
+            stringResource(R.string.hw_disptest_intro),
             fontSize = 13.sp
         )
         Spacer(Modifier.height(8.dp))
@@ -86,7 +88,7 @@ fun DisplayTestScreen() {
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    c.name,
+                    stringResource(c.nameRes),
                     color = if (c.color == Color.White || c.color == Color.Yellow || c.color == Color.Cyan)
                         Color.Black else Color.White,
                     fontWeight = FontWeight.SemiBold

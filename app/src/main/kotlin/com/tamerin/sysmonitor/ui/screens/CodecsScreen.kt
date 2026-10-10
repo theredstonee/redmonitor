@@ -8,6 +8,8 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -55,11 +57,11 @@ fun CodecsScreen() {
             FilterChip(hwOnly, {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                 hwOnly = !hwOnly
-            }, label = { Text("Nur HW") })
+            }, label = { Text(stringResource(R.string.bench_codecs_hw_only)) })
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            if (codecs == null) "Lade Codec-Liste…" else "${filtered.size} Codecs",
+            if (codecs == null) stringResource(R.string.bench_codecs_loading) else "${filtered.size} Codecs",
             color = OnSurfaceMuted, fontSize = 12.sp
         )
         Spacer(Modifier.height(8.dp))
@@ -67,16 +69,16 @@ fun CodecsScreen() {
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(filtered, key = { it.name + it.isEncoder }) { c ->
                 StatCard(c.name) {
-                    KeyValueRow("Typ", if (c.isEncoder) "Encoder" else "Decoder")
+                    KeyValueRow(stringResource(R.string.bench_type), if (c.isEncoder) "Encoder" else "Decoder")
                     KeyValueRow(
-                        "Beschleunigung",
+                        stringResource(R.string.bench_codecs_acceleration),
                         when {
-                            c.isHardwareAccelerated -> "Hardware"
-                            c.isSoftwareOnly -> "nur Software"
-                            else -> "gemischt"
+                            c.isHardwareAccelerated -> stringResource(R.string.bench_codecs_hw)
+                            c.isSoftwareOnly -> stringResource(R.string.bench_codecs_sw_only)
+                            else -> stringResource(R.string.bench_codecs_mixed)
                         }
                     )
-                    KeyValueRow("MIME-Typen", c.supportedTypes.joinToString(", "))
+                    KeyValueRow(stringResource(R.string.bench_codecs_mime_types), c.supportedTypes.joinToString(", "))
                 }
             }
         }

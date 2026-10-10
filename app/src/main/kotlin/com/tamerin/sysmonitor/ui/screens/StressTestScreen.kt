@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -123,7 +125,7 @@ fun StressTestScreen() {
     }
 
     val displayTemp = if (!cpuZoneTempC.isNaN()) cpuZoneTempC else battTempC
-    val tempLabel = if (cpuZoneName != null) "CPU/SoC ($cpuZoneName)" else "Akku-Sensor"
+    val tempLabel = if (cpuZoneName != null) "CPU/SoC ($cpuZoneName)" else stringResource(R.string.bench_stress_batt_sensor)
 
     Column(
         modifier = Modifier
@@ -132,9 +134,9 @@ fun StressTestScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Stresstest") {
+        StatCard(stringResource(R.string.bench_stress_test)) {
             Text(
-                "Lädt alle CPU-Kerne dauerhaft mit 100 % aus. Das Gerät wird heiß — bei Throttling sinken Frequenz und Auslastung.",
+                stringResource(R.string.bench_stress_desc),
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
@@ -156,12 +158,12 @@ fun StressTestScreen() {
                     running = true
                 }
             }) {
-                Text(if (running) "Stresstest stoppen" else "Stresstest starten")
+                Text(if (running) stringResource(R.string.bench_stress_stop) else stringResource(R.string.bench_stress_start))
             }
             if (running) {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Laufzeit: ${elapsedSec / 60}:${"%02d".format(elapsedSec % 60)}",
+                    stringResource(R.string.bench_stress_runtime, "${elapsedSec / 60}:${"%02d".format(elapsedSec % 60)}"),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
@@ -169,26 +171,26 @@ fun StressTestScreen() {
         }
 
         StatCard("Live") {
-            KeyValueRow("CPU-Auslastung", "${cpuPct.toInt()} %")
+            KeyValueRow(stringResource(R.string.bench_stress_cpu_load), "${cpuPct.toInt()} %")
             KeyValueRow(
-                "Quelle",
+                stringResource(R.string.bench_stress_source),
                 when (cpuSource) {
                     "system" -> "System (/proc/stat)"
-                    "process" -> "Prozess-CPU-Zeit (Fallback)"
+                    "process" -> stringResource(R.string.bench_stress_src_process)
                     else -> cpuSource
                 }
             )
-            KeyValueRow("Ø Frequenz", if (avgFreqMhz > 0) "$avgFreqMhz MHz" else "—")
+            KeyValueRow(stringResource(R.string.bench_stress_avg_freq), if (avgFreqMhz > 0) "$avgFreqMhz MHz" else "—")
             KeyValueRow(
-                "Temperatur ($tempLabel)",
+                stringResource(R.string.bench_stress_temp, tempLabel),
                 if (displayTemp > 0f) "${"%.1f".format(displayTemp)} °C" else "—"
             )
             if (displayTemp >= 40f) {
                 Spacer(Modifier.height(6.dp))
                 Text(
                     when {
-                        displayTemp >= 80f -> "⚠ Throttling sehr wahrscheinlich"
-                        displayTemp >= 60f -> "Heiß — Throttling möglich"
+                        displayTemp >= 80f -> stringResource(R.string.bench_stress_throttle_very_likely)
+                        displayTemp >= 60f -> stringResource(R.string.bench_stress_hot)
                         else -> "Warm"
                     },
                     color = if (displayTemp >= 80f) GaugeRed else GaugeOrange,
@@ -199,7 +201,7 @@ fun StressTestScreen() {
             if (cpuZoneTempC.isNaN()) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Hinweis: Keine CPU-Thermalzone lesbar — zeige stattdessen Akku-Temperatur (auf Emulatoren oft fix bei 25 °C).",
+                    stringResource(R.string.bench_stress_no_thermal_zone),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -221,24 +223,22 @@ fun StressTestScreen() {
                 Text(r.verdict, color = OnSurfaceMuted, fontSize = 13.sp)
                 Spacer(Modifier.height(10.dp))
                 KeyValueRow(
-                    "Throttling ab",
+                    stringResource(R.string.bench_stress_throttle_from),
                     r.throttleAtSec?.let { "${it / 60}:${"%02d".format(it % 60)} min" }
-                        ?: "bisher nicht"
+                        ?: stringResource(R.string.bench_stress_not_yet)
                 )
-                KeyValueRow("Schlechtester Wert", "${(r.minRatio * 100).toInt()} %")
+                KeyValueRow(stringResource(R.string.bench_stress_worst_value), "${(r.minRatio * 100).toInt()} %")
                 KeyValueRow(
-                    "Takt Start → jetzt",
+                    stringResource(R.string.bench_stress_clock_start_now),
                     if (r.baselineFreqMhz > 0) "${r.baselineFreqMhz} → ${r.currentFreqMhz} MHz" else "—"
                 )
                 KeyValueRow(
-                    "Spitzentemperatur",
+                    stringResource(R.string.bench_stress_peak_temp),
                     if (!r.peakTempC.isNaN() && r.peakTempC > 0f) "${"%.1f".format(r.peakTempC)} °C" else "—"
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Gemessen wird der echte Durchsatz der Stress-Threads, nicht die " +
-                        "Auslastung — die bleibt beim Drosseln bei 100 %. Die ersten " +
-                        "${ThrottleAnalyzer.WARMUP_SEC} Sekunden sind Anlauf und zählen nicht.",
+                    stringResource(R.string.bench_stress_methodology, ThrottleAnalyzer.WARMUP_SEC),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -246,7 +246,7 @@ fun StressTestScreen() {
         }
 
         if (opsHistory.size > 1) {
-            StatCard("Verlauf Durchsatz") {
+            StatCard(stringResource(R.string.bench_stress_throughput_history)) {
                 Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
                     Sparkline(
                         values = opsHistory.toList(),
@@ -255,7 +255,7 @@ fun StressTestScreen() {
                     )
                 }
                 Text(
-                    "Mio. Iterationen/s · höher ist besser",
+                    stringResource(R.string.bench_stress_throughput_caption),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -263,7 +263,7 @@ fun StressTestScreen() {
         }
 
         if (cpuHistory.size > 1) {
-            StatCard("Verlauf CPU-Last") {
+            StatCard(stringResource(R.string.bench_stress_cpu_history)) {
                 Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
                     Sparkline(
                         values = cpuHistory.toList(),
@@ -275,7 +275,7 @@ fun StressTestScreen() {
             }
         }
         if (tempHistory.size > 1) {
-            StatCard("Verlauf Temperatur") {
+            StatCard(stringResource(R.string.bench_stress_temp_history)) {
                 Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
                     Sparkline(
                         values = tempHistory.toList(),

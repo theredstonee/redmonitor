@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,7 +51,7 @@ object UpdateInstaller {
             }
             DownloadResult.Success(target)
         } catch (e: Exception) {
-            DownloadResult.Error(e.message ?: "Download fehlgeschlagen")
+            DownloadResult.Error(e.message ?: context.getString(R.string.bg_update_download_failed))
         }
     }
 
@@ -60,13 +61,13 @@ object UpdateInstaller {
      */
     suspend fun installViaShizuku(context: Context, apk: File): Pair<Boolean, String> = withContext(Dispatchers.IO) {
         if (ShizukuHelper.state(context) != ShizukuHelper.State.Ready) {
-            return@withContext false to "Shizuku nicht bereit"
+            return@withContext false to context.getString(R.string.bg_update_shizuku_not_ready)
         }
         val res = ShizukuHelper.runCommand(
             context, "pm", "install", "-r", "-i", context.packageName, apk.absolutePath
         )
         val success = res.ok && res.stdout.contains("Success", ignoreCase = true)
-        success to (if (success) "Installation erfolgreich" else res.stderr.ifBlank { res.stdout.ifBlank { "Exit ${res.exitCode}" } })
+        success to (if (success) context.getString(R.string.bg_update_install_success) else res.stderr.ifBlank { res.stdout.ifBlank { "Exit ${res.exitCode}" } })
     }
 
     /**

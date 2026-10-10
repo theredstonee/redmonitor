@@ -3,6 +3,7 @@ package com.tamerin.sysmonitor.data
 import android.content.Context
 import android.content.pm.PackageManager
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -42,21 +43,26 @@ object WakelockReader {
 
     suspend fun read(context: Context): WakelockResult = withContext(Dispatchers.IO) {
         if (ShizukuHelper.state(context) != ShizukuHelper.State.Ready) {
-            return@withContext WakelockResult(false, "Shizuku nicht bereit.", emptyList(), "")
+            return@withContext WakelockResult(false, context.getString(R.string.data_wl_shizuku_not_ready), emptyList(), "")
         }
         val res = ShizukuHelper.runCommand(context, "dumpsys", "power")
         if (!res.ok || res.stdout.isBlank()) {
             return@withContext WakelockResult(
                 false,
-                "dumpsys power Exit ${res.exitCode}: ${res.stderr.ifBlank { "leere Ausgabe" }}",
+                context.getString(
+                    R.string.data_wl_dumpsys_error,
+                    res.exitCode,
+                    res.stderr.ifBlank { context.getString(R.string.data_wl_empty_output) }
+                ),
                 emptyList(),
                 ""
             )
         }
-        parse(context.packageManager, res.stdout)
+        parse(context, res.stdout)
     }
 
-    private fun parse(pm: PackageManager, output: String): WakelockResult {
+    private fun parse(context: Context, output: String): WakelockResult {
+        val pm = context.packageManager
         val lines = output.lines()
         var sectionStart = -1
         var headerIndent = 0
@@ -69,7 +75,7 @@ object WakelockReader {
             }
         }
         if (sectionStart < 0) {
-            return WakelockResult(true, "Keine 'Wake Locks:'-Sektion gefunden.", emptyList(), "")
+            return WakelockResult(true, context.getString(R.string.data_wl_no_section), emptyList(), "")
         }
         val collected = mutableListOf<String>()
         for (j in (sectionStart + 1) until lines.size) {
@@ -80,14 +86,14 @@ object WakelockReader {
             collected += raw
         }
         if (collected.isEmpty()) {
-            return WakelockResult(true, "Keine Wake-Locks aktiv.", emptyList(), lines[sectionStart])
+            return WakelockResult(true, context.getString(R.string.data_wl_no_active), emptyList(), lines[sectionStart])
         }
 
         val entries = collected.mapNotNull { parseEntry(it.trim(), pm) }
         val raw = (listOf(lines[sectionStart]) + collected).joinToString("\n")
         return WakelockResult(
             true,
-            "${entries.size} Wake-Locks (${collected.size} Zeilen geparst)",
+            context.getString(R.string.data_wl_count, entries.size, collected.size),
             entries.sortedWith(compareBy({ it.isSystem }, { it.displayName ?: it.packageName ?: "zz_${it.uid}" })),
             raw
         )

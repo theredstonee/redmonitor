@@ -12,10 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.SystemTweaks
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -60,22 +62,20 @@ fun DozeWhitelistScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!shizukuReady) {
             com.tamerin.sysmonitor.ui.components.ShizukuCard(
-                title = "Shizuku für Doze-Whitelist",
-                description = "Apps auf der Doze-Whitelist hinzufügen/entfernen geht nur via shell-User-Kontext. " +
-                    "Shizuku gibt uns den."
+                title = stringResource(R.string.pwr_doze_shizuku_title),
+                description = stringResource(R.string.pwr_doze_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Doze-Whitelist") {
+        StatCard(stringResource(R.string.pwr_doze_title)) {
             Text(
-                "Apps auf der Whitelist dürfen während Doze (Tiefschlaf) Netzwerk nutzen und Wakelocks halten. " +
-                    "Push-Notifications + Sync. Je weniger Apps drauf, desto bessere Akku-Laufzeit.",
+                stringResource(R.string.pwr_doze_explain),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(6.dp))
-            KeyValueRow("Anzahl Apps", list.size.toString())
-            KeyValueRow("Davon System-Apps", list.count { !it.isUser }.toString())
+            KeyValueRow(stringResource(R.string.pwr_doze_count), list.size.toString())
+            KeyValueRow(stringResource(R.string.pwr_doze_system_count), list.count { !it.isUser }.toString())
             lastAction?.let {
                 Spacer(Modifier.height(6.dp))
                 Text(it, color = if (it.startsWith("✓")) GaugeGreen else GaugeRed, fontSize = 12.sp)
@@ -85,7 +85,7 @@ fun DozeWhitelistScreen() {
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("Filter") },
+            label = { Text(stringResource(R.string.pwr_doze_filter)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -129,10 +129,10 @@ fun DozeWhitelistScreen() {
                     OutlinedButton(
                         onClick = {
                             haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
-                            act("Entfernt: ${entry.pkg}") { SystemTweaks.removeFromWhitelist(context, entry.pkg) }
+                            act(context.getString(R.string.pwr_doze_removed, entry.pkg)) { SystemTweaks.removeFromWhitelist(context, entry.pkg) }
                         },
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
-                    ) { Text("Entfernen", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.pwr_doze_remove), fontSize = 11.sp) }
                 }
             }
         }

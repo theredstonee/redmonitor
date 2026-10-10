@@ -560,6 +560,17 @@
                 android:value="Benchmark run" />
         </service>
 
+        <!-- Empfängt den Binder des app_process-Starters (PC-Weg). exported=true, weil
+             der Starter als shell-User (UID 2000) sendet; Echtheit wird über die
+             Dienst-UID im AdbConnectionManager geprüft. -->
+        <receiver
+            android:name=".privileged.adb.PrivilegedReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.tamerin.sysmonitor.PRIVILEGED_BINDER" />
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="rikka.shizuku.ShizukuProvider"
             android:authorities="${applicationId}.shizuku"

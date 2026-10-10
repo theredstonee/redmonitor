@@ -17,10 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.NotificationEntry
 import com.tamerin.sysmonitor.data.NotificationLog
 import com.tamerin.sysmonitor.data.isNotificationListenerEnabled
@@ -55,11 +57,9 @@ fun NotificationLogScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!enabled) {
-            StatCard("Notification-Zugriff nötig") {
+            StatCard(stringResource(R.string.sys_nl_access_needed)) {
                 Text(
-                    "Um alle eingehenden Benachrichtigungen zu loggen, braucht RedMonitor " +
-                        "den 'Notification-Access' (BIND_NOTIFICATION_LISTENER_SERVICE). " +
-                        "Android verweigert das ohne explizite User-Erteilung.",
+                    stringResource(R.string.sys_nl_access_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -71,13 +71,12 @@ fun NotificationLogScreen() {
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Notification-Settings öffnen") }
+                ) { Text(stringResource(R.string.sys_nl_open_settings)) }
             }
             Spacer(Modifier.height(8.dp))
             StatCard("Privacy") {
                 Text(
-                    "Notifications werden nur im RAM gehalten (max ${NotificationLog.MAX_ENTRIES}). " +
-                        "Nichts wird auf Disk gespeichert oder verschickt — beim App-Beenden weg.",
+                    stringResource(R.string.sys_nl_privacy_desc, NotificationLog.MAX_ENTRIES),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
@@ -88,7 +87,7 @@ fun NotificationLogScreen() {
             OutlinedButton(
                 onClick = { NotificationLog.clear() },
                 modifier = Modifier.weight(1f)
-            ) { Text("Log leeren", fontSize = 12.sp) }
+            ) { Text(stringResource(R.string.sys_nl_clear), fontSize = 12.sp) }
             OutlinedButton(
                 onClick = {
                     context.startActivity(
@@ -104,7 +103,7 @@ fun NotificationLogScreen() {
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
-            label = { Text("Filter (Package, Titel, Text)") },
+            label = { Text(stringResource(R.string.sys_nl_filter)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -140,16 +139,16 @@ fun NotificationLogScreen() {
         }
 
         Text(
-            "${filtered.size} sichtbar / ${entries.size} im Log",
+            stringResource(R.string.sys_nl_visible_count, filtered.size, entries.size),
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(6.dp))
 
         if (filtered.isEmpty()) {
-            StatCard("Noch nichts eingegangen") {
+            StatCard(stringResource(R.string.sys_nl_nothing_yet)) {
                 Text(
-                    if (entries.isEmpty()) "Sobald eine Notification reinkommt, erscheint sie hier."
-                    else "Filter passt auf keinen Eintrag.",
+                    if (entries.isEmpty()) stringResource(R.string.sys_nl_will_appear)
+                    else stringResource(R.string.sys_nl_no_match),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }

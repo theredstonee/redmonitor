@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -52,34 +54,33 @@ fun BackgroundRestrictScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Background-Restrictions",
-                description = "`cmd appops set <pkg> RUN_ANY_IN_BACKGROUND ignore` — " +
-                    "killt Background-Wakeups gezielt pro App ohne durch lange System-Menüs zu klicken."
+                title = stringResource(R.string.pwr_bgr_shizuku_title),
+                description = stringResource(R.string.pwr_bgr_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Background-Restrictions") {
+        StatCard(stringResource(R.string.pwr_bgr_title)) {
             Text(
-                "Roter Status = App darf nichts mehr im Hintergrund (kein Wakeup, kein Job). " +
-                    "Grüner Status = Stock-Verhalten. Tap auf eine Reihe togglet.",
+                stringResource(R.string.pwr_bgr_explain),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         }
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(value = filter, onValueChange = { filter = it },
-            label = { Text("Filter") }, singleLine = true,
+            label = { Text(stringResource(R.string.pwr_bgr_filter)) }, singleLine = true,
             modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(4.dp))
         FilterChip(selected = showSystem, onClick = { showSystem = !showSystem },
-            label = { Text("System-Apps", fontSize = 11.sp) })
+            label = { Text(stringResource(R.string.pwr_bgr_system_apps), fontSize = 11.sp) })
         Spacer(Modifier.height(8.dp))
 
         val filtered = remember(apps, filter, showSystem) {
             apps.filter { (showSystem || !it.isSystem) &&
                 (filter.isBlank() || it.label.contains(filter, true) || it.pkg.contains(filter, true)) }
         }
-        Text("${filtered.count { it.restricted }} restricted von ${filtered.size} sichtbar",
+        Text(stringResource(R.string.pwr_bgr_restricted_count,
+                filtered.count { it.restricted }, filtered.size),
             color = OnSurfaceMuted, fontSize = 11.sp)
         Spacer(Modifier.height(6.dp))
 

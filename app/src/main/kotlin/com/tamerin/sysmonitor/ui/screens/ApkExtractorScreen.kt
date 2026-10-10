@@ -16,10 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
@@ -77,23 +79,21 @@ fun ApkExtractorScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für APK-Extract",
-                description = "`pm path <pkg>` listet die APK-Dateien (Split-APKs inkl.). " +
-                    "Das Kopieren aus /data/app/.../ braucht shell-Rechte — Shizuku liefert die."
+                title = stringResource(R.string.sys_ax_shizuku_title),
+                description = stringResource(R.string.sys_ax_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("APK-Extractor") {
+        StatCard(stringResource(R.string.sys_ax_title)) {
             Text(
-                "Extrahiert die installierte APK (Base + alle Splits) nach " +
-                    "/sdcard/Download/redmonitor-apks/<pkg>/. Dort kannst du sie z.B. mit einem Datei-Manager teilen.",
+                stringResource(R.string.sys_ax_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             lastResult?.let { (pkg, ok) ->
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "${if (ok) "✓ Extrahiert" else "✗ Fehler"}: $pkg",
+                    "${if (ok) stringResource(R.string.sys_ax_extracted) else stringResource(R.string.sys_ax_error)}: $pkg",
                     color = if (ok) GaugeGreen else GaugeRed,
                     fontSize = 12.sp, fontWeight = FontWeight.SemiBold
                 )
@@ -102,14 +102,14 @@ fun ApkExtractorScreen() {
         Spacer(Modifier.height(8.dp))
         OutlinedTextField(
             value = filter, onValueChange = { filter = it },
-            label = { Text("Filter") }, singleLine = true,
+            label = { Text(stringResource(R.string.sys_ax_filter)) }, singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(4.dp))
         FilterChip(
             selected = showSystem,
             onClick = { showSystem = !showSystem },
-            label = { Text("System-Apps", fontSize = 11.sp) }
+            label = { Text(stringResource(R.string.sys_ax_system_apps), fontSize = 11.sp) }
         )
         Spacer(Modifier.height(8.dp))
 

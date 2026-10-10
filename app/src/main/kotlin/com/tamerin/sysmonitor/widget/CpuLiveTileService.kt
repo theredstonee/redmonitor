@@ -71,7 +71,7 @@ class CpuLiveTileService : TileService() {
     private fun updateTile(cpuPct: Float) {
         val tile = qsTile ?: return
         tile.label = "CPU"
-        tile.contentDescription = "CPU-Auslastung"
+        tile.contentDescription = getString(R.string.bg_tile_cpu_desc)
         tile.subtitle = if (cpuPct < 0) "—" else "${cpuPct.toInt()}%"
         tile.state = when {
             cpuPct < 0 -> Tile.STATE_INACTIVE

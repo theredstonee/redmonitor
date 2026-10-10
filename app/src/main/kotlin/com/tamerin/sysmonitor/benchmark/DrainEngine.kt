@@ -49,6 +49,7 @@ import android.os.Vibrator
 import android.os.VibratorManager
 import android.view.WindowManager
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -78,6 +79,7 @@ class DrainEngine {
     private var sqliteDb: SQLiteDatabase? = null
     private var mediaCodec: MediaCodec? = null
     private val jobs = mutableListOf<Job>()
+    private lateinit var appContext: Context
     var running: Boolean = false
         private set
 
@@ -86,6 +88,7 @@ class DrainEngine {
     fun start(context: Context, activity: Activity?, scope: CoroutineScope) {
         if (running) return
         running = true
+        appContext = context.applicationContext
         activeChannels.clear()
 
         startCpu(scope)
@@ -118,7 +121,7 @@ class DrainEngine {
 
     private fun startCpu(scope: CoroutineScope) {
         stress.start(scope)
-        activeChannels += "CPU 100 % alle Kerne"
+        activeChannels += appContext.getString(R.string.data_drain_cpu)
     }
 
     private fun startBrightness(activity: Activity?) {
@@ -128,7 +131,7 @@ class DrainEngine {
             activity.window.attributes = lp
             activity.window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
-        if (activity != null) activeChannels += "Bildschirm max-Helligkeit + always-on"
+        if (activity != null) activeChannels += appContext.getString(R.string.data_drain_brightness)
     }
 
     private fun startTorch(context: Context) {
@@ -140,7 +143,7 @@ class DrainEngine {
             }
             torchId?.let {
                 cm.setTorchMode(it, true)
-                activeChannels += "Taschenlampe AN"
+                activeChannels += appContext.getString(R.string.data_drain_torch)
             }
         }
     }
@@ -162,7 +165,7 @@ class DrainEngine {
                     delay(400)
                 }
             }
-            activeChannels += "Dauer-Vibration"
+            activeChannels += appContext.getString(R.string.data_drain_vibration)
         }
     }
 
@@ -214,7 +217,7 @@ class DrainEngine {
                 runCatching { t.release() }
             }
         }
-        activeChannels += "Lauter 1-kHz-Sinuston"
+        activeChannels += appContext.getString(R.string.data_drain_audio)
     }
 
     private fun startGps(context: Context) {
@@ -228,7 +231,7 @@ class DrainEngine {
                 if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     @Suppress("MissingPermission")
                     lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 100L, 0f, listener)
-                    activeChannels += "GPS-Dauer-Tracking (100 ms)"
+                    activeChannels += appContext.getString(R.string.data_drain_gps)
                 }
                 if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                     @Suppress("MissingPermission")
@@ -248,7 +251,7 @@ class DrainEngine {
             }
             sensorListener = listener
             all.forEach { s -> sm.registerListener(listener, s, SensorManager.SENSOR_DELAY_FASTEST) }
-            activeChannels += "Alle ${all.size} Sensoren @ Max-Rate"
+            activeChannels += appContext.getString(R.string.data_drain_sensors, all.size)
         }
     }
 
@@ -264,7 +267,7 @@ class DrainEngine {
                     delay(2_000)
                 }
             }
-            activeChannels += "WLAN-Dauer-Scan (alle 2 s)"
+            activeChannels += appContext.getString(R.string.data_drain_wifi)
         }
     }
 
@@ -284,7 +287,7 @@ class DrainEngine {
             bleCallback = cb
             @Suppress("MissingPermission")
             scanner.startScan(cb)
-            activeChannels += "Bluetooth-LE-Scan"
+            activeChannels += appContext.getString(R.string.data_drain_ble)
         }
     }
 
@@ -312,7 +315,7 @@ class DrainEngine {
                 delay(50)
             }
         }
-        activeChannels += "Memory-Churn (32 MB-Blöcke)"
+        activeChannels += appContext.getString(R.string.data_drain_memory)
     }
 
     private fun startNetworkLoop(context: Context, scope: CoroutineScope) {
@@ -335,7 +338,7 @@ class DrainEngine {
                 delay(500)
             }
         }
-        activeChannels += "Netz-Loop (DNS + HTTPS-Requests)"
+        activeChannels += appContext.getString(R.string.data_drain_network)
     }
 
     private fun startWakeLock(context: Context) {
@@ -348,13 +351,13 @@ class DrainEngine {
             wl.setReferenceCounted(false)
             wl.acquire(60 * 60 * 1000L) // max 1 h Sicherheitslimit
             wakeLock = wl
-            activeChannels += "PARTIAL_WAKE_LOCK (CPU bleibt wach)"
+            activeChannels += appContext.getString(R.string.data_drain_wakelock)
         }
     }
 
     private fun startGpuLoop(scope: CoroutineScope) {
         // Marker so BatteryScreen knows to render the GPU-burner overlay
-        activeChannels += "GPU-Render-Loop (Compose-Canvas Max-FPS)"
+        activeChannels += appContext.getString(R.string.data_drain_gpu)
     }
 
     private fun startMultiAudio(scope: CoroutineScope) {
@@ -403,7 +406,7 @@ class DrainEngine {
                 }
             }
         }
-        activeChannels += "3 zusätzliche Audio-Layer (523/740/880 Hz)"
+        activeChannels += appContext.getString(R.string.data_drain_multi_audio)
     }
 
     private fun startStorageLoop(context: Context, scope: CoroutineScope) {
@@ -435,7 +438,7 @@ class DrainEngine {
                 runCatching { file.delete() }
             }
         }
-        activeChannels += "Storage-I/O-Burst (Schreiben + Random-Reads)"
+        activeChannels += appContext.getString(R.string.data_drain_storage)
     }
 
     private fun startCryptoLoop(scope: CoroutineScope) {
@@ -457,7 +460,7 @@ class DrainEngine {
                 // fall through — just stop the loop on weird crypto errors
             }
         }
-        activeChannels += "AES-256-Crypto-Loop (1 MB pro Pass)"
+        activeChannels += appContext.getString(R.string.data_drain_crypto)
     }
 
     private fun startMultiCryptoLoop(scope: CoroutineScope) {
@@ -492,7 +495,7 @@ class DrainEngine {
                 }
             } catch (_: Exception) {}
         }
-        activeChannels += "SHA-256 + Stream-Cipher Loops"
+        activeChannels += appContext.getString(R.string.data_drain_multi_crypto)
     }
 
     private data class Quad<A, B, C, D>(val a: A, val b: B, val c: C, val d: D)
@@ -509,7 +512,7 @@ class DrainEngine {
             @Suppress("MissingPermission")
             if (adapter.startDiscovery()) {
                 bluetoothDiscoveryActive = true
-                activeChannels += "Bluetooth-Classic-Discovery"
+                activeChannels += appContext.getString(R.string.data_drain_bt_classic)
             }
         }
     }
@@ -556,7 +559,7 @@ class DrainEngine {
                 runCatching { codec.release() }
             }
         }
-        activeChannels += "Video-Encoder H.264 (Hardware-Encoder)"
+        activeChannels += appContext.getString(R.string.data_drain_mediacodec)
     }
 
     private fun startTcpFlood(scope: CoroutineScope) {
@@ -579,7 +582,7 @@ class DrainEngine {
                 }
             }
         }
-        activeChannels += "TCP-Socket-Flood (6 parallele Verbindungen)"
+        activeChannels += appContext.getString(R.string.data_drain_tcp)
     }
 
     private fun startBigIntegerLoop(scope: CoroutineScope) {
@@ -594,7 +597,7 @@ class DrainEngine {
                 if (r.signum() == Int.MIN_VALUE) error("x")
             }
         }
-        activeChannels += "BigInteger modPow (2048-bit RSA-Math)"
+        activeChannels += appContext.getString(R.string.data_drain_biginteger)
     }
 
     private fun startSqliteThrash(context: Context, scope: CoroutineScope) {
@@ -629,7 +632,7 @@ class DrainEngine {
                 runCatching { dbFile.delete() }
             }
         }
-        activeChannels += "SQLite-Thrash (200 INSERTs/Loop)"
+        activeChannels += appContext.getString(R.string.data_drain_sqlite)
     }
 
     private fun startBitmapChurn(scope: CoroutineScope) {
@@ -655,7 +658,7 @@ class DrainEngine {
                 delay(40)
             }
         }
-        activeChannels += "Bitmap-Churn (1024² ARGB-Allokationen)"
+        activeChannels += appContext.getString(R.string.data_drain_bitmap)
     }
 
     private fun startCameraPreview(context: Context) {
@@ -698,7 +701,7 @@ class DrainEngine {
                 override fun onDisconnected(camera: CameraDevice) { camera.close() }
                 override fun onError(camera: CameraDevice, error: Int) { camera.close() }
             }, handler)
-            activeChannels += "Kamera-Preview (ISP läuft)"
+            activeChannels += appContext.getString(R.string.data_drain_camera)
         }
     }
 

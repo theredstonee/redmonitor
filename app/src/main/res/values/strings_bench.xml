@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== Shared / common ===== -->
+    <string name="bench_cancel">Abbrechen</string>
+    <string name="bench_history">Verlauf</string>
+    <string name="bench_start_test">Test starten</string>
+    <string name="bench_test_again">Erneut testen</string>
+    <string name="bench_result">Ergebnis</string>
+    <string name="bench_duration">Dauer</string>
+    <string name="bench_total">Gesamt</string>
+    <string name="bench_error">Fehler</string>
+    <string name="bench_yes">Ja</string>
+    <string name="bench_no">Nein</string>
+    <string name="bench_running">Läuft…</string>
+    <string name="bench_ready">Bereit</string>
+    <string name="bench_no_data">Keine Daten</string>
+    <string name="bench_done">Fertig</string>
+    <string name="bench_badge_new">NEU</string>
+    <string name="bench_used">Belegt</string>
+    <string name="bench_internal_storage">Interner Speicher</string>
+    <string name="bench_cpu_benchmark">CPU-Benchmark</string>
+    <string name="bench_stress_test">Stresstest</string>
+    <string name="bench_country">Land</string>
+    <string name="bench_type">Typ</string>
+
+    <!-- ===== BenchmarkHubScreen ===== -->
+    <string name="bench_hub_cpu_sub">Single + Multi-Core Score</string>
+    <string name="bench_hub_ram_title">RAM-Speed</string>
+    <string name="bench_hub_ram_sub">Lesen / Schreiben MB/s</string>
+    <string name="bench_hub_storage_title">Storage Seq.</string>
+    <string name="bench_hub_storage_sub">Sequenzielles Lesen/Schreiben</string>
+    <string name="bench_hub_random_title">Storage 4K Random</string>
+    <string name="bench_hub_random_sub">IOPS — wichtig für Apps</string>
+    <string name="bench_hub_gpu_title">GPU-FPS</string>
+    <string name="bench_hub_gpu_sub">Render-Test</string>
+    <string name="bench_hub_image_title">Bild-Verarbeitung</string>
+    <string name="bench_hub_image_sub">CPU Bildfilter MPx/s</string>
+    <string name="bench_hub_network_title">Netz-Speed</string>
+    <string name="bench_hub_network_sub">Download von Cloudflare</string>
+    <string name="bench_hub_stress_sub">CPU-Vollast + Throttling</string>
+    <string name="bench_hub_color_title">Farbraum &amp; Gamut</string>
+    <string name="bench_hub_color_sub">sRGB, HDR, Gradienten</string>
+    <string name="bench_hub_display_title">Display-Test</string>
+    <string name="bench_hub_display_sub">Auto-Sequenz Vollbild-Muster</string>
+    <string name="bench_hub_history_sub">Alle Runs mit Sub-Scores</string>
+
+    <!-- ===== BenchRunScreen ===== -->
+    <string name="bench_run_none_active">Kein Benchmark aktiv</string>
+    <string name="bench_run_back">Zurück</string>
+    <string name="bench_run_close">Schließen</string>
+    <string name="bench_run_completed_subtests">ABGESCHLOSSENE SUB-TESTS</string>
+    <string name="bench_run_saved">Gespeichert in Verlauf</string>
+    <string name="bench_run_almost_done">fast fertig</string>
+    <string name="bench_run_remaining_sec">~%1$ds übrig</string>
+    <string name="bench_run_remaining_min">~%1$dm %2$ds übrig</string>
+
+    <!-- ===== BenchHistoryScreen ===== -->
+    <string name="bench_hist_all">Alle</string>
+    <string name="bench_hist_no_runs">Noch keine Runs</string>
+    <string name="bench_hist_no_runs_hint">Starte einen Benchmark — die Ergebnisse landen hier mit Score, Sub-Scores und Zeitstempel.</string>
+    <string name="bench_hist_device">Gerät</string>
+    <string name="bench_hist_app_version">App-Version</string>
+    <string name="bench_hist_phase_sec">Phase-Sek.</string>
+    <string name="bench_hist_comparison">Vergleich</string>
+    <string name="bench_hist_loading_comparison">Lade Vergleichswerte ...</string>
+    <string name="bench_hist_comparison_unavailable">Vergleich gerade nicht erreichbar.</string>
+    <string name="bench_hist_not_enough_data">Noch zu wenig Daten fuer dieses Geraet (%1$d von %2$d noetig).</string>
+    <string name="bench_hist_faster_than">Schneller als %1$d %% der Geraete</string>
+    <string name="bench_hist_comparison_devices">Vergleichsgeraete</string>
+    <string name="bench_hist_average">Durchschnitt</string>
+    <string name="bench_hist_best_value">Bester Wert</string>
+    <string name="bench_hist_contribute">Ergebnis beitragen</string>
+    <string name="bench_hist_upload_title">Ergebnis hochladen?</string>
+    <string name="bench_hist_upload_body">Hochgeladen werden: Benchmark-Typ (%1$s), Gesamt-Score, Single- und Multi-Score, alle %2$d Sub-Scores, dein Geraetemodell, der SoC, die Android-Version und die App-Version.\n\nKein Name, kein Konto, keine Standortdaten. Die Zuordnung laeuft ueber eine anonyme Geraete-Kennung, mit der du deine Daten jederzeit im Privacy-Dashboard wieder loeschen kannst.</string>
+    <string name="bench_hist_upload_confirm">Hochladen</string>
+    <string name="bench_hist_uploading">Lade hoch ...</string>
+    <string name="bench_hist_upload_thanks">Danke — Ergebnis beigetragen.</string>
+    <string name="bench_hist_upload_failed">Upload fehlgeschlagen. Spaeter nochmal versuchen.</string>
+
+    <!-- ===== CpuBenchmarkScreen ===== -->
+    <string name="bench_cpu_desc">4 Sub-Tests à la Geekbench: Integer-Mathe, Floating-Point, SHA-256-Crypto, Quicksort. Single + Multi-Core. Läuft im Foreground-Service — Activity darf in den Hintergrund.</string>
+    <string name="bench_cpu_phase_duration">Dauer pro Phase (× 4 Tests × 2 Modi)</string>
+    <string name="bench_cpu_total">Gesamt: ~%1$d min %2$d s</string>
+    <string name="bench_cpu_start">Benchmark starten</string>
+    <string name="bench_cpu_notes">Hinweise</string>
+    <string name="bench_cpu_notes_body">· Schließe vorher Spiele/Streaming-Apps für stabilere Scores\n· Bench-Service läuft als Foreground-Notification — du kannst die App im Hintergrund lassen\n· Ergebnis landet automatisch im Verlauf</string>
+
+    <!-- ===== GpuBenchmarkScreen ===== -->
+    <string name="bench_gpu_starting">Starte…</string>
+    <string name="bench_gpu_title">GPU-Benchmark (echte GLES2-Shader)</string>
+    <string name="bench_gpu_desc">3 Sub-Tests à 15 s mit echten OpenGL-ES-2-Shadern (Vertex- und Fragment-Shader, VBOs). Im Gegensatz zum alten Scissor-Trick wird hier wirklich gerendert.</string>
+    <string name="bench_gpu_detail">VERTEX: 50.000 rotierende Dreiecke pro Frame · FILL-RATE: 30× Vollbild-Quad mit Alpha-Blending (Overdraw) · SHADER: 32-Iter Fraktal-Fragment-Shader.</string>
+    <string name="bench_gpu_start">Vollbild-Test starten</string>
+    <string name="bench_gpu_total_score">Gesamt-Score</string>
+    <string name="bench_gpu_avg_of_3">Mittelwert aus 3 Sub-Tests</string>
+
+    <!-- ===== RamBenchmarkScreen ===== -->
+    <string name="bench_ram_title">RAM-Bandbreite (tier-aware)</string>
+    <string name="bench_ram_desc">Misst Lesen/Schreiben/Kopieren über 4 Puffer-Größen: 32 KB (L1), 1 MB (L2), 16 MB (L3/SLC) und 256 MB (DRAM). Läuft im Foreground-Service.</string>
+    <string name="bench_ram_duration_per_op">Dauer pro Operation × Tier</string>
+    <string name="bench_ram_total">Gesamt: 4 Tiers × 3 Ops × %1$ds = %2$ds</string>
+
+    <!-- ===== StorageBenchmarkScreen ===== -->
+    <string name="bench_storage_title">Storage Sequenziell — Sustained</string>
+    <string name="bench_storage_desc">Schreibt und liest kontinuierlich. Sustained = echter Flash-Durchsatz (fsync alle 32 MB). Peak = SLC-Cache-Burst.</string>
+    <string name="bench_storage_duration_per_phase">Dauer pro Phase (Write + Read)</string>
+    <string name="bench_storage_total">Gesamt: %1$d s · 512 MB File-Cap</string>
+
+    <!-- ===== RandomIOScreen ===== -->
+    <string name="bench_random_desc">Random-4-KB-Operationen bei drei Queue-Depths. QD=1 = wie SQLite-Scrolling, QD=16 = was UFS+f2fs max. pipelinen kann.</string>
+    <string name="bench_random_duration_per_phase">Dauer pro Phase (3 QDs × 2 r/w)</string>
+    <string name="bench_random_total">Gesamt: %1$d s</string>
+
+    <!-- ===== ImageBenchScreen ===== -->
+    <string name="bench_image_title">Bild-Verarbeitung (CPU)</string>
+    <string name="bench_image_desc">Wendet einen 3×3-Blur sechsmal auf ein 1920×1080-Bild an (ohne Allokationen, rein Integer-Arithmetik).</string>
+    <string name="bench_image_size">Bildgröße</string>
+    <string name="bench_image_passes">Durchgänge</string>
+
+    <!-- ===== SpeedTestScreen ===== -->
+    <string name="bench_speed_unknown_error">Unbekannter Fehler</string>
+    <string name="bench_speed_title">Speed-Test (Cloudflare)</string>
+    <string name="bench_speed_desc">Latency, Download und Upload gegen speed.cloudflare.com. Single-Connection — d.h. der typische \'realistische\' Real-World-Wert, nicht der maximale Multi-Stream-Wert wie bei Ookla.</string>
+    <string name="bench_speed_transferred">Übertragen</string>
+
+    <!-- ===== NetworkSpeedScreen ===== -->
+    <string name="bench_netspeed_title">Netzwerk Download-Speed</string>
+    <string name="bench_netspeed_desc">Lädt 25 MB von Cloudflare und misst die effektive Bandbreite in Mbps.</string>
+    <string name="bench_netspeed_error">Fehler: %1$s</string>
+    <string name="bench_netspeed_downloaded">Heruntergeladen</string>
+
+    <!-- ===== NetworkScreen ===== -->
+    <string name="bench_net_connection">Verbindung</string>
+    <string name="bench_net_downstream">Downstream (gemeldet)</string>
+    <string name="bench_net_upstream">Upstream (gemeldet)</string>
+    <string name="bench_net_metered">Datenintensiv (metered)?</string>
+    <string name="bench_net_signal_strength">Signalstärke</string>
+    <string name="bench_net_wifi_signal">WLAN-Signal</string>
+    <string name="bench_net_ip_addresses">IP-Adressen</string>
+    <string name="bench_net_traffic_since_boot">Traffic (seit Boot)</string>
+    <string name="bench_net_received_rx">Empfangen (RX)</string>
+    <string name="bench_net_sent_tx">Gesendet (TX)</string>
+
+    <!-- ===== NetworkUsageScreen ===== -->
+    <string name="bench_range_1h">1 h</string>
+    <string name="bench_range_24h">24 h</string>
+    <string name="bench_range_7d">7 Tg</string>
+    <string name="bench_range_30d">30 Tg</string>
+    <string name="bench_usage_perm_title">Nutzungsstatistiken-Permission benötigt</string>
+    <string name="bench_usage_perm_body">Pro-App-Netzwerk-Traffic braucht \'Nutzungszugriff\' (PACKAGE_USAGE_STATS). Android: Einstellungen → Apps → Spezieller App-Zugriff → Nutzungsdaten → RedMonitor erlauben.</string>
+    <string name="bench_usage_open_settings">Einstellungen öffnen</string>
+    <string name="bench_usage_system_apps">System-Apps</string>
+    <string name="bench_usage_loading">lädt…</string>
+    <string name="bench_usage_user_prefix">User-</string>
+    <string name="bench_usage_no_traffic">Im gewählten Zeitraum hat keine %1$sApp Netzwerk-Traffic erzeugt.</string>
+    <string name="bench_usage_total">Gesamt %1$s</string>
+    <string name="bench_usage_total_volume">Gesamt-Volumen</string>
+    <string name="bench_usage_mobile">Mobil</string>
+    <string name="bench_usage_wifi">WLAN</string>
+    <string name="bench_usage_wifi_mobile">WLAN %1$s · Mobil %2$s</string>
+
+    <!-- ===== TelephonyScreen ===== -->
+    <string name="bench_tel_title">Telefonie</string>
+    <string name="bench_tel_loading">Lade Mobilfunk-Status…</string>
+    <string name="bench_tel_operator_card">Netzwerk-Betreiber</string>
+    <string name="bench_tel_sim_operator">SIM-Operator</string>
+    <string name="bench_tel_sim_status">SIM-Status</string>
+    <string name="bench_tel_phone_type">Phone-Typ</string>
+    <string name="bench_tel_data_network_type">Datennetz-Typ</string>
+    <string name="bench_tel_sim_cards">SIM-Karten</string>
+    <string name="bench_tel_modems_active">Modems aktiv</string>
+    <string name="bench_tel_sim_list_perm">SIM-Liste benötigt READ_PHONE_STATE (in den App-Einstellungen erteilen).</string>
+    <string name="bench_tel_more">Mehr</string>
+    <string name="bench_tel_volte_capable">VoLTE-fähig</string>
+    <string name="bench_tel_sms_capable">SMS-fähig</string>
+    <string name="bench_tel_has_icc">Hat ICC-Karte</string>
+    <string name="bench_tel_perm_missing">Berechtigung fehlt</string>
+    <string name="bench_tel_sim_absent">Keine SIM</string>
+    <string name="bench_tel_sim_pin">PIN erforderlich</string>
+    <string name="bench_tel_sim_puk">PUK erforderlich</string>
+    <string name="bench_tel_sim_netlock">Netz gesperrt</string>
+    <string name="bench_tel_sim_not_ready">Nicht bereit</string>
+    <string name="bench_tel_sim_disabled">Deaktiviert</string>
+    <string name="bench_tel_sim_io_error">I/O-Fehler</string>
+    <string name="bench_tel_sim_restricted">Eingeschränkt</string>
+    <string name="bench_tel_unknown">Unbekannt</string>
+    <string name="bench_tel_phone_none">Keine</string>
+    <string name="bench_tel_net_type_num">Typ #%1$d</string>
+
+    <!-- ===== CodecsScreen ===== -->
+    <string name="bench_codecs_hw_only">Nur HW</string>
+    <string name="bench_codecs_loading">Lade Codec-Liste…</string>
+    <string name="bench_codecs_acceleration">Beschleunigung</string>
+    <string name="bench_codecs_hw">Hardware</string>
+    <string name="bench_codecs_sw_only">nur Software</string>
+    <string name="bench_codecs_mixed">gemischt</string>
+    <string name="bench_codecs_mime_types">MIME-Typen</string>
+
+    <!-- ===== CpuScreen ===== -->
+    <string name="bench_cpu_processor">Prozessor</string>
+    <string name="bench_cpu_total_load">Gesamt-Last</string>
+    <string name="bench_cpu_data_source">Datenquelle: %1$s</string>
+    <string name="bench_cpu_per_core">Pro Kern</string>
+    <string name="bench_cpu_no_per_core">Keine Per-Core-Daten verfügbar. Auf neueren Android-Versionen ist /proc/stat ohne shell-Zugriff blockiert — aktiviere Shizuku für echte Werte.</string>
+    <string name="bench_cpu_top_processes">Top-CPU-Prozesse</string>
+    <string name="bench_cpu_loading_dumpsys">Lade via dumpsys cpuinfo…</string>
+    <string name="bench_cpu_top_needs_shizuku">Top-Prozesse brauchen Shizuku (dumpsys cpuinfo).</string>
+    <string name="bench_cpu_processor_info">Prozessor-Info</string>
+    <string name="bench_cpu_cores">Kerne</string>
+    <string name="bench_cpu_arch_primary">Architektur (primär)</string>
+    <string name="bench_cpu_supported_abis">Unterstützte ABIs</string>
+    <string name="bench_cpu_freq_range_per_core">Frequenz-Range pro Kern</string>
+
+    <!-- ===== RamScreen ===== -->
+    <string name="bench_ram_storage">Speicher</string>
+    <string name="bench_ram_memory">Arbeitsspeicher</string>
+    <string name="bench_ram_available">Verfügbar</string>
+    <string name="bench_ram_low_mem_threshold">Low-Memory-Schwelle</string>
+    <string name="bench_ram_low_memory">Low Memory?</string>
+    <string name="bench_ram_free">Frei</string>
+
+    <!-- ===== GpuScreen ===== -->
+    <string name="bench_gpuinfo_title">Grafikprozessor</string>
+    <string name="bench_gpuinfo_reading">Lese GPU-Info…</string>
+    <string name="bench_gpuinfo_manufacturer">Hersteller</string>
+    <string name="bench_gpuinfo_opengl_version">OpenGL-Version</string>
+    <string name="bench_gpuinfo_glsl_version">GLSL-Version</string>
+    <string name="bench_gpuinfo_more">+ %1$d weitere…</string>
+
+    <!-- ===== SystemPropertiesScreen ===== -->
+    <string name="bench_props_filter">Filter (Schlüssel oder Wert)</string>
+    <string name="bench_props_loading">Lade…</string>
+    <string name="bench_props_count">%1$d von %2$d Properties</string>
+    <string name="bench_props_getprop_failed">Konnte `getprop` nicht ausführen — auf diesem Gerät gesperrt.</string>
+    <string name="bench_props_empty">(leer)</string>
+
+    <!-- ===== FeaturesScreen ===== -->
+    <string name="bench_features_title">Hardware-Features</string>
+    <string name="bench_features_count">Anzahl</string>
+    <string name="bench_features_loading">lade…</string>
+    <string name="bench_features_desc">Vom System gemeldete Features (PackageManager.systemAvailableFeatures).</string>
+
+    <!-- ===== OverviewScreen ===== -->
+    <string name="bench_ov_app_only">nur App</string>
+    <string name="bench_ov_charging">Lädt %1$s W</string>
+    <string name="bench_ov_battery">Akku</string>
+    <string name="bench_ov_cpu_per_core">CPU pro Kern</string>
+    <string name="bench_ov_sampler_warmup">Sampler wärmt auf…</string>
+    <string name="bench_ov_cores_avg">Ø %1$s %%  ·  %2$d Kerne</string>
+    <string name="bench_ov_network_live">Netzwerk live</string>
+    <string name="bench_ov_received_total">Empfangen gesamt</string>
+    <string name="bench_ov_sent_total">Gesendet gesamt</string>
+    <string name="bench_ov_top_cpu_app">Top-CPU-App</string>
+    <string name="bench_ov_shizuku_needed">Shizuku nötig</string>
+    <string name="bench_ov_storage_compact">Speicher kompakt</string>
+    <string name="bench_ov_ram_used">RAM verwendet</string>
+    <string name="bench_ov_ram_total">RAM gesamt</string>
+    <string name="bench_ov_ram_load">RAM-Auslastung</string>
+
+    <!-- ===== InfoHubScreen ===== -->
+    <string name="bench_info_thermal_title">Thermalzonen</string>
+    <string name="bench_info_thermal_sub">Live-Temperaturen</string>
+    <string name="bench_info_telephony_title">SIM &amp; Telefonie</string>
+    <string name="bench_info_telephony_sub">Operator, Netz, Signal</string>
+    <string name="bench_info_wifi_title">WLAN-Scan</string>
+    <string name="bench_info_wifi_sub">Umliegende Netze</string>
+    <string name="bench_info_bluetooth_sub">Adapter + gekoppelt</string>
+    <string name="bench_info_nfc_sub">Status &amp; Verfügbarkeit</string>
+    <string name="bench_info_cameras_title">Kameras</string>
+    <string name="bench_info_cameras_sub">Specs aller Kameras</string>
+    <string name="bench_info_codecs_title">Codecs</string>
+    <string name="bench_info_codecs_sub">Audio &amp; Video, HW?</string>
+    <string name="bench_info_running_title">Laufende Apps</string>
+    <string name="bench_info_running_sub">Aktiv + RAM</string>
+    <string name="bench_info_installed_title">Installierte Apps</string>
+    <string name="bench_info_installed_sub">Pakete + Größe</string>
+    <string name="bench_info_features_title">Hardware-Features</string>
+    <string name="bench_info_features_sub">Was hat das Gerät</string>
+    <string name="bench_info_props_title">System-Properties</string>
+    <string name="bench_info_props_sub">Alle Build-Props</string>
+    <string name="bench_info_logcat_sub">Live System-Logs (Shizuku)</string>
+    <string name="bench_info_doze_title">Doze-Whitelist</string>
+    <string name="bench_info_doze_sub">Akku-Optimierung verwalten</string>
+    <string name="bench_info_oem_title">Geräte-Setup</string>
+    <string name="bench_info_oem_sub">MIUI/HyperOS/OneUI Permissions</string>
+    <string name="bench_info_net_usage_title">Pro-App Traffic</string>
+    <string name="bench_info_net_usage_sub">WLAN + Mobil pro App</string>
+    <string name="bench_info_wakelocks_title">Wake-Locks</string>
+    <string name="bench_info_wakelocks_sub">Was hält das Gerät wach</string>
+    <string name="bench_info_notif_title">Notification-Log</string>
+    <string name="bench_info_notif_sub">Alle eingehenden Notifications</string>
+    <string name="bench_info_perm_audit_title">Permission-Audit</string>
+    <string name="bench_info_perm_audit_sub">Wer hat welche Rechte</string>
+    <string name="bench_info_shell_title">Shell-Terminal</string>
+    <string name="bench_info_shell_sub">ADB-Shell in-app via Shizuku</string>
+    <string name="bench_info_discharge_title">Akku-Verlauf</string>
+    <string name="bench_info_discharge_sub">Discharge-Kurve aus History</string>
+    <string name="bench_info_charging_limit_sub">Auto-Stop bei X % via Shizuku</string>
+    <string name="bench_info_battery_doctor_title">Akku-Doktor</string>
+    <string name="bench_info_battery_doctor_sub">Wer killt deinen Akku?</string>
+    <string name="bench_info_storage_title">Storage-Analyzer</string>
+    <string name="bench_info_storage_sub">Was frisst deinen Speicher</string>
+    <string name="bench_info_apk_title">APK-Extract</string>
+    <string name="bench_info_apk_sub">Installierte App als APK ziehen</string>
+    <string name="bench_info_crash_title">Crash-Logs</string>
+    <string name="bench_info_crash_sub">Tombstones + Dropbox-Reports</string>
+    <string name="bench_info_speedtest_title">Speed-Test</string>
+    <string name="bench_info_speedtest_sub">Cloudflare Down/Up + Latency</string>
+    <string name="bench_info_ping_title">Ping-Monitor</string>
+    <string name="bench_info_ping_sub">4 Server live + Jitter-Graph</string>
+    <string name="bench_info_gnss_title">GNSS Live</string>
+    <string name="bench_info_gnss_sub">Satelliten-Status + SNR</string>
+    <string name="bench_info_perfetto_title">Perfetto-Trace</string>
+    <string name="bench_info_perfetto_sub">System-Trace für ui.perfetto.dev</string>
+    <string name="bench_info_dpi_title">DPI / Animation</string>
+    <string name="bench_info_dpi_sub">wm density + animator-scales</string>
+    <string name="bench_info_bg_restrict_title">BG-Restrict</string>
+    <string name="bench_info_bg_restrict_sub">Bulk RUN_ANY_IN_BACKGROUND-Toggle</string>
+    <string name="bench_info_privacy_title">Privacy-Dashboard</string>
+    <string name="bench_info_privacy_sub">Wer hat WAS zuletzt benutzt</string>
+
+    <!-- ===== SystemHubScreen ===== -->
+    <string name="bench_sys_cpu_sub">Last, Frequenzen, Kerne</string>
+    <string name="bench_sys_ram_title">RAM &amp; Speicher</string>
+    <string name="bench_sys_ram_sub">Auslastung &amp; Storage</string>
+    <string name="bench_sys_battery_title">Akku</string>
+    <string name="bench_sys_battery_sub">Stand, Watt, Schnelllad-Erkennung</string>
+    <string name="bench_sys_sensors_title">Sensoren</string>
+    <string name="bench_sys_sensors_sub">Liste + Klick = Detail-Graph</string>
+    <string name="bench_sys_gpu_sub">Renderer, OpenGL, GLSL</string>
+    <string name="bench_sys_network_title">Netzwerk</string>
+    <string name="bench_sys_network_sub">WLAN, Signal, IP, Traffic</string>
+    <string name="bench_sys_display_title">Display &amp; Gerät</string>
+    <string name="bench_sys_display_sub">Build, Uptime, Display</string>
+    <string name="bench_sys_hud_title">Floating HUD</string>
+    <string name="bench_sys_hud_sub">Live-Overlay über allen Apps</string>
+    <string name="bench_sys_glyph_title">Glyph Matrix</string>
+    <string name="bench_sys_glyph_sub">Live-Werte auf der Rückseite</string>
+    <string name="bench_sys_tweaks_title">Display-Tweaks</string>
+    <string name="bench_sys_tweaks_sub">DPI, Auflösung, Animationen</string>
+
+    <!-- ===== TestsHubScreen ===== -->
+    <string name="bench_test_touch_title">Multi-Touch</string>
+    <string name="bench_test_touch_sub">Alle Finger gleichzeitig</string>
+    <string name="bench_test_display_title">Display-Farben</string>
+    <string name="bench_test_display_sub">Dead-Pixel-Check</string>
+    <string name="bench_test_vibrate_title">Vibration</string>
+    <string name="bench_test_vibrate_sub">Muster testen</string>
+    <string name="bench_test_flash_title">Taschenlampe</string>
+    <string name="bench_test_flash_sub">Kamera-LED an/aus</string>
+    <string name="bench_test_speaker_title">Speaker-Ton</string>
+    <string name="bench_test_speaker_sub">Tongenerator L/R</string>
+    <string name="bench_test_mic_title">Mikrofon</string>
+    <string name="bench_test_mic_sub">Live-Pegelmeter</string>
+    <string name="bench_test_gps_title">GPS / Satelliten</string>
+    <string name="bench_test_gps_sub">Live Position + Sats</string>
+    <string name="bench_test_proximity_title">Proximity &amp; Licht</string>
+    <string name="bench_test_proximity_sub">Beide Sensoren visuell</string>
+    <string name="bench_test_earpiece_title">Earpiece</string>
+    <string name="bench_test_earpiece_sub">Hörmuschel-Ton</string>
+    <string name="bench_test_edges_title">Edge-Rejection</string>
+    <string name="bench_test_edges_sub">Curved-Screen Palm-Test</string>
+    <string name="bench_test_brightness_title">Brightness</string>
+    <string name="bench_test_brightness_sub">PWM + Banding-Check</string>
+    <string name="bench_test_nfc_title">NFC-Tap</string>
+    <string name="bench_test_nfc_sub">ReaderMode + NDEF</string>
+    <string name="bench_test_ir_title">IR-Blaster</string>
+    <string name="bench_test_ir_sub">Carrier + Test-Burst</string>
+    <string name="bench_test_compass_title">Kompass</string>
+    <string name="bench_test_compass_sub">Magnetfeld + Heading</string>
+    <string name="bench_test_barometer_title">Barometer</string>
+    <string name="bench_test_barometer_sub">hPa + Höhe</string>
+
+    <!-- ===== StressTestScreen ===== -->
+    <string name="bench_stress_desc">Lädt alle CPU-Kerne dauerhaft mit 100 % aus. Das Gerät wird heiß — bei Throttling sinken Frequenz und Auslastung.</string>
+    <string name="bench_stress_stop">Stresstest stoppen</string>
+    <string name="bench_stress_start">Stresstest starten</string>
+    <string name="bench_stress_runtime">Laufzeit: %1$s</string>
+    <string name="bench_stress_cpu_load">CPU-Auslastung</string>
+    <string name="bench_stress_source">Quelle</string>
+    <string name="bench_stress_src_process">Prozess-CPU-Zeit (Fallback)</string>
+    <string name="bench_stress_avg_freq">Ø Frequenz</string>
+    <string name="bench_stress_temp">Temperatur (%1$s)</string>
+    <string name="bench_stress_batt_sensor">Akku-Sensor</string>
+    <string name="bench_stress_throttle_very_likely">⚠ Throttling sehr wahrscheinlich</string>
+    <string name="bench_stress_hot">Heiß — Throttling möglich</string>
+    <string name="bench_stress_no_thermal_zone">Hinweis: Keine CPU-Thermalzone lesbar — zeige stattdessen Akku-Temperatur (auf Emulatoren oft fix bei 25 °C).</string>
+    <string name="bench_stress_throttle_from">Throttling ab</string>
+    <string name="bench_stress_not_yet">bisher nicht</string>
+    <string name="bench_stress_worst_value">Schlechtester Wert</string>
+    <string name="bench_stress_clock_start_now">Takt Start → jetzt</string>
+    <string name="bench_stress_peak_temp">Spitzentemperatur</string>
+    <string name="bench_stress_methodology">Gemessen wird der echte Durchsatz der Stress-Threads, nicht die Auslastung — die bleibt beim Drosseln bei 100 %%. Die ersten %1$d Sekunden sind Anlauf und zählen nicht.</string>
+    <string name="bench_stress_throughput_history">Verlauf Durchsatz</string>
+    <string name="bench_stress_throughput_caption">Mio. Iterationen/s · höher ist besser</string>
+    <string name="bench_stress_cpu_history">Verlauf CPU-Last</string>
+    <string name="bench_stress_temp_history">Verlauf Temperatur</string>
+</resources>

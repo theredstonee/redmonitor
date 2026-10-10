@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -55,9 +57,8 @@ fun StorageAnalyzerScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Storage-Analyzer",
-                description = "Tiefer Verzeichnis-Scan auf /sdcard und /data ist auf Android 11+ " +
-                    "ohne MANAGE_EXTERNAL_STORAGE blockiert. Shizuku-Shell sieht alles."
+                title = stringResource(R.string.sys_sa_shizuku_title),
+                description = stringResource(R.string.sys_sa_shizuku_desc)
             )
             return@Column
         }
@@ -81,8 +82,8 @@ fun StorageAnalyzerScreen() {
         Text(path, color = AccentSoft, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
         Spacer(Modifier.height(4.dp))
         Text(
-            if (loading) "scannt (du -sh)…"
-            else "${entries.size} Einträge · ges. ${formatBytes(entries.sumOf { it.sizeBytes })}",
+            if (loading) stringResource(R.string.sys_sa_scanning)
+            else stringResource(R.string.sys_sa_entries_total, entries.size, formatBytes(entries.sumOf { it.sizeBytes })),
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(8.dp))

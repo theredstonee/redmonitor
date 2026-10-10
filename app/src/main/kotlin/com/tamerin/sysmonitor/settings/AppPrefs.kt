@@ -1,11 +1,13 @@
 package com.tamerin.sysmonitor.settings
 
 import android.content.Context
+import androidx.annotation.StringRes
+import com.tamerin.sysmonitor.R
 
-enum class HapticIntensity(val key: String, val label: String) {
-    WEAK("weak", "Schwach"),
-    MEDIUM("medium", "Mittel"),
-    STRONG("strong", "Stark")
+enum class HapticIntensity(val key: String, @StringRes val labelRes: Int) {
+    WEAK("weak", R.string.misc_haptic_weak),
+    MEDIUM("medium", R.string.misc_haptic_medium),
+    STRONG("strong", R.string.misc_haptic_strong)
 }
 
 object AppPrefs {
@@ -22,7 +24,16 @@ object AppPrefs {
     private const val K_AUTOSTART_OVERLAY = "autostart_overlay_on_boot"
     private const val K_MATERIAL_YOU = "material_you_dynamic_theme"
     private const val K_ONBOARDING_DONE = "first_launch_onboarding_done"
+    private const val K_APP_LOCALE = "app_locale"
     private const val RATE_INTERVAL_MS = 3L * 24L * 3600L * 1000L
+
+    /** Sprach-Tag: "system" (Systemsprache folgen), "de" oder "en". */
+    fun appLocale(context: Context): String =
+        prefs(context).getString(K_APP_LOCALE, "system") ?: "system"
+
+    fun setAppLocale(context: Context, tag: String) {
+        prefs(context).edit().putString(K_APP_LOCALE, tag).apply()
+    }
 
     fun hasRated(context: Context): Boolean =
         prefs(context).getBoolean(K_RATED, false)

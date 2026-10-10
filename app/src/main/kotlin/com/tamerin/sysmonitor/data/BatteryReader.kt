@@ -6,6 +6,7 @@ import android.content.IntentFilter
 import android.os.BatteryManager
 import android.os.SystemClock
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import java.io.File
 import kotlin.math.abs
 
@@ -56,29 +57,29 @@ object BatteryReader {
 
         val pluggedRaw = intent?.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) ?: 0
         val plugged = when (pluggedRaw) {
-            BatteryManager.BATTERY_PLUGGED_AC -> "AC (Netzteil)"
+            BatteryManager.BATTERY_PLUGGED_AC -> context.getString(R.string.data_bat_plugged_ac)
             BatteryManager.BATTERY_PLUGGED_USB -> "USB"
             BatteryManager.BATTERY_PLUGGED_WIRELESS -> "Wireless / Qi"
-            else -> "Akkubetrieb"
+            else -> context.getString(R.string.data_bat_plugged_battery)
         }
         val isWireless = pluggedRaw == BatteryManager.BATTERY_PLUGGED_WIRELESS
 
         val health = when (intent?.getIntExtra(BatteryManager.EXTRA_HEALTH, 0)) {
-            BatteryManager.BATTERY_HEALTH_GOOD -> "Gut"
-            BatteryManager.BATTERY_HEALTH_OVERHEAT -> "Überhitzt"
-            BatteryManager.BATTERY_HEALTH_DEAD -> "Defekt"
-            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> "Überspannung"
-            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> "Fehler"
-            BatteryManager.BATTERY_HEALTH_COLD -> "Zu kalt"
-            else -> "Unbekannt"
+            BatteryManager.BATTERY_HEALTH_GOOD -> context.getString(R.string.data_bat_health_good)
+            BatteryManager.BATTERY_HEALTH_OVERHEAT -> context.getString(R.string.data_bat_health_overheat)
+            BatteryManager.BATTERY_HEALTH_DEAD -> context.getString(R.string.data_bat_health_dead)
+            BatteryManager.BATTERY_HEALTH_OVER_VOLTAGE -> context.getString(R.string.data_bat_health_overvoltage)
+            BatteryManager.BATTERY_HEALTH_UNSPECIFIED_FAILURE -> context.getString(R.string.data_bat_health_failure)
+            BatteryManager.BATTERY_HEALTH_COLD -> context.getString(R.string.data_bat_health_cold)
+            else -> context.getString(R.string.data_bat_health_unknown)
         }
 
         val statusLabel = when (status) {
-            BatteryManager.BATTERY_STATUS_CHARGING -> "Lädt"
-            BatteryManager.BATTERY_STATUS_DISCHARGING -> "Entlädt"
-            BatteryManager.BATTERY_STATUS_FULL -> "Voll"
-            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> "Nicht ladend"
-            BatteryManager.BATTERY_STATUS_UNKNOWN -> "Unbekannt"
+            BatteryManager.BATTERY_STATUS_CHARGING -> context.getString(R.string.data_bat_status_charging)
+            BatteryManager.BATTERY_STATUS_DISCHARGING -> context.getString(R.string.data_bat_status_discharging)
+            BatteryManager.BATTERY_STATUS_FULL -> context.getString(R.string.data_bat_status_full)
+            BatteryManager.BATTERY_STATUS_NOT_CHARGING -> context.getString(R.string.data_bat_status_not_charging)
+            BatteryManager.BATTERY_STATUS_UNKNOWN -> context.getString(R.string.data_bat_status_unknown)
             else -> "—"
         }
 
@@ -184,15 +185,15 @@ object BatteryReader {
         // ---- Pick best wattage display ----
         val (watts, source) = when {
             charging && usbWatts in 0.5f..200f && usbVoltageV >= 4.5f ->
-                usbWatts to "USB-Eingang (echte PD-Leistung)"
+                usbWatts to context.getString(R.string.data_bat_watts_usb)
             charging && battWatts in 0.1f..200f -> {
                 val method = when {
-                    deltaCurrentMa != 0L -> "Akku-Seite über Charge-Counter Δ (genau)"
-                    else -> "Akku-Seite via BatteryManager (Momentwert)"
+                    deltaCurrentMa != 0L -> context.getString(R.string.data_bat_watts_delta)
+                    else -> context.getString(R.string.data_bat_watts_bm)
                 }
                 battWatts to method
             }
-            !charging && battWatts in 0.05f..200f -> battWatts to "Akku-Seite (System-Verbrauch)"
+            !charging && battWatts in 0.05f..200f -> battWatts to context.getString(R.string.data_bat_watts_discharge)
             else -> 0f to "—"
         }
 
@@ -200,15 +201,15 @@ object BatteryReader {
 
         val speedLabel = if (charging) {
             if (!sensorTrust || watts < 0.2f) {
-                "Sensor liefert keine Werte"
+                context.getString(R.string.data_bat_speed_no_sensor)
             } else when {
-                watts >= 80f -> "Hyper-Charging (${"%.1f".format(watts)} W)"
-                watts >= 50f -> "Super-Fast-Charging 2.0 (${"%.1f".format(watts)} W)"
-                watts >= 30f -> "Super-Fast-Charging (${"%.1f".format(watts)} W)"
-                watts >= 15f -> "Schnellladen (${"%.1f".format(watts)} W)"
-                watts >= 7.5f -> "Standard-Schnellladen (${"%.1f".format(watts)} W)"
-                watts >= 2.5f -> "Normales Laden (${"%.1f".format(watts)} W)"
-                else -> "Trickle-Charging (${"%.2f".format(watts)} W)"
+                watts >= 80f -> context.getString(R.string.data_bat_speed_hyper, watts)
+                watts >= 50f -> context.getString(R.string.data_bat_speed_superfast2, watts)
+                watts >= 30f -> context.getString(R.string.data_bat_speed_superfast, watts)
+                watts >= 15f -> context.getString(R.string.data_bat_speed_fast, watts)
+                watts >= 7.5f -> context.getString(R.string.data_bat_speed_standard_fast, watts)
+                watts >= 2.5f -> context.getString(R.string.data_bat_speed_normal, watts)
+                else -> context.getString(R.string.data_bat_speed_trickle, watts)
             }
         } else "—"
 

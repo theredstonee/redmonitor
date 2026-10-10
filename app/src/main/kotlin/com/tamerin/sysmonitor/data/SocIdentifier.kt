@@ -1,7 +1,9 @@
 package com.tamerin.sysmonitor.data
 
+import android.content.Context
 import android.os.Build
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import java.io.File
 
 @Immutable
@@ -14,14 +16,14 @@ data class SocInfo(
 
 object SocIdentifier {
 
-    fun identify(): SocInfo {
-        val mfg = manufacturer()
+    fun identify(context: Context): SocInfo {
+        val mfg = manufacturer(context)
         val code = socCode()
         val marketing = marketingNameFor(code, mfg)
         val full = when {
             marketing != null && marketing != code -> "$marketing ($code)"
             code.isNotBlank() -> code
-            else -> "Unbekannt"
+            else -> context.getString(R.string.data_soc_unknown)
         }
         return SocInfo(
             marketingName = marketing ?: code,
@@ -31,7 +33,7 @@ object SocIdentifier {
         )
     }
 
-    private fun manufacturer(): String {
+    private fun manufacturer(context: Context): String {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val m = Build.SOC_MANUFACTURER
             if (!m.isNullOrBlank() && m != Build.UNKNOWN) return m
@@ -43,7 +45,7 @@ object SocIdentifier {
             board.contains("exynos") || board.startsWith("erd") -> "Samsung"
             board.contains("mt") -> "MediaTek"
             board.contains("gs") -> "Google"
-            else -> Build.HARDWARE ?: "Unbekannt"
+            else -> Build.HARDWARE ?: context.getString(R.string.data_soc_unknown)
         }
     }
 

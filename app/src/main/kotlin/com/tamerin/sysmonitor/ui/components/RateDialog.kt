@@ -14,9 +14,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.settings.Haptic
 import com.tamerin.sysmonitor.settings.HapticType
@@ -38,14 +40,14 @@ fun RateDialog(onDismiss: () -> Unit) {
         },
         title = {
             Text(
-                "Gefällt dir RedMonitor?",
+                stringResource(R.string.comp_rate_title),
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 18.sp
             )
         },
         text = {
             Text(
-                "Hilf uns mit einer kurzen Bewertung auf Trustpilot. Dauert 30 Sekunden und hilft enorm, die App bekannter zu machen.",
+                stringResource(R.string.comp_rate_body),
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -58,7 +60,7 @@ fun RateDialog(onDismiss: () -> Unit) {
                 openTrustpilot(context)
                 onDismiss()
             }) {
-                Text("⭐ Jetzt bewerten", color = Accent, fontWeight = FontWeight.SemiBold)
+                Text(stringResource(R.string.comp_rate_confirm), color = Accent, fontWeight = FontWeight.SemiBold)
             }
         },
         dismissButton = {
@@ -67,7 +69,7 @@ fun RateDialog(onDismiss: () -> Unit) {
                 AppPrefs.markRatePromptShown(context)
                 onDismiss()
             }) {
-                Text("Später")
+                Text(stringResource(R.string.comp_rate_later))
             }
         }
     )

@@ -1,43 +1,45 @@
 package com.tamerin.sysmonitor.overlay
 
 import android.content.Context
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.tamerin.sysmonitor.R
 
-enum class HudMetric(val key: String, val label: String) {
-    CPU_PERCENT("cpu", "CPU % gesamt"),
-    PER_CORE("per_core", "Pro-Core-Balken"),
-    PER_CORE_DETAIL("per_core_detail", "Pro-Core %·MHz (detailliert)"),
-    CPU_FREQ_AVG("cpu_freq", "CPU-Takt Ø (MHz)"),
-    CPU_TEMP("cpu_temp", "CPU/SoC-Temperatur"),
-    RAM_PERCENT("ram", "RAM %"),
-    BATTERY("batt", "Akku % + Watt"),
-    NETWORK("net", "Netz Down/Up"),
-    FPS("fps", "FPS"),
-    CLOCK("clock", "Uhrzeit + Uptime")
+enum class HudMetric(val key: String, @StringRes val labelRes: Int) {
+    CPU_PERCENT("cpu", R.string.misc_hud_metric_cpu_percent),
+    PER_CORE("per_core", R.string.misc_hud_metric_per_core),
+    PER_CORE_DETAIL("per_core_detail", R.string.misc_hud_metric_per_core_detail),
+    CPU_FREQ_AVG("cpu_freq", R.string.misc_hud_metric_cpu_freq),
+    CPU_TEMP("cpu_temp", R.string.misc_hud_metric_cpu_temp),
+    RAM_PERCENT("ram", R.string.misc_hud_metric_ram_percent),
+    BATTERY("batt", R.string.misc_hud_metric_battery),
+    NETWORK("net", R.string.misc_hud_metric_network),
+    FPS("fps", R.string.misc_hud_metric_fps),
+    CLOCK("clock", R.string.misc_hud_metric_clock)
 }
 
 /**
  * Wann das HUD sichtbar ist. Braucht ausser bei [ALWAYS] den Nutzungsdaten-Zugriff,
  * weil sonst die Vordergrund-App nicht ermittelbar ist.
  */
-enum class HudProfileMode(val label: String) {
-    ALWAYS("Immer sichtbar"),
-    ONLY_IN("Nur in ausgewaehlten Apps"),
-    EXCEPT_IN("Ueberall ausser in ausgewaehlten Apps")
+enum class HudProfileMode(@StringRes val labelRes: Int) {
+    ALWAYS(R.string.misc_hud_profile_always),
+    ONLY_IN(R.string.misc_hud_profile_only_in),
+    EXCEPT_IN(R.string.misc_hud_profile_except_in)
 }
 
-enum class HudSize(val scale: Float, val label: String) {
-    SMALL(0.85f, "Klein"),
-    MEDIUM(1.0f, "Mittel"),
-    LARGE(1.25f, "Groß")
+enum class HudSize(val scale: Float, @StringRes val labelRes: Int) {
+    SMALL(0.85f, R.string.misc_hud_size_small),
+    MEDIUM(1.0f, R.string.misc_hud_size_medium),
+    LARGE(1.25f, R.string.misc_hud_size_large)
 }
 
-enum class HudColor(val hex: Long, val label: String) {
-    BRAND_RED(0xFFDC2626, "Brand-Rot"),
-    WHITE(0xFFFFFFFF, "Weiß"),
-    GREEN(0xFF22C55E, "Grün"),
-    CYAN(0xFF06B6D4, "Cyan"),
-    AMBER(0xFFF59E0B, "Bernstein");
+enum class HudColor(val hex: Long, @StringRes val labelRes: Int) {
+    BRAND_RED(0xFFDC2626, R.string.misc_hud_color_brand_red),
+    WHITE(0xFFFFFFFF, R.string.misc_hud_color_white),
+    GREEN(0xFF22C55E, R.string.misc_hud_color_green),
+    CYAN(0xFF06B6D4, R.string.misc_hud_color_cyan),
+    AMBER(0xFFF59E0B, R.string.misc_hud_color_amber);
 
     fun composeColor(): Color = Color(hex)
 }

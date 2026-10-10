@@ -18,6 +18,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,11 +36,11 @@ import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.AccentSoft
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 
-private enum class TimeRange(val ms: Long, val label: String) {
-    H1(3600_000L, "1 h"),
-    H24(24L * 3600_000L, "24 h"),
-    D7(7L * 24L * 3600_000L, "7 Tg"),
-    D30(30L * 24L * 3600_000L, "30 Tg")
+private enum class TimeRange(val ms: Long, val labelRes: Int) {
+    H1(3600_000L, R.string.bench_range_1h),
+    H24(24L * 3600_000L, R.string.bench_range_24h),
+    D7(7L * 24L * 3600_000L, R.string.bench_range_7d),
+    D30(30L * 24L * 3600_000L, R.string.bench_range_30d)
 }
 
 @Composable
@@ -66,10 +68,9 @@ fun NetworkUsageScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!hasAccess) {
-            StatCard("Nutzungsstatistiken-Permission benötigt") {
+            StatCard(stringResource(R.string.bench_usage_perm_title)) {
                 Text(
-                    "Pro-App-Netzwerk-Traffic braucht 'Nutzungszugriff' (PACKAGE_USAGE_STATS). " +
-                        "Android: Einstellungen → Apps → Spezieller App-Zugriff → Nutzungsdaten → RedMonitor erlauben.",
+                    stringResource(R.string.bench_usage_perm_body),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -81,7 +82,7 @@ fun NetworkUsageScreen() {
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Einstellungen öffnen") }
+                ) { Text(stringResource(R.string.bench_usage_open_settings)) }
             }
             return
         }
@@ -91,7 +92,7 @@ fun NetworkUsageScreen() {
                 FilterChip(
                     selected = range == r,
                     onClick = { range = r },
-                    label = { Text(r.label, fontSize = 11.sp) }
+                    label = { Text(stringResource(r.labelRes), fontSize = 11.sp) }
                 )
             }
         }
@@ -100,11 +101,11 @@ fun NetworkUsageScreen() {
             FilterChip(
                 selected = showSystem,
                 onClick = { showSystem = !showSystem },
-                label = { Text("System-Apps", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.bench_usage_system_apps), fontSize = 11.sp) }
             )
             Spacer(Modifier.weight(1f))
             Text(
-                if (loading) "lädt…" else "${usage.size} Apps",
+                if (loading) stringResource(R.string.bench_usage_loading) else "${usage.size} Apps",
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
@@ -114,9 +115,10 @@ fun NetworkUsageScreen() {
             if (showSystem) usage else usage.filterNot { it.isSystem }
         }
         if (filtered.isEmpty() && !loading) {
-            StatCard("Keine Daten") {
+            StatCard(stringResource(R.string.bench_no_data)) {
+                val prefix = if (showSystem) "" else stringResource(R.string.bench_usage_user_prefix)
                 Text(
-                    "Im gewählten Zeitraum hat keine ${if (showSystem) "" else "User-"}App Netzwerk-Traffic erzeugt.",
+                    stringResource(R.string.bench_usage_no_traffic, prefix),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -126,10 +128,10 @@ fun NetworkUsageScreen() {
         val totalBytes = remember(filtered) { filtered.sumOf { it.totalBytes } }
         val maxBytes = (filtered.firstOrNull()?.totalBytes ?: 1L).coerceAtLeast(1L)
 
-        StatCard("Gesamt ${range.label}") {
-            KeyValueRow("Gesamt-Volumen", totalBytes.formatBytes())
-            KeyValueRow("Mobil", filtered.sumOf { it.mobileBytes }.formatBytes())
-            KeyValueRow("WLAN", filtered.sumOf { it.wifiBytes }.formatBytes())
+        StatCard(stringResource(R.string.bench_usage_total, stringResource(range.labelRes))) {
+            KeyValueRow(stringResource(R.string.bench_usage_total_volume), totalBytes.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_usage_mobile), filtered.sumOf { it.mobileBytes }.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_usage_wifi), filtered.sumOf { it.wifiBytes }.formatBytes())
         }
         Spacer(Modifier.height(8.dp))
 
@@ -161,7 +163,7 @@ private fun AppRow(app: AppNetworkUsage, maxBytes: Long) {
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    "WLAN ${app.wifiBytes.formatBytes()} · Mobil ${app.mobileBytes.formatBytes()}",
+                    stringResource(R.string.bench_usage_wifi_mobile, app.wifiBytes.formatBytes(), app.mobileBytes.formatBytes()),
                     color = OnSurfaceMuted, fontSize = 10.sp
                 )
             }

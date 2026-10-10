@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.theme.AccentSoft
 import com.tamerin.sysmonitor.ui.theme.GaugeOrange
@@ -53,7 +55,7 @@ fun LogcatScreen() {
     val context = LocalContext.current
     val shizukuReady = ShizukuHelper.state(context) == ShizukuHelper.State.Ready
     var lines by remember { mutableStateOf<List<String>>(emptyList()) }
-    var status by remember { mutableStateOf("Bereit. 'Aktualisieren' drücken oder 'Live ein'.") }
+    var status by remember { mutableStateOf(context.getString(R.string.sys_lc_ready)) }
     var streaming by remember { mutableStateOf(false) }
     var filterText by remember { mutableStateOf("") }
     var minLevel by remember { mutableStateOf(LogLevel.VERBOSE) }
@@ -85,7 +87,7 @@ fun LogcatScreen() {
             val primary = runLogcat("all", tail)
             if (primary.ok && primary.stdout.isNotBlank()) {
                 val parsed = primary.stdout.lines().filter { it.isNotBlank() }
-                return@withContext parsed to "${parsed.size} Zeilen aus allen Buffern (Tiefe ${depth.short})."
+                return@withContext parsed to context.getString(R.string.sys_lc_lines_all, parsed.size, depth.short)
             }
             // Fallback: merge per-buffer
             val merged = mutableListOf<String>()
@@ -100,21 +102,21 @@ fun LogcatScreen() {
             }
             val sorted = merged.sortedWith(LogcatComparator)
             val msg = if (sorted.isEmpty()) {
-                "Alle Buffer leer. ${errs.joinToString(" / ")}"
+                context.getString(R.string.sys_lc_all_empty, errs.joinToString(" / "))
             } else {
-                "${sorted.size} Zeilen (merge: main+system+crash+events+radio · Tiefe ${depth.short})."
+                context.getString(R.string.sys_lc_lines_merge, sorted.size, depth.short)
             }
             sorted to msg
         } else {
             val res = runLogcat(buffer.arg, tail)
             when {
                 !res.ok -> emptyList<String>() to
-                    "logcat exit ${res.exitCode}: ${res.stderr.ifBlank { "stdout leer" }}"
+                    "logcat exit ${res.exitCode}: ${res.stderr.ifBlank { context.getString(R.string.sys_lc_stdout_empty) }}"
                 res.stdout.isBlank() -> emptyList<String>() to
-                    "Buffer '${buffer.short}' liefert nichts. Anderen Buffer probieren?"
+                    context.getString(R.string.sys_lc_buffer_empty, buffer.short)
                 else -> {
                     val parsed = res.stdout.lines().filter { it.isNotBlank() }
-                    parsed to "${parsed.size} Zeilen aus Buffer '${buffer.short}' (Tiefe ${depth.short})."
+                    parsed to context.getString(R.string.sys_lc_lines_buffer, parsed.size, buffer.short, depth.short)
                 }
             }
         }
@@ -122,7 +124,7 @@ fun LogcatScreen() {
 
     fun fetchOnce() {
         scope.launch {
-            status = "Lade Buffer '${buffer.short}' (Tiefe ${depth.short})..."
+            status = context.getString(R.string.sys_lc_loading_buffer, buffer.short, depth.short)
             val (raw, msg) = pull()
             lines = raw
             status = msg
@@ -167,9 +169,8 @@ fun LogcatScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             com.tamerin.sysmonitor.ui.components.ShizukuCard(
-                title = "Shizuku für Logcat",
-                description = "Logcat liest System-Logs aller Apps. Android schützt das mit READ_LOGS - " +
-                    "die haben nur System-Apps und der shell-User. Shizuku gibt uns shell-Zugriff."
+                title = stringResource(R.string.sys_lc_shizuku_title),
+                description = stringResource(R.string.sys_lc_shizuku_desc)
             )
             return@Column
         }
@@ -184,7 +185,7 @@ fun LogcatScreen() {
                     fetchOnce()
                 },
                 modifier = Modifier.weight(1f)
-            ) { Text("Aktualisieren", fontSize = 12.sp) }
+            ) { Text(stringResource(R.string.sys_lc_refresh), fontSize = 12.sp) }
             if (!streaming) {
                 Button(
                     onClick = {
@@ -192,7 +193,7 @@ fun LogcatScreen() {
                         startStream()
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Live ein", fontSize = 12.sp) }
+                ) { Text(stringResource(R.string.sys_lc_live_on), fontSize = 12.sp) }
             } else {
                 OutlinedButton(
                     onClick = {
@@ -200,12 +201,12 @@ fun LogcatScreen() {
                         streaming = false
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Live aus", fontSize = 12.sp) }
+                ) { Text(stringResource(R.string.sys_lc_live_off), fontSize = 12.sp) }
             }
         }
         Spacer(Modifier.height(8.dp))
 
-        Text("Buffer", color = OnSurfaceMuted, fontSize = 10.sp)
+        Text(stringResource(R.string.sys_lc_buffer_label), color = OnSurfaceMuted, fontSize = 10.sp)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             LogBuffer.values().forEach { b ->
                 FilterChip(
@@ -220,7 +221,7 @@ fun LogcatScreen() {
         }
         Spacer(Modifier.height(4.dp))
 
-        Text("Tiefe", color = OnSurfaceMuted, fontSize = 10.sp)
+        Text(stringResource(R.string.sys_lc_depth), color = OnSurfaceMuted, fontSize = 10.sp)
         Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             Depth.values().forEach { d ->
                 FilterChip(
@@ -238,7 +239,7 @@ fun LogcatScreen() {
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
-            label = { Text("Filter (Tag, PID, Text)") },
+            label = { Text(stringResource(R.string.sys_lc_filter)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -264,7 +265,7 @@ fun LogcatScreen() {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     rawMode = !rawMode
                 },
-                label = { Text("Raw (alles)", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.sys_lc_raw), fontSize = 11.sp) }
             )
             FilterChip(
                 selected = autoScroll,
@@ -276,9 +277,11 @@ fun LogcatScreen() {
             )
         }
         Spacer(Modifier.height(6.dp))
+        val visibleLoaded = stringResource(R.string.sys_lc_visible_loaded, filtered.size, lines.size)
         Text(
             buildString {
-                append("${filtered.size} sichtbar / ${lines.size} geladen · ")
+                append(visibleLoaded)
+                append(" · ")
                 append(if (rawMode) "Raw" else "Min ${minLevel.short}")
                 append(" · ")
                 append(status)

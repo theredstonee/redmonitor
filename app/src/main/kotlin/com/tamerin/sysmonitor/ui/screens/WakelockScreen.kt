@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.WakeLockEntry
 import com.tamerin.sysmonitor.data.WakelockReader
@@ -63,9 +65,8 @@ fun WakelockScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Wake-Lock-Viewer",
-                description = "dumpsys power liefert alle aktiven Wake-Locks (Owner-UID, Package, Flags). " +
-                    "Ohne Shizuku wäre dafür DUMP-Permission nötig — die hat nur das System."
+                title = stringResource(R.string.pwr_wl_shizuku_title),
+                description = stringResource(R.string.pwr_wl_shizuku_desc)
             )
             return@Column
         }
@@ -74,17 +75,17 @@ fun WakelockScreen() {
             Button(
                 onClick = { scope.launch { refresh() } },
                 modifier = Modifier.weight(1f)
-            ) { Text("Aktualisieren", fontSize = 12.sp) }
+            ) { Text(stringResource(R.string.pwr_wl_refresh), fontSize = 12.sp) }
             if (!live) {
                 Button(
                     onClick = { live = true },
                     modifier = Modifier.weight(1f)
-                ) { Text("Live ein (3s)", fontSize = 12.sp) }
+                ) { Text(stringResource(R.string.pwr_wl_live_on), fontSize = 12.sp) }
             } else {
                 OutlinedButton(
                     onClick = { live = false },
                     modifier = Modifier.weight(1f)
-                ) { Text("Live aus", fontSize = 12.sp) }
+                ) { Text(stringResource(R.string.pwr_wl_live_off), fontSize = 12.sp) }
             }
         }
         Spacer(Modifier.height(8.dp))
@@ -93,11 +94,11 @@ fun WakelockScreen() {
             FilterChip(
                 selected = showSystem,
                 onClick = { showSystem = !showSystem },
-                label = { Text("System-UIDs", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.pwr_wl_system_uids), fontSize = 11.sp) }
             )
             Spacer(Modifier.weight(1f))
             Text(
-                result?.message ?: "Lädt…",
+                result?.message ?: stringResource(R.string.pwr_wl_loading),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
@@ -105,11 +106,11 @@ fun WakelockScreen() {
 
         val current = result
         if (current == null) {
-            Text("dumpsys power läuft…", color = OnSurfaceMuted, fontSize = 12.sp)
+            Text(stringResource(R.string.pwr_wl_running), color = OnSurfaceMuted, fontSize = 12.sp)
             return@Column
         }
         if (!current.ok) {
-            StatCard("Fehler") {
+            StatCard(stringResource(R.string.pwr_wl_error)) {
                 Text(current.message, color = GaugeOrange, fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace)
             }
@@ -120,10 +121,10 @@ fun WakelockScreen() {
             if (showSystem) current.entries else current.entries.filterNot { it.isSystem }
         }
         if (filtered.isEmpty()) {
-            StatCard("Keine Einträge") {
+            StatCard(stringResource(R.string.pwr_wl_no_entries)) {
                 Text(
-                    if (current.entries.isEmpty()) "Aktuell hält keine App ein Wake-Lock — Gerät kann sauber schlafen."
-                    else "Nur System-UIDs halten Wake-Locks. 'System-UIDs' aktivieren zum Anzeigen.",
+                    if (current.entries.isEmpty()) stringResource(R.string.pwr_wl_none_held)
+                    else stringResource(R.string.pwr_wl_only_system),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -131,7 +132,7 @@ fun WakelockScreen() {
         }
 
         val byType = remember(filtered) { filtered.groupingBy { it.type }.eachCount() }
-        StatCard("Übersicht") {
+        StatCard(stringResource(R.string.pwr_wl_overview)) {
             byType.entries.sortedByDescending { it.value }.forEach { (type, n) ->
                 KeyValueRow(type, "$n")
             }

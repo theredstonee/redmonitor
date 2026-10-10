@@ -1,5 +1,7 @@
 package com.tamerin.sysmonitor.data
 
+import com.tamerin.sysmonitor.R
+
 /**
  * Lade-Steuerung mit zwei Strategien:
  *
@@ -48,7 +50,7 @@ object ChargingControl {
                 path = path,
                 onValue = on,
                 offValue = off,
-                description = "Hardware-Stop via Kernel-Sysfs"
+                description = context.getString(R.string.data_cc_hard_stop)
             )
         }
 
@@ -59,8 +61,7 @@ object ChargingControl {
             path = "dumpsys battery set ac/usb/wireless",
             onValue = "reset",
             offValue = "0",
-            description = "Soft-Stop via OS (kein echter Hardware-Stop, aber " +
-                "PMIC bekommt kein \"weiter laden\" mehr)"
+            description = context.getString(R.string.data_cc_soft_stop)
         )
 
         return null

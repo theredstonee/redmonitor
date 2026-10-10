@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,7 +45,7 @@ fun BenchHistoryScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
-            "Verlauf",
+            stringResource(R.string.bench_history),
             color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
@@ -59,7 +61,7 @@ fun BenchHistoryScreen() {
             FilterChip(
                 selected = filter == null,
                 onClick = { filter = null },
-                label = { Text("Alle", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.bench_hist_all), fontSize = 11.sp) }
             )
             BenchmarkType.values().forEach { t ->
                 FilterChip(
@@ -72,9 +74,9 @@ fun BenchHistoryScreen() {
         Spacer(Modifier.height(12.dp))
 
         if (runs.isEmpty()) {
-            StatCard("Noch keine Runs") {
+            StatCard(stringResource(R.string.bench_hist_no_runs)) {
                 Text(
-                    "Starte einen Benchmark — die Ergebnisse landen hier mit Score, Sub-Scores und Zeitstempel.",
+                    stringResource(R.string.bench_hist_no_runs_hint),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -137,11 +139,11 @@ private fun RunRow(
         }
         if (expanded) {
             Spacer(Modifier.height(10.dp))
-            KeyValueRow("Gerät", r.deviceModel)
-            KeyValueRow("App-Version", r.appVersion)
+            KeyValueRow(stringResource(R.string.bench_hist_device), r.deviceModel)
+            KeyValueRow(stringResource(R.string.bench_hist_app_version), r.appVersion)
             KeyValueRow("Android SDK", r.androidSdk.toString())
-            KeyValueRow("Phase-Sek.", r.phaseSeconds.toString())
-            KeyValueRow("Dauer", "${r.durationMs / 1000} s")
+            KeyValueRow(stringResource(R.string.bench_hist_phase_sec), r.phaseSeconds.toString())
+            KeyValueRow(stringResource(R.string.bench_duration), "${r.durationMs / 1000} s")
             Spacer(Modifier.height(10.dp))
             BenchmarkComparison(run = run)
             if (run.subScores.isNotEmpty()) {
@@ -202,29 +204,28 @@ private fun BenchmarkComparison(run: BenchmarkRunWithSubs) {
 
     LaunchedEffect(r.id) { refresh() }
 
-    Text("Vergleich", color = AccentSoft, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+    Text(stringResource(R.string.bench_hist_comparison), color = AccentSoft, fontWeight = FontWeight.Bold, fontSize = 12.sp)
     Spacer(Modifier.height(4.dp))
 
     val p = percentile
     when {
-        loading -> Text("Lade Vergleichswerte ...", color = OnSurfaceMuted, fontSize = 12.sp)
+        loading -> Text(stringResource(R.string.bench_hist_loading_comparison), color = OnSurfaceMuted, fontSize = 12.sp)
         p == null -> Text(
-            "Vergleich gerade nicht erreichbar.",
+            stringResource(R.string.bench_hist_comparison_unavailable),
             color = OnSurfaceMuted, fontSize = 12.sp
         )
         !p.enoughData -> Text(
-            "Noch zu wenig Daten fuer dieses Geraet " +
-                "(" + p.sampleCount + " von " + p.minSamplesHint() + " noetig).",
+            stringResource(R.string.bench_hist_not_enough_data, p.sampleCount, p.minSamplesHint()),
             color = OnSurfaceMuted, fontSize = 12.sp
         )
         else -> {
             Text(
-                "Schneller als " + (p.percentile ?: 0) + " % der Geraete",
+                stringResource(R.string.bench_hist_faster_than, p.percentile ?: 0),
                 color = GaugeGreen, fontWeight = FontWeight.Bold, fontSize = 15.sp
             )
-            KeyValueRow("Vergleichsgeraete", p.sampleCount.toString())
-            p.averageScore?.let { KeyValueRow("Durchschnitt", "%,d".format(it)) }
-            p.bestScore?.let { KeyValueRow("Bester Wert", "%,d".format(it)) }
+            KeyValueRow(stringResource(R.string.bench_hist_comparison_devices), p.sampleCount.toString())
+            p.averageScore?.let { KeyValueRow(stringResource(R.string.bench_hist_average), "%,d".format(it)) }
+            p.bestScore?.let { KeyValueRow(stringResource(R.string.bench_hist_best_value), "%,d".format(it)) }
         }
     }
 
@@ -232,7 +233,7 @@ private fun BenchmarkComparison(run: BenchmarkRunWithSubs) {
     Button(onClick = {
         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
         showConfirm = true
-    }) { Text("Ergebnis beitragen") }
+    }) { Text(stringResource(R.string.bench_hist_contribute)) }
 
     uploadState?.let {
         Spacer(Modifier.height(6.dp))
@@ -242,23 +243,17 @@ private fun BenchmarkComparison(run: BenchmarkRunWithSubs) {
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
-            title = { Text("Ergebnis hochladen?") },
+            title = { Text(stringResource(R.string.bench_hist_upload_title)) },
             text = {
                 Text(
-                    "Hochgeladen werden: Benchmark-Typ (" + r.type.displayName + "), " +
-                        "Gesamt-Score, Single- und Multi-Score, alle " + run.subScores.size +
-                        " Sub-Scores, dein Geraetemodell, der SoC, die Android-Version und " +
-                        "die App-Version.\n\n" +
-                        "Kein Name, kein Konto, keine Standortdaten. Die Zuordnung laeuft " +
-                        "ueber eine anonyme Geraete-Kennung, mit der du deine Daten " +
-                        "jederzeit im Privacy-Dashboard wieder loeschen kannst."
+                    stringResource(R.string.bench_hist_upload_body, r.type.displayName, run.subScores.size)
                 )
             },
             confirmButton = {
                 TextButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     showConfirm = false
-                    uploadState = "Lade hoch ..."
+                    uploadState = context.getString(R.string.bench_hist_uploading)
                     scope.launch {
                         val res = runCatching {
                             BackendClient.uploadBenchmark(
@@ -279,15 +274,15 @@ private fun BenchmarkComparison(run: BenchmarkRunWithSubs) {
                         }.getOrNull()
                         uploadState = if (res?.ok == true) {
                             refresh()
-                            "Danke — Ergebnis beigetragen."
+                            context.getString(R.string.bench_hist_upload_thanks)
                         } else {
-                            "Upload fehlgeschlagen. Spaeter nochmal versuchen."
+                            context.getString(R.string.bench_hist_upload_failed)
                         }
                     }
-                }) { Text("Hochladen") }
+                }) { Text(stringResource(R.string.bench_hist_upload_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Abbrechen") }
+                TextButton(onClick = { showConfirm = false }) { Text(stringResource(R.string.bench_cancel)) }
             }
         )
     }

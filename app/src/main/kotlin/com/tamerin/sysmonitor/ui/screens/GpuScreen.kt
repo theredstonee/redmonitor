@@ -7,6 +7,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -43,16 +45,16 @@ fun GpuScreen() {
 
         val gpu = info
         if (gpu == null) {
-            StatCard("Grafikprozessor") {
-                KeyValueRow("Status", "Lese GPU-Info…")
+            StatCard(stringResource(R.string.bench_gpuinfo_title)) {
+                KeyValueRow("Status", stringResource(R.string.bench_gpuinfo_reading))
             }
         } else {
-            StatCard("Grafikprozessor") {
-                KeyValueRow("Hersteller", gpu.vendor)
+            StatCard(stringResource(R.string.bench_gpuinfo_title)) {
+                KeyValueRow(stringResource(R.string.bench_gpuinfo_manufacturer), gpu.vendor)
                 KeyValueRow("Renderer", gpu.renderer)
-                KeyValueRow("OpenGL-Version", gpu.version)
+                KeyValueRow(stringResource(R.string.bench_gpuinfo_opengl_version), gpu.version)
                 if (gpu.glslVersion.isNotBlank()) {
-                    KeyValueRow("GLSL-Version", gpu.glslVersion)
+                    KeyValueRow(stringResource(R.string.bench_gpuinfo_glsl_version), gpu.glslVersion)
                 }
                 KeyValueRow("Extensions", "${gpu.extensions.size}")
             }
@@ -68,7 +70,7 @@ fun GpuScreen() {
                 }
                 if (gpu.extensions.size > 60) {
                     Text(
-                        "+ ${gpu.extensions.size - 60} weitere…",
+                        stringResource(R.string.bench_gpuinfo_more, gpu.extensions.size - 60),
                         color = OnSurfaceMuted,
                         fontSize = 11.sp
                     )

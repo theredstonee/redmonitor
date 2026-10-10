@@ -10,6 +10,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -54,15 +56,14 @@ fun CpuBenchmarkScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("CPU-Benchmark") {
+        StatCard(stringResource(R.string.bench_cpu_benchmark)) {
             Text(
-                "4 Sub-Tests à la Geekbench: Integer-Mathe, Floating-Point, SHA-256-Crypto, Quicksort. " +
-                    "Single + Multi-Core. Läuft im Foreground-Service — Activity darf in den Hintergrund.",
+                stringResource(R.string.bench_cpu_desc),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
-            Text("Dauer pro Phase (× 4 Tests × 2 Modi)", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.bench_cpu_phase_duration), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 BenchmarkDuration.values().forEach { d ->
@@ -79,7 +80,7 @@ fun CpuBenchmarkScreen() {
             Spacer(Modifier.height(4.dp))
             val total = duration.seconds * 8
             Text(
-                "Gesamt: ~${total / 60} min ${total % 60} s",
+                stringResource(R.string.bench_cpu_total, total / 60, total % 60),
                 color = AccentSoft, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -91,7 +92,7 @@ fun CpuBenchmarkScreen() {
                         BenchmarkService.start(context, BenchmarkType.CPU, duration.seconds)
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Benchmark starten", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.bench_cpu_start), fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -99,15 +100,13 @@ fun CpuBenchmarkScreen() {
                             Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
                         )
                     }
-                ) { Text("Verlauf") }
+                ) { Text(stringResource(R.string.bench_history)) }
             }
         }
 
-        StatCard("Hinweise") {
+        StatCard(stringResource(R.string.bench_cpu_notes)) {
             Text(
-                "· Schließe vorher Spiele/Streaming-Apps für stabilere Scores\n" +
-                    "· Bench-Service läuft als Foreground-Notification — du kannst die App im Hintergrund lassen\n" +
-                    "· Ergebnis landet automatisch im Verlauf",
+                stringResource(R.string.bench_cpu_notes_body),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         }

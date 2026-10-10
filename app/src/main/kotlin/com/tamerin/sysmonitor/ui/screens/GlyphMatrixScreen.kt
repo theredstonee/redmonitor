@@ -15,10 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.BuildConfig
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.glyph.GlyphMatrixRenderer
 import com.tamerin.sysmonitor.glyph.GlyphMetric
 import com.tamerin.sysmonitor.glyph.GlyphMetricReader
@@ -73,7 +75,7 @@ fun GlyphMatrixScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Vorschau (25 × 25)") {
+        StatCard(stringResource(R.string.scr2_glyph_preview_title)) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
@@ -85,15 +87,15 @@ fun GlyphMatrixScreen() {
             }
             Spacer(Modifier.height(12.dp))
             Text(
-                "${metric.label}: $readout",
+                "${stringResource(metric.labelRes)}: $readout",
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
         }
 
-        StatCard("Metrik") {
+        StatCard(stringResource(R.string.scr2_glyph_metric_title)) {
             Text(
-                "Auf dem Geraet blaetterst du mit langem Druck auf den Glyph-Button weiter.",
+                stringResource(R.string.scr2_glyph_metric_desc),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
@@ -117,7 +119,7 @@ fun GlyphMatrixScreen() {
             }
         }
 
-        StatCard("Helligkeit") {
+        StatCard(stringResource(R.string.scr2_glyph_brightness_title)) {
             Text("Normal: $brightness", color = OnSurfaceMuted, fontSize = 12.sp)
             Slider(
                 value = brightness.toFloat(),
@@ -134,33 +136,36 @@ fun GlyphMatrixScreen() {
                 valueRange = 10f..255f
             )
             Text(
-                "Im Always-On-Betrieb aktualisiert Nothing OS den Toy einmal pro Minute.",
+                stringResource(R.string.scr2_glyph_aod_note),
                 color = OnSurfaceMuted,
                 fontSize = 11.sp
             )
         }
 
         StatCard("Status") {
-            KeyValueRow("Glyph-SDK im Build", if (BuildConfig.HAS_GLYPH_SDK) "ja" else "nein")
-            KeyValueRow("Glyph Matrix erkannt", if (deviceSupported) "ja (Phone 3)" else "nein")
+            KeyValueRow(
+                stringResource(R.string.scr2_glyph_sdk_in_build),
+                if (BuildConfig.HAS_GLYPH_SDK) stringResource(R.string.scr2_glyph_yes) else stringResource(R.string.scr2_glyph_no)
+            )
+            KeyValueRow(
+                stringResource(R.string.scr2_glyph_matrix_detected),
+                if (deviceSupported) stringResource(R.string.scr2_glyph_yes_phone3) else stringResource(R.string.scr2_glyph_no)
+            )
             Spacer(Modifier.height(10.dp))
             when {
                 !BuildConfig.HAS_GLYPH_SDK -> Text(
-                    "Dieser Build wurde ohne das Nothing-SDK erstellt. Der Toy ist deshalb " +
-                        "inaktiv — die Vorschau oben funktioniert trotzdem, sie braucht kein SDK.",
+                    stringResource(R.string.scr2_glyph_no_sdk),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
                 !deviceSupported -> Text(
-                    "Die Glyph Matrix gibt es nur beim Nothing Phone (3). Auf diesem Geraet " +
-                        "laesst sich der Toy nicht aktivieren.",
+                    stringResource(R.string.scr2_glyph_only_phone3),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
                 else -> {
                     Text(
-                        "Aktiviere RedMonitor in Nothings Toys-Manager, danach erreichst du ihn " +
-                            "mit kurzem Druck auf den Glyph-Button.",
+                        stringResource(R.string.scr2_glyph_activate_hint),
                         color = OnSurfaceMuted,
                         fontSize = 12.sp
                     )
@@ -169,12 +174,11 @@ fun GlyphMatrixScreen() {
                     Button(onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         managerFailed = !GlyphSupport.openToysManager(context)
-                    }) { Text("Toy aktivieren") }
+                    }) { Text(stringResource(R.string.scr2_glyph_activate_btn)) }
                     if (managerFailed) {
                         Spacer(Modifier.height(8.dp))
                         Text(
-                            "Toys-Manager liess sich nicht oeffnen (gibt es erst ab Nothing OS " +
-                                "20250829). Manuell: Einstellungen › Glyph-Interface › Glyph-Toys.",
+                            stringResource(R.string.scr2_glyph_manager_failed),
                             color = OnSurfaceMuted,
                             fontSize = 12.sp
                         )

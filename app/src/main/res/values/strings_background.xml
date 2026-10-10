@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- UpdateNotifier -->
+    <string name="bg_update_channel_name">RedMonitor-Updates</string>
+    <string name="bg_update_channel_desc">Benachrichtigt über neue Versionen von RedMonitor</string>
+    <string name="bg_update_notif_title">Update verfügbar: %1$s</string>
+    <string name="bg_update_notif_text">Tippen für Details &amp; Download</string>
+
+    <!-- UpdateChecker -->
+    <string name="bg_update_no_releases">Keine Releases gefunden</string>
+    <string name="bg_update_unknown_error">Unbekannter Fehler</string>
+
+    <!-- UpdateInstaller -->
+    <string name="bg_update_download_failed">Download fehlgeschlagen</string>
+    <string name="bg_update_shizuku_not_ready">Shizuku nicht bereit</string>
+    <string name="bg_update_install_success">Installation erfolgreich</string>
+
+    <!-- BenchmarkService -->
+    <string name="bg_bench_preparing">Vorbereiten...</string>
+    <string name="bg_bench_unknown_error">unbekannter Fehler</string>
+    <string name="bg_bench_runs_in_activity">Dieser Bench läuft (noch) in der Activity, nicht im Service.</string>
+    <string name="bg_bench_channel_name">Benchmark läuft</string>
+    <string name="bg_bench_channel_desc">Fortschritt eines laufenden Benchmarks</string>
+    <string name="bg_bench_notif_title">%1$s-Benchmark läuft</string>
+    <string name="bg_bench_notif_text">%1$s  ·  %2$d / %3$d s</string>
+
+    <!-- OverlayService -->
+    <string name="bg_overlay_starting">starte…</string>
+    <string name="bg_overlay_core_locked_shizuku">— (gesperrt, Shizuku?)</string>
+    <string name="bg_overlay_core_locked">— (gesperrt)</string>
+    <string name="bg_overlay_battery_label">Akku</string>
+    <string name="bg_overlay_no_metrics">(keine Metriken aktiv)</string>
+    <string name="bg_overlay_channel_name">System-Monitor-Overlay</string>
+    <string name="bg_overlay_channel_desc">Hält das Live-Overlay aktiv</string>
+    <string name="bg_overlay_notif_title">RedMonitor-HUD aktiv</string>
+    <string name="bg_overlay_notif_text">Tippen zum Öffnen</string>
+    <string name="bg_overlay_notif_stop">HUD beenden</string>
+
+    <!-- ShutdownOverlayService -->
+    <string name="bg_shutdown_channel_name">Shutdown-Countdown</string>
+    <string name="bg_shutdown_notif_title">☠ Shutdown in %1$d …</string>
+    <string name="bg_shutdown_msg_bye_in">Tschüss in</string>
+    <string name="bg_shutdown_sub">RedMonitor sagt: Es war schön mit dir</string>
+    <string name="bg_shutdown_msg_last_words">Letzte Worte?</string>
+    <string name="bg_shutdown_msg_safe_travels">Gute Reise</string>
+
+    <!-- CpuLiveTileService -->
+    <string name="bg_tile_cpu_desc">CPU-Auslastung</string>
+</resources>

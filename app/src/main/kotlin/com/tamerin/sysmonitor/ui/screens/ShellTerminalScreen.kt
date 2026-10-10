@@ -16,10 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -93,9 +95,8 @@ fun ShellTerminalScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für In-App-Shell",
-                description = "Die Terminal-Console führt Kommandos als `shell`-User aus — " +
-                    "gleiche Privilegien wie `adb shell`. Ohne Shizuku ginge das nur via Root."
+                title = stringResource(R.string.sys_st_shizuku_title),
+                description = stringResource(R.string.sys_st_shizuku_desc)
             )
             return@Column
         }
@@ -124,7 +125,7 @@ fun ShellTerminalScreen() {
         OutlinedTextField(
             value = input,
             onValueChange = { input = it },
-            label = { Text("Shell-Kommando (sh -c)") },
+            label = { Text(stringResource(R.string.sys_st_cmd_label)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             textStyle = androidx.compose.ui.text.TextStyle(
@@ -143,7 +144,7 @@ fun ShellTerminalScreen() {
                 },
                 enabled = !running && input.isNotBlank(),
                 modifier = Modifier.weight(1f)
-            ) { Text(if (running) "läuft…" else "Ausführen", fontSize = 12.sp) }
+            ) { Text(if (running) stringResource(R.string.sys_st_running) else stringResource(R.string.sys_st_run), fontSize = 12.sp) }
             OutlinedButton(
                 onClick = {
                     if (history.isNotEmpty()) {

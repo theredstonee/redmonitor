@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.formatBytes
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -67,7 +69,7 @@ fun InstalledAppsScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
             Text(
-                if (loading) "Lade…" else "${filtered.size} Apps",
+                if (loading) stringResource(R.string.sys_ia_loading) else stringResource(R.string.sys_ia_apps_count, filtered.size),
                 fontSize = 14.sp
             )
             Spacer(Modifier.weight(1f))
@@ -78,19 +80,19 @@ fun InstalledAppsScreen() {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     showSystem = !showSystem
                 },
-                label = { Text("System-Apps anzeigen") }
+                label = { Text(stringResource(R.string.sys_ia_show_system)) }
             )
         }
         Spacer(Modifier.height(12.dp))
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(filtered, key = { it.pkg }) { app ->
                 StatCard(app.name) {
-                    KeyValueRow("Paket", app.pkg)
-                    KeyValueRow("Version", "${app.versionName} (${app.versionCode})")
-                    KeyValueRow("APK-Größe", app.apkSizeBytes.formatBytes())
+                    KeyValueRow(stringResource(R.string.sys_ia_package), app.pkg)
+                    KeyValueRow(stringResource(R.string.sys_ia_version), "${app.versionName} (${app.versionCode})")
+                    KeyValueRow(stringResource(R.string.sys_ia_apk_size), app.apkSizeBytes.formatBytes())
                     if (app.isSystem) {
                         Text(
-                            "System-App",
+                            stringResource(R.string.sys_ia_system_app),
                             color = OnSurfaceMuted,
                             fontSize = 11.sp
                         )

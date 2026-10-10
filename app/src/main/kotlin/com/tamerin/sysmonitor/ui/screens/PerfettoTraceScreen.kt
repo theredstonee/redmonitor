@@ -10,9 +10,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
@@ -65,8 +67,8 @@ fun PerfettoTraceScreen() {
                     "rm '$tmp'; echo done"
                 ShizukuHelper.runShell(context, cmd)
             }
-            lastOutput = if (result.ok) "OK · gespeichert unter $out" else
-                "FAIL · exit ${result.exitCode}\n${result.stderr.take(200)}"
+            lastOutput = if (result.ok) context.getString(R.string.sys_pf_ok, out) else
+                context.getString(R.string.sys_pf_fail, result.exitCode, result.stderr.take(200))
             lastFile = if (result.ok) out else null
             running = false
         }
@@ -78,14 +80,13 @@ fun PerfettoTraceScreen() {
     ) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für System-Trace",
-                description = "atrace / perfetto sind shell-only Tools. Output ein .pftrace-File " +
-                    "das du in ui.perfetto.dev hochladen kannst für die volle Analyse."
+                title = stringResource(R.string.sys_pf_shizuku_title),
+                description = stringResource(R.string.sys_pf_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Trace-Preset") {
+        StatCard(stringResource(R.string.sys_pf_preset)) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Preset.values().forEach { p ->
                     FilterChip(
@@ -100,7 +101,7 @@ fun PerfettoTraceScreen() {
                 fontSize = 10.sp, fontFamily = FontFamily.Monospace)
         }
 
-        StatCard("Dauer") {
+        StatCard(stringResource(R.string.sys_pf_duration)) {
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 listOf(5, 10, 30, 60).forEach { sec ->
                     FilterChip(
@@ -117,22 +118,21 @@ fun PerfettoTraceScreen() {
             enabled = !running,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(if (running) "Tracing … ${durationSec}s" else "Trace starten",
+            Text(if (running) stringResource(R.string.sys_pf_tracing, durationSec) else stringResource(R.string.sys_pf_start),
                 fontFamily = FontFamily.Monospace)
         }
 
         if (lastOutput.isNotBlank()) {
-            StatCard("Letzter Run") {
+            StatCard(stringResource(R.string.sys_pf_last_run)) {
                 Text(lastOutput,
                     color = if (lastOutput.startsWith("OK")) GaugeGreen else GaugeRed,
                     fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                 lastFile?.let {
                     Spacer(Modifier.height(6.dp))
-                    KeyValueRow("Datei", it.substringAfterLast('/'))
+                    KeyValueRow(stringResource(R.string.sys_pf_file), it.substringAfterLast('/'))
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        "→ Datei auf PC ziehen und in ui.perfetto.dev öffnen für UI-Analyse " +
-                            "(Threads, CPU-Idle, Wakeups, Locks, Frame-Timing).",
+                        stringResource(R.string.sys_pf_analysis_hint),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }

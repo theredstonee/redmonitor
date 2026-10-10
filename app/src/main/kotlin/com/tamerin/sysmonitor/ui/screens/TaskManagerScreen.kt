@@ -1,5 +1,6 @@
 package com.tamerin.sysmonitor.ui.screens
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,10 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.AppActions
 import com.tamerin.sysmonitor.data.ProcessReadResult
 import com.tamerin.sysmonitor.data.ProcessReader
@@ -42,8 +45,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private enum class SortMode(val label: String) {
-    RAM_DESC("RAM ↓"), NAME("Name"), PID("PID"), USER_FIRST("User zuerst")
+private enum class SortMode(@StringRes val labelRes: Int) {
+    RAM_DESC(R.string.misc_sortmode_ram_desc),
+    NAME(R.string.misc_sortmode_name),
+    PID(R.string.misc_sortmode_pid),
+    USER_FIRST(R.string.misc_sortmode_user_first)
 }
 
 @Composable
@@ -82,15 +88,13 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         if (!shizukuReady) {
             com.tamerin.sysmonitor.ui.components.ShizukuCard(
-                title = "Shizuku für Task-Manager",
-                description = "Seit Android 7 darf eine App nur den eigenen Prozess sehen. " +
-                    "Mit Shizuku (shell-User-Zugriff) sehen wir alle laufenden Apps, " +
-                    "können Force-Stop / Cache leeren / App-Daten zurücksetzen / Deep-Freeze ausführen."
+                title = stringResource(R.string.sys_tm_shizuku_title),
+                description = stringResource(R.string.sys_tm_shizuku_desc)
             )
             Spacer(Modifier.height(12.dp))
         }
         // Diagnostic card
-        StatCard("Status") {
+        StatCard(stringResource(R.string.sys_tm_status)) {
             Text(result.source, color = OnSurfaceMuted, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace)
         }
@@ -99,7 +103,7 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("App suchen") },
+            label = { Text(stringResource(R.string.sys_tm_search)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -116,7 +120,7 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     showSystem = !showSystem
                 },
-                label = { Text("System", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.sys_tm_system), fontSize = 11.sp) }
             )
             SortMode.values().forEach { mode ->
                 FilterChip(
@@ -125,13 +129,13 @@ fun TaskManagerScreen(onSelect: (String) -> Unit = {}) {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         sortMode = mode
                     },
-                    label = { Text(mode.label, fontSize = 11.sp) }
+                    label = { Text(stringResource(mode.labelRes), fontSize = 11.sp) }
                 )
             }
         }
         Spacer(Modifier.height(8.dp))
         Text(
-            if (loading) "lade…" else "${filtered.size} Apps angezeigt",
+            if (loading) stringResource(R.string.sys_tm_loading) else stringResource(R.string.sys_tm_apps_shown, filtered.size),
             color = OnSurfaceMuted, fontSize = 12.sp
         )
         Spacer(Modifier.height(8.dp))
@@ -215,7 +219,7 @@ private fun AppRow(
             )
             if (canStop) {
                 IconButton(onClick = onStop) {
-                    Icon(Icons.Filled.Stop, contentDescription = "Force-Stop", tint = GaugeRed)
+                    Icon(Icons.Filled.Stop, contentDescription = stringResource(R.string.sys_tm_forcestop_cd), tint = GaugeRed)
                 }
             }
         }

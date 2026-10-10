@@ -9,9 +9,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.Oem
 import com.tamerin.sysmonitor.data.OemDetect
 import com.tamerin.sysmonitor.data.ShizukuHelper
@@ -26,7 +28,7 @@ import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 @Composable
 fun OemOnboardingScreen(onDone: () -> Unit) {
     val context = LocalContext.current
-    val spec = remember { OemDetect.detect() }
+    val spec = remember { OemDetect.detect(context) }
     val scroll = rememberScrollState()
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
@@ -37,32 +39,34 @@ fun OemOnboardingScreen(onDone: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        SectionEyebrow("Setup")
+        SectionEyebrow(stringResource(R.string.oem_eyebrow_setup))
         Text(
-            "Gerät vorbereiten",
+            stringResource(R.string.oem_title),
             color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            "Damit RedMonitor auf deinem ${spec.skinName}-Gerät zuverlässig läuft, " +
-                "musst du je nach Hersteller ein paar Limits lockern. " +
-                "Wir gehen sie hier Schritt für Schritt durch.",
+            stringResource(R.string.oem_intro, spec.skinName),
             color = OnSurfaceMuted,
             fontSize = 13.sp
         )
 
-        StatCard("Gerät") {
+        StatCard(stringResource(R.string.oem_device_card)) {
             Text(spec.displayName, color = AccentSoft, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
             Spacer(Modifier.height(4.dp))
             Text(
-                "Android ${android.os.Build.VERSION.RELEASE} (SDK ${android.os.Build.VERSION.SDK_INT})",
+                stringResource(
+                    R.string.oem_device_android,
+                    android.os.Build.VERSION.RELEASE,
+                    android.os.Build.VERSION.SDK_INT
+                ),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             if (spec.isMiui || spec.isHyperOs) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Xiaomi-Geräte schränken Apps am stärksten ein - alle Schritte unten sind hier wichtig.",
+                    stringResource(R.string.oem_xiaomi_strict_note),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
@@ -71,36 +75,32 @@ fun OemOnboardingScreen(onDone: () -> Unit) {
         OemSetupCard(spec)
 
         if (spec.oem == Oem.XIAOMI) {
-            StatCard("Xiaomi-spezifisch: Recents sperren") {
+            StatCard(stringResource(R.string.oem_xiaomi_recents_title)) {
                 Text(
-                    "Im Recents-Bildschirm (Übersicht aller offenen Apps) auf die RedMonitor-Karte lange drücken " +
-                        "und 'Sperren' / Vorhängeschloss tippen. Damit überlebt die App den 'Alles schließen'-Wisch " +
-                        "und den MIUI Memory Cleaner.",
+                    stringResource(R.string.oem_xiaomi_recents_body),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
         }
 
         if (spec.oem == Oem.SAMSUNG) {
-            StatCard("Samsung-spezifisch: Schlafende Apps") {
+            StatCard(stringResource(R.string.oem_samsung_sleep_title)) {
                 Text(
-                    "Settings -> Akku -> Hintergrund-Nutzungslimits -> Schlafende Apps. " +
-                        "RedMonitor darf NICHT in dieser Liste stehen. Falls doch: entfernen.",
+                    stringResource(R.string.oem_samsung_sleep_body),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
         }
 
-        StatCard("Shizuku (für Logcat, Tasks, Doze, ...)") {
+        StatCard(stringResource(R.string.oem_shizuku_title)) {
             Text(
-                "Shizuku gibt dieser App shell-User-Rechte ohne Root. Wird gebraucht für: " +
-                    "Logcat lesen, Top-CPU-App ermitteln, Doze-Whitelist verwalten, App-Force-Stop.",
+                stringResource(R.string.oem_shizuku_body),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         }
         ShizukuCard(
-            title = "Shizuku-Status",
-            description = "Status & Setup-Schritte falls noch nicht bereit."
+            title = stringResource(R.string.oem_shizuku_status_title),
+            description = stringResource(R.string.oem_shizuku_status_desc)
         )
 
         Spacer(Modifier.height(8.dp))
@@ -111,7 +111,7 @@ fun OemOnboardingScreen(onDone: () -> Unit) {
                 onDone()
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Fertig - zur App") }
+        ) { Text(stringResource(R.string.oem_done_button)) }
         OutlinedButton(
             onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -119,7 +119,7 @@ fun OemOnboardingScreen(onDone: () -> Unit) {
                 onDone()
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("Später erinnern (nicht mehr beim Start zeigen)") }
+        ) { Text(stringResource(R.string.oem_remind_later)) }
         Spacer(Modifier.height(24.dp))
     }
 }

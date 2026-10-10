@@ -72,7 +72,7 @@ class ShutdownOverlayService : Service() {
                 nm.createNotificationChannel(
                     NotificationChannel(
                         CHANNEL_ID,
-                        "Shutdown-Countdown",
+                        getString(R.string.bg_shutdown_channel_name),
                         NotificationManager.IMPORTANCE_LOW
                     )
                 )
@@ -83,7 +83,7 @@ class ShutdownOverlayService : Service() {
     private fun buildNotification(): Notification =
         Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("☠ Shutdown in $stepsLeft …")
+            .setContentTitle(getString(R.string.bg_shutdown_notif_title, stepsLeft))
             .setOngoing(true)
             .build()
 
@@ -112,7 +112,7 @@ class ShutdownOverlayService : Service() {
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 26f)
             typeface = android.graphics.Typeface.DEFAULT_BOLD
             gravity = Gravity.CENTER
-            text = "Tschüss in"
+            text = getString(R.string.bg_shutdown_msg_bye_in)
         }
         bigNumber = TextView(this).apply {
             setTextColor(Color.WHITE)
@@ -126,7 +126,7 @@ class ShutdownOverlayService : Service() {
             setTextColor(Color.parseColor("#888888"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
             gravity = Gravity.CENTER
-            text = "RedMonitor sagt: Es war schön mit dir"
+            text = getString(R.string.bg_shutdown_sub)
         }
         column.addView(emojiLabel)
         column.addView(msgLabel, LinearLayout.LayoutParams(
@@ -180,9 +180,9 @@ class ShutdownOverlayService : Service() {
 
     private fun updateText() {
         val (emoji, msg, number) = when (stepsLeft) {
-            3 -> Triple("👋", "Tschüss in", "3")
-            2 -> Triple("😬", "Letzte Worte?", "2")
-            1 -> Triple("💣", "Gute Reise", "1")
+            3 -> Triple("👋", getString(R.string.bg_shutdown_msg_bye_in), "3")
+            2 -> Triple("😬", getString(R.string.bg_shutdown_msg_last_words), "2")
+            1 -> Triple("💣", getString(R.string.bg_shutdown_msg_safe_travels), "1")
             else -> Triple("💀", "BYE", "💀")
         }
         emojiLabel?.text = emoji

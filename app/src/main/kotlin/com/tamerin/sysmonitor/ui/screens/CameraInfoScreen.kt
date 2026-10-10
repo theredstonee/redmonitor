@@ -18,9 +18,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -81,8 +83,8 @@ fun CameraInfoScreen() {
     val list = cams
     if (list == null) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            StatCard("Kameras") {
-                Text("Lade Kamera-Eigenschaften…", color = OnSurfaceMuted, fontSize = 13.sp)
+            StatCard(stringResource(R.string.hw_cam_loading_title)) {
+                Text(stringResource(R.string.hw_cam_loading), color = OnSurfaceMuted, fontSize = 13.sp)
             }
         }
         return
@@ -93,13 +95,13 @@ fun CameraInfoScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            StatCard("Übersicht") {
+            StatCard(stringResource(R.string.hw_cam_overview)) {
                 val logical = list.count { !it.isPhysical }
                 val physical = list.count { it.isPhysical }
-                KeyValueRow("Logische Kameras", logical.toString())
-                if (physical > 0) KeyValueRow("Physische Sub-Kameras", physical.toString())
+                KeyValueRow(stringResource(R.string.hw_cam_logical), logical.toString())
+                if (physical > 0) KeyValueRow(stringResource(R.string.hw_cam_physical_sub), physical.toString())
                 Text(
-                    "Tippe auf eine Karte, um Details zu sehen. Auf Multi-Kamera-Geräten zeigt Android meistens nur die logische Hauptkamera. Die physischen Sub-Sensoren (Ultraweitwinkel/Tele/Tiefe) findest du unter ihren Parent-IDs.",
+                    stringResource(R.string.hw_cam_overview_desc),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
@@ -112,82 +114,82 @@ fun CameraInfoScreen() {
 
 @Composable
 private fun CamCard(c: CamSpec) {
-    val titlePrefix = if (c.isPhysical) "📷 Physische Cam #${c.id}" else "📸 Cam ID ${c.id}"
+    val titlePrefix = if (c.isPhysical) stringResource(R.string.hw_cam_physical_cam, c.id) else stringResource(R.string.hw_cam_cam_id, c.id)
     StatCard("$titlePrefix · ${c.facing}") {
         if (c.isPhysical && c.parentId != null) {
             Text(
-                "Sub-Sensor von logischer Cam #${c.parentId}",
+                stringResource(R.string.hw_cam_subsensor, c.parentId),
                 color = AccentSoft, fontSize = 11.sp, fontWeight = FontWeight.Medium
             )
             Spacer(Modifier.height(4.dp))
         }
 
         // --- Sensor ---
-        SectionHeader("Sensor")
+        SectionHeader(stringResource(R.string.hw_cam_sec_sensor))
         // Effective MP = active array (post-binning, what you actually get out).
         // For Quad-Bayer / Nona-Bayer sensors Android 13+ exposes the unbinned
         // 'maximum resolution' size; show both when they differ.
-        KeyValueRow("Megapixel (effektiv)", "${"%.1f".format(c.sensorMp)} MP")
+        KeyValueRow(stringResource(R.string.hw_cam_mp_effective), "${"%.1f".format(c.sensorMp)} MP")
         if (c.sensorMpMax > c.sensorMp * 1.5f) {
-            KeyValueRow("Megapixel (max. Sensor)", "${"%.0f".format(c.sensorMpMax)} MP")
+            KeyValueRow(stringResource(R.string.hw_cam_mp_max), "${"%.0f".format(c.sensorMpMax)} MP")
         }
         if (c.activeArrayW > 0) {
-            KeyValueRow("Aktive Pixel", "${c.activeArrayW} × ${c.activeArrayH}")
+            KeyValueRow(stringResource(R.string.hw_cam_active_pixels), "${c.activeArrayW} × ${c.activeArrayH}")
         }
-        KeyValueRow("Pixel-Array (gesamt)", "${c.pixelArrayW} × ${c.pixelArrayH}")
+        KeyValueRow(stringResource(R.string.hw_cam_pixel_array), "${c.pixelArrayW} × ${c.pixelArrayH}")
         if (c.sensorWidthMm > 0 && c.sensorHeightMm > 0) {
             KeyValueRow(
-                "Sensor-Fläche",
+                stringResource(R.string.hw_cam_sensor_area),
                 "${"%.2f".format(c.sensorWidthMm)} × ${"%.2f".format(c.sensorHeightMm)} mm"
             )
-            KeyValueRow("Sensor-Diagonale", "${"%.2f".format(c.sensorDiagonal)} mm")
+            KeyValueRow(stringResource(R.string.hw_cam_sensor_diagonal), "${"%.2f".format(c.sensorDiagonal)} mm")
             // Pixel pitch using ACTIVE array (real pixel pitch) instead of total array.
             val refW = if (c.activeArrayW > 0) c.activeArrayW else c.pixelArrayW
             if (refW > 0) {
                 val pxSize = (c.sensorWidthMm * 1000) / refW
-                KeyValueRow("Pixel-Größe", "${"%.2f".format(pxSize)} µm")
+                KeyValueRow(stringResource(R.string.hw_cam_pixel_size), "${"%.2f".format(pxSize)} µm")
             }
         }
         KeyValueRow("HW-Level", c.hwLevel)
-        KeyValueRow("Orientierung", "${c.orientation}°")
+        KeyValueRow(stringResource(R.string.hw_cam_orientation), "${c.orientation}°")
 
         // --- Auflösungen ---
         Spacer(Modifier.height(8.dp))
-        SectionHeader("Auflösungen")
-        if (c.maxJpegW > 0) KeyValueRow("Max Foto (JPEG)", "${c.maxJpegW} × ${c.maxJpegH}")
+        SectionHeader(stringResource(R.string.hw_cam_sec_resolutions))
+        if (c.maxJpegW > 0) KeyValueRow(stringResource(R.string.hw_cam_max_photo), "${c.maxJpegW} × ${c.maxJpegH}")
         c.maxVideo?.let { KeyValueRow("Max Video", it) }
         c.maxRaw?.let { KeyValueRow("Max RAW", it) }
-        KeyValueRow("4K-Video", if (c.supports4kVideo) "Ja" else "Nein")
+        KeyValueRow("4K-Video", if (c.supports4kVideo) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
 
         // --- Optik ---
         Spacer(Modifier.height(8.dp))
-        SectionHeader("Optik")
+        SectionHeader(stringResource(R.string.hw_cam_sec_optics))
         if (c.focalLengthsMm.isNotEmpty()) {
-            KeyValueRow("Brennweiten (real)", c.focalLengthsMm.joinToString(", ") { "${"%.2f".format(it)} mm" })
+            KeyValueRow(stringResource(R.string.hw_cam_focal_real), c.focalLengthsMm.joinToString(", ") { "${"%.2f".format(it)} mm" })
         }
         if (c.equivFocal35mm.isNotEmpty()) {
-            KeyValueRow("Brennweiten (KB-äquiv.)", c.equivFocal35mm.joinToString(", ") { "${it} mm" })
+            KeyValueRow(stringResource(R.string.hw_cam_focal_equiv), c.equivFocal35mm.joinToString(", ") { "${it} mm" })
         }
         if (c.apertures.isNotEmpty()) {
-            KeyValueRow("Blenden", c.apertures.joinToString(", ") { "f/${"%.1f".format(it)}" })
+            KeyValueRow(stringResource(R.string.hw_cam_apertures), c.apertures.joinToString(", ") { "f/${"%.1f".format(it)}" })
         }
         if (c.minFocusDistance > 0) {
-            KeyValueRow("Min Fokus", "${"%.1f".format(100f / c.minFocusDistance)} cm (= 1/${"%.2f".format(c.minFocusDistance)} m⁻¹)")
+            KeyValueRow(stringResource(R.string.hw_cam_min_focus), "${"%.1f".format(100f / c.minFocusDistance)} cm (= 1/${"%.2f".format(c.minFocusDistance)} m⁻¹)")
         }
         if (c.hyperfocalDistance > 0) {
-            KeyValueRow("Hyperfokal", "${"%.2f".format(1f / c.hyperfocalDistance)} m")
+            KeyValueRow(stringResource(R.string.hw_cam_hyperfocal), "${"%.2f".format(1f / c.hyperfocalDistance)} m")
         }
-        if (c.maxZoom > 1f) KeyValueRow("Max Zoom (optisch+digital)", "${"%.1f".format(c.maxZoom)}×")
-        if (c.maxDigitalZoom > 1f) KeyValueRow("Max digitaler Zoom", "${"%.1f".format(c.maxDigitalZoom)}×")
+        if (c.maxZoom > 1f) KeyValueRow(stringResource(R.string.hw_cam_max_zoom), "${"%.1f".format(c.maxZoom)}×")
+        if (c.maxDigitalZoom > 1f) KeyValueRow(stringResource(R.string.hw_cam_max_digital_zoom), "${"%.1f".format(c.maxDigitalZoom)}×")
 
         // --- Belichtung ---
         Spacer(Modifier.height(8.dp))
-        SectionHeader("Belichtung")
+        SectionHeader(stringResource(R.string.hw_cam_sec_exposure))
         c.isoRange?.let { KeyValueRow("ISO-Range", "${it.lower} – ${it.upper}") }
         c.shutterRangeNs?.let { range ->
             val lo = formatShutter(range.lower)
             val hi = formatShutter(range.upper)
-            KeyValueRow("Belichtungszeit", "$lo – $hi")
+            KeyValueRow(stringResource(R.string.hw_cam_exposure_time), "$lo – $hi")
         }
         if (c.maxFpsRanges.isNotEmpty()) {
             val str = c.maxFpsRanges.joinToString(", ") { "${it.lower}-${it.upper}" }
@@ -196,11 +198,11 @@ private fun CamCard(c: CamSpec) {
 
         // --- Features ---
         Spacer(Modifier.height(8.dp))
-        SectionHeader("Features")
-        KeyValueRow("Blitz", if (c.hasFlash) "Ja" else "Nein")
-        KeyValueRow("RAW", if (c.supportsRaw) "Ja (DNG-Capture)" else "Nein")
-        KeyValueRow("OIS", if (c.opticalStabilization) "Ja (optisch)" else "Nein")
-        KeyValueRow("EIS / Video-Stab.", if (c.videoStabilization) "Ja" else "Nein")
+        SectionHeader(stringResource(R.string.hw_cam_sec_features))
+        KeyValueRow(stringResource(R.string.hw_cam_flash), if (c.hasFlash) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
+        KeyValueRow("RAW", if (c.supportsRaw) stringResource(R.string.hw_cam_raw_yes) else stringResource(R.string.hw_no))
+        KeyValueRow("OIS", if (c.opticalStabilization) stringResource(R.string.hw_cam_ois_yes) else stringResource(R.string.hw_no))
+        KeyValueRow(stringResource(R.string.hw_cam_eis), if (c.videoStabilization) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
         if (c.capabilities.isNotEmpty()) {
             KeyValueRow("Capabilities", c.capabilities.size.toString())
             c.capabilities.forEach { cap ->
@@ -211,14 +213,14 @@ private fun CamCard(c: CamSpec) {
         // --- Formate ---
         if (c.outputFormats.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            SectionHeader("Ausgabe-Formate")
+            SectionHeader(stringResource(R.string.hw_cam_sec_output_formats))
             Text(c.outputFormats.joinToString(", "), color = OnSurfaceMuted, fontSize = 11.sp)
         }
 
         // --- Physical IDs ---
         if (c.physicalIds.isNotEmpty()) {
             Spacer(Modifier.height(8.dp))
-            SectionHeader("Enthält physische Sub-Kameras")
+            SectionHeader(stringResource(R.string.hw_cam_sec_contains_sub))
             Text(c.physicalIds.joinToString(", "),
                 color = AccentSoft, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
@@ -251,12 +253,12 @@ private fun readAllCameras(context: Context): List<CamSpec> {
     val out = mutableListOf<CamSpec>()
     runCatching {
         for (id in cm.cameraIdList) {
-            val main = readOne(cm, id, isPhysical = false, parentId = null)
+            val main = readOne(context, cm, id, isPhysical = false, parentId = null)
             if (main != null) {
                 out += main
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
                     for (physId in main.physicalIds) {
-                        val sub = readOne(cm, physId, isPhysical = true, parentId = id)
+                        val sub = readOne(context, cm, physId, isPhysical = true, parentId = id)
                         if (sub != null) out += sub
                     }
                 }
@@ -266,14 +268,14 @@ private fun readAllCameras(context: Context): List<CamSpec> {
     return out
 }
 
-private fun readOne(cm: CameraManager, id: String, isPhysical: Boolean, parentId: String?): CamSpec? {
+private fun readOne(context: Context, cm: CameraManager, id: String, isPhysical: Boolean, parentId: String?): CamSpec? {
     return runCatching {
         val ch = cm.getCameraCharacteristics(id)
         val facing = when (ch.get(CameraCharacteristics.LENS_FACING)) {
-            CameraCharacteristics.LENS_FACING_BACK -> "Rückseite"
-            CameraCharacteristics.LENS_FACING_FRONT -> "Vorderseite"
-            CameraCharacteristics.LENS_FACING_EXTERNAL -> "Extern"
-            else -> "Unbekannt"
+            CameraCharacteristics.LENS_FACING_BACK -> context.getString(R.string.hw_cam_facing_back)
+            CameraCharacteristics.LENS_FACING_FRONT -> context.getString(R.string.hw_cam_facing_front)
+            CameraCharacteristics.LENS_FACING_EXTERNAL -> context.getString(R.string.hw_cam_facing_external)
+            else -> context.getString(R.string.hw_cam_facing_unknown)
         }
         val pixelArr = ch.get(CameraCharacteristics.SENSOR_INFO_PIXEL_ARRAY_SIZE)
         val pixelW = pixelArr?.width ?: 0

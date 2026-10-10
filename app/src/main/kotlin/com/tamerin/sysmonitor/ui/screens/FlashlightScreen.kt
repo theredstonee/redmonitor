@@ -8,8 +8,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -40,8 +42,8 @@ fun FlashlightScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Taschenlampe") {
-            KeyValueRow("Kamera mit Blitz", torchId ?: "Keine gefunden")
+        StatCard(stringResource(R.string.hw_fl_title)) {
+            KeyValueRow(stringResource(R.string.hw_fl_camera_with_flash), torchId ?: stringResource(R.string.hw_fl_none_found))
             error?.let {
                 Spacer(Modifier.height(6.dp))
                 Text(it, color = androidx.compose.ui.graphics.Color.Red, fontSize = 12.sp)
@@ -57,15 +59,15 @@ fun FlashlightScreen() {
                         on = !on
                         error = null
                     } catch (e: Exception) {
-                        error = "Fehler: ${e.message}"
+                        error = context.getString(R.string.hw_fl_error, e.message ?: "")
                     }
                 }
             ) {
-                Text(if (on) "Aus" else "Ein")
+                Text(if (on) stringResource(R.string.hw_fl_off) else stringResource(R.string.hw_fl_on))
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "Hinweis: Manche Geräte deaktivieren den Blitz, wenn der Akku zu niedrig oder das Gerät zu heiß ist.",
+                stringResource(R.string.hw_fl_hint),
                 color = OnSurfaceMuted,
                 fontSize = 11.sp
             )

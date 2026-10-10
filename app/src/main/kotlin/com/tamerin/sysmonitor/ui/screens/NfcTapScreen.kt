@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -31,7 +33,8 @@ fun NfcTapScreen() {
     val adapter = remember { NfcAdapter.getDefaultAdapter(context) }
     var enabled by remember { mutableStateOf(adapter?.isEnabled == true) }
     var lastReads by remember { mutableStateOf<List<TagRead>>(emptyList()) }
-    var status by remember { mutableStateOf("Bereit. Lege ein NFC-Tag aufs Handy.") }
+    val readyStatus = stringResource(R.string.hw_nfctap_ready)
+    var status by remember { mutableStateOf(readyStatus) }
 
     DisposableEffect(activity) {
         if (activity == null || adapter == null) {
@@ -41,7 +44,10 @@ fun NfcTapScreen() {
         val callback = NfcAdapter.ReaderCallback { tag ->
             val read = readTag(tag)
             lastReads = (listOf(read) + lastReads).take(20)
-            status = "Tag erkannt: ${read.tech.firstOrNull() ?: "unbekannt"}"
+            status = context.getString(
+                R.string.hw_nfctap_detected,
+                read.tech.firstOrNull() ?: context.getString(R.string.hw_nfctap_unknown)
+            )
         }
         runCatching {
             adapter.enableReaderMode(
@@ -67,25 +73,24 @@ fun NfcTapScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("NFC-Tap-Test (ReaderMode)") {
-            KeyValueRow("NFC-Hardware", if (adapter != null) "vorhanden" else "fehlt")
-            KeyValueRow("NFC aktiviert", if (enabled) "ja" else "nein")
+        StatCard(stringResource(R.string.hw_nfctap_title)) {
+            KeyValueRow(stringResource(R.string.hw_nfctap_hardware), if (adapter != null) stringResource(R.string.hw_nfctap_present) else stringResource(R.string.hw_nfctap_missing))
+            KeyValueRow(stringResource(R.string.hw_nfctap_nfc_enabled), if (enabled) stringResource(R.string.hw_yes_lc) else stringResource(R.string.hw_no_lc))
             if (adapter != null && !enabled) {
                 Spacer(Modifier.height(6.dp))
                 Button(onClick = {
                     context.startActivity(Intent(Settings.ACTION_NFC_SETTINGS)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-                }) { Text("NFC einschalten") }
+                }) { Text(stringResource(R.string.hw_nfctap_turn_on)) }
             }
             Spacer(Modifier.height(6.dp))
             Text(status, color = OnSurfaceMuted, fontSize = 12.sp)
         }
 
         if (lastReads.isEmpty()) {
-            StatCard("Anleitung") {
+            StatCard(stringResource(R.string.hw_nfctap_instructions)) {
                 Text(
-                    "Halte eine NFC-Karte / einen NFC-Sticker / Tag an die Rückseite des Telefons " +
-                        "(meist obere Hälfte). Der ReaderMode fängt jeden Read ab — auch leere Tags.",
+                    stringResource(R.string.hw_nfctap_instructions_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -95,7 +100,7 @@ fun NfcTapScreen() {
                     KeyValueRow("UID", r.uid)
                     KeyValueRow("Tech", r.tech.joinToString(", "))
                     KeyValueRow("Max-Size", r.maxSize?.let { "$it B" } ?: "—")
-                    KeyValueRow("Writable", r.writable?.let { if (it) "ja" else "nein" } ?: "—")
+                    KeyValueRow("Writable", r.writable?.let { if (it) stringResource(R.string.hw_yes_lc) else stringResource(R.string.hw_no_lc) } ?: "—")
                     if (r.ndefPayload.isNotBlank()) {
                         Spacer(Modifier.height(4.dp))
                         Text("NDEF:", color = Accent, fontSize = 11.sp)

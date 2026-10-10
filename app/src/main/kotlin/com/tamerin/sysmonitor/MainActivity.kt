@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -108,6 +109,10 @@ import com.tamerin.sysmonitor.ui.screens.tests.TestsHubScreen
 import com.tamerin.sysmonitor.ui.theme.SysMonitorTheme
 
 class MainActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.tamerin.sysmonitor.settings.LocaleHelper.wrap(newBase))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -127,6 +132,18 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             runCatching {
                 com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(this@MainActivity)
+            }
+        }
+        // Eigener ADB-Zugang: wenn vom User aktiviert, im Hintergrund automatisch
+        // verbinden (App als ADB-Client zu 127.0.0.1:5555). Danach nochmal Auto-Grant,
+        // falls erst über ADB privilegierte Rechte verfügbar wurden.
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            if (com.tamerin.sysmonitor.privileged.adb.AdbPrefs.isEnabled(this@MainActivity)) {
+                val ok = com.tamerin.sysmonitor.privileged.adb.AdbConnectionManager
+                    .autoConnect(this@MainActivity)
+                if (ok) runCatching {
+                    com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(this@MainActivity)
+                }
             }
         }
         com.tamerin.sysmonitor.settings.AppPrefs.incrementLaunchCount(this)
@@ -217,78 +234,78 @@ object Routes {
     const val OEM_SETUP = "oem/setup"
 }
 
-private data class TopTab(val route: String, val label: String, val icon: ImageVector)
+private data class TopTab(val route: String, val labelRes: Int, val icon: ImageVector)
 
 private val TOP_TABS = listOf(
-    TopTab(Routes.LIVE, "Live", Icons.Filled.Dashboard),
-    TopTab(Routes.SYSTEM, "System", Icons.Filled.Memory),
-    TopTab(Routes.TASKS, "Tasks", Icons.Filled.TaskAlt),
-    TopTab(Routes.BENCHMARK, "Bench", Icons.Filled.Speed),
-    TopTab(Routes.TESTS, "Tests", Icons.Filled.Build),
-    TopTab(Routes.INFO, "Info", Icons.Filled.Info),
-    TopTab(Routes.SETTINGS, "Mehr", Icons.Filled.Settings)
+    TopTab(Routes.LIVE, R.string.nav_live, Icons.Filled.Dashboard),
+    TopTab(Routes.SYSTEM, R.string.nav_system, Icons.Filled.Memory),
+    TopTab(Routes.TASKS, R.string.nav_tasks, Icons.Filled.TaskAlt),
+    TopTab(Routes.BENCHMARK, R.string.nav_tab_bench, Icons.Filled.Speed),
+    TopTab(Routes.TESTS, R.string.nav_tests, Icons.Filled.Build),
+    TopTab(Routes.INFO, R.string.nav_info, Icons.Filled.Info),
+    TopTab(Routes.SETTINGS, R.string.nav_more, Icons.Filled.Settings)
 )
 
 private val TOP_LEVEL_ROUTES = setOf(
     Routes.LIVE, Routes.SYSTEM, Routes.TASKS, Routes.BENCHMARK, Routes.TESTS, Routes.INFO, Routes.SETTINGS
 )
 
-private fun titleFor(route: String?): String = when {
-    route == null -> "SysMonitor"
-    route == Routes.LIVE -> "Live"
-    route == Routes.SYSTEM -> "System"
-    route == Routes.BENCHMARK -> "Benchmark"
-    route == Routes.TESTS -> "Tests"
-    route == Routes.INFO -> "Info"
-    route == Routes.TASKS -> "Tasks"
-    route?.startsWith("tasks/") == true -> "App-Details"
-    route == Routes.CPU -> "CPU"
-    route == Routes.RAM -> "RAM & Speicher"
-    route == Routes.BATTERY -> "Akku"
-    route == Routes.SENSORS -> "Sensoren"
-    route.startsWith("system/sensors/") -> "Sensor-Detail"
-    route == Routes.GPU -> "GPU"
-    route == Routes.NETWORK -> "Netzwerk"
-    route == Routes.DISPLAY -> "Display & Gerät"
-    route == Routes.HUD -> "Floating HUD"
-    route == Routes.GLYPH -> "Glyph Matrix"
-    route == Routes.HUD_SETTINGS -> "HUD anpassen"
-    route == Routes.BM_CPU -> "CPU-Benchmark"
-    route == Routes.BM_RAM -> "RAM-Speed"
-    route == Routes.BM_STORAGE -> "Storage Sequenziell"
-    route == Routes.BM_RANDOM -> "Storage Random 4K"
-    route == Routes.BM_GPU -> "GPU-FPS"
-    route == Routes.BM_STRESS -> "Stresstest"
-    route == Routes.BM_COLOR -> "Farbraum & Gamut"
-    route == Routes.BM_DISPLAY -> "Display-Test"
-    route == Routes.BM_NETWORK -> "Netz-Speed"
-    route == Routes.BM_IMAGE -> "Bild-Verarbeitung"
-    route == Routes.TEST_TOUCH -> "Multi-Touch"
-    route == Routes.TEST_DISPLAY -> "Display-Farben"
-    route == Routes.TEST_VIBRATE -> "Vibration"
-    route == Routes.TEST_FLASH -> "Taschenlampe"
-    route == Routes.TEST_SPEAKER -> "Speaker-Ton"
-    route == Routes.TEST_MIC -> "Mikrofon"
-    route == Routes.TEST_GPS -> "GPS & Satelliten"
-    route == Routes.TEST_PROXIMITY -> "Proximity & Licht"
-    route == Routes.INFO_THERMAL -> "Thermalzonen"
-    route == Routes.INFO_PROPS -> "System-Properties"
-    route == Routes.INFO_FEATURES -> "Hardware-Features"
-    route == Routes.INFO_TELEPHONY -> "SIM & Telefonie"
-    route == Routes.INFO_CAMERAS -> "Kameras"
-    route == Routes.INFO_CODECS -> "Codecs"
-    route == Routes.INFO_RUNNING -> "Laufende Apps"
-    route == Routes.INFO_INSTALLED -> "Installierte Apps"
-    route == Routes.INFO_WIFI -> "WLAN-Scan"
-    route == Routes.INFO_BLUETOOTH -> "Bluetooth"
-    route == Routes.INFO_NFC -> "NFC"
-    route == Routes.INFO_LOGCAT -> "Logcat"
-    route == Routes.INFO_DOZE -> "Doze-Whitelist"
-    route == Routes.SYSTEM_TWEAKS -> "Display-Tweaks"
-    route == Routes.UPDATE -> "Update"
-    route == Routes.SETTINGS -> "Einstellungen"
-    route == Routes.OEM_SETUP -> "Geräte-Setup"
-    else -> "SysMonitor"
+private fun titleFor(route: String?): Int = when {
+    route == null -> R.string.nav_app
+    route == Routes.LIVE -> R.string.nav_live
+    route == Routes.SYSTEM -> R.string.nav_system
+    route == Routes.BENCHMARK -> R.string.nav_benchmark
+    route == Routes.TESTS -> R.string.nav_tests
+    route == Routes.INFO -> R.string.nav_info
+    route == Routes.TASKS -> R.string.nav_tasks
+    route?.startsWith("tasks/") == true -> R.string.nav_app_details
+    route == Routes.CPU -> R.string.nav_cpu
+    route == Routes.RAM -> R.string.nav_ram_storage
+    route == Routes.BATTERY -> R.string.nav_battery
+    route == Routes.SENSORS -> R.string.nav_sensors
+    route.startsWith("system/sensors/") -> R.string.nav_sensor_detail
+    route == Routes.GPU -> R.string.nav_gpu
+    route == Routes.NETWORK -> R.string.nav_network
+    route == Routes.DISPLAY -> R.string.nav_display_device
+    route == Routes.HUD -> R.string.nav_floating_hud
+    route == Routes.GLYPH -> R.string.nav_glyph_matrix
+    route == Routes.HUD_SETTINGS -> R.string.nav_hud_customize
+    route == Routes.BM_CPU -> R.string.nav_cpu_benchmark
+    route == Routes.BM_RAM -> R.string.nav_ram_speed
+    route == Routes.BM_STORAGE -> R.string.nav_storage_seq
+    route == Routes.BM_RANDOM -> R.string.nav_storage_random
+    route == Routes.BM_GPU -> R.string.nav_gpu_fps
+    route == Routes.BM_STRESS -> R.string.nav_stress_test
+    route == Routes.BM_COLOR -> R.string.nav_color_gamut
+    route == Routes.BM_DISPLAY -> R.string.nav_display_test
+    route == Routes.BM_NETWORK -> R.string.nav_network_speed
+    route == Routes.BM_IMAGE -> R.string.nav_image_processing
+    route == Routes.TEST_TOUCH -> R.string.nav_multitouch
+    route == Routes.TEST_DISPLAY -> R.string.nav_display_colors
+    route == Routes.TEST_VIBRATE -> R.string.nav_vibration
+    route == Routes.TEST_FLASH -> R.string.nav_flashlight
+    route == Routes.TEST_SPEAKER -> R.string.nav_speaker_tone
+    route == Routes.TEST_MIC -> R.string.nav_microphone
+    route == Routes.TEST_GPS -> R.string.nav_gps_satellites
+    route == Routes.TEST_PROXIMITY -> R.string.nav_proximity_light
+    route == Routes.INFO_THERMAL -> R.string.nav_thermal_zones
+    route == Routes.INFO_PROPS -> R.string.nav_system_properties
+    route == Routes.INFO_FEATURES -> R.string.nav_hardware_features
+    route == Routes.INFO_TELEPHONY -> R.string.nav_sim_telephony
+    route == Routes.INFO_CAMERAS -> R.string.nav_cameras
+    route == Routes.INFO_CODECS -> R.string.nav_codecs
+    route == Routes.INFO_RUNNING -> R.string.nav_running_apps
+    route == Routes.INFO_INSTALLED -> R.string.nav_installed_apps
+    route == Routes.INFO_WIFI -> R.string.nav_wifi_scan
+    route == Routes.INFO_BLUETOOTH -> R.string.nav_bluetooth
+    route == Routes.INFO_NFC -> R.string.nav_nfc
+    route == Routes.INFO_LOGCAT -> R.string.nav_logcat
+    route == Routes.INFO_DOZE -> R.string.nav_doze_whitelist
+    route == Routes.SYSTEM_TWEAKS -> R.string.nav_display_tweaks
+    route == Routes.UPDATE -> R.string.nav_update
+    route == Routes.SETTINGS -> R.string.nav_settings
+    route == Routes.OEM_SETUP -> R.string.nav_device_setup
+    else -> R.string.nav_app
 }
 
 /** Set to true by full-screen tests to hide top/bottom bars + system bars. */
@@ -432,7 +449,7 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                             fontSize = 18.sp
                         )
                     } else {
-                        Text(titleFor(currentRoute))
+                        Text(stringResource(titleFor(currentRoute)))
                     }
                 },
                 navigationIcon = {
@@ -441,7 +458,7 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                             haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                             navController.popBackStack()
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zurück")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.nav_back))
                         }
                     }
                 },
@@ -471,8 +488,8 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                                 navController.navigateTopLevel(tab.route)
                             }
                         },
-                        icon = { Icon(tab.icon, contentDescription = tab.label) },
-                        label = { Text(tab.label, maxLines = 1, fontSize = 11.sp) },
+                        icon = { Icon(tab.icon, contentDescription = stringResource(tab.labelRes)) },
+                        label = { Text(stringResource(tab.labelRes), maxLines = 1, fontSize = 11.sp) },
                         colors = NavigationBarItemDefaults.colors(
                             selectedIconColor = Color.White,
                             selectedTextColor = Accent,
@@ -504,8 +521,8 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                                     navController.navigateTopLevel(tab.route)
                                 }
                             },
-                            icon = { Icon(tab.icon, contentDescription = tab.label) },
-                            label = { Text(tab.label, maxLines = 1, fontSize = 11.sp) },
+                            icon = { Icon(tab.icon, contentDescription = stringResource(tab.labelRes)) },
+                            label = { Text(stringResource(tab.labelRes), maxLines = 1, fontSize = 11.sp) },
                             colors = NavigationRailItemDefaults.colors(
                                 selectedIconColor = Color.White,
                                 selectedTextColor = Accent,
@@ -611,13 +628,15 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     if (pending != null) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { startupUpdate = null },
-            title = { Text("Update verfügbar") },
+            title = { Text(stringResource(R.string.nav_update_available)) },
             text = {
                 Text(
-                    "${pending.name}\n\n" +
-                        "Aktuell: ${com.tamerin.sysmonitor.BuildConfig.VERSION_NAME}\n" +
-                        "Neu: ${pending.versionName}" +
-                        if (pending.isPrerelease) "  (Pre-Release)" else ""
+                    stringResource(
+                        R.string.nav_update_body,
+                        pending.name,
+                        com.tamerin.sysmonitor.BuildConfig.VERSION_NAME,
+                        pending.versionName
+                    ) + if (pending.isPrerelease) stringResource(R.string.nav_update_prerelease) else ""
                 )
             },
             confirmButton = {
@@ -625,14 +644,14 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     startupUpdate = null
                     navController.navigate(Routes.UPDATE)
-                }) { Text("Details / Installieren") }
+                }) { Text(stringResource(R.string.nav_update_install)) }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     com.tamerin.sysmonitor.update.UpdatePrefs.dismissVersion(context, pending.versionName)
                     startupUpdate = null
-                }) { Text("Ignorieren") }
+                }) { Text(stringResource(R.string.nav_update_ignore)) }
             }
         )
     }
@@ -658,13 +677,12 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                 com.tamerin.sysmonitor.cloud.RestoreChecker.decline(context, avail)
                 restoreAvailable = null
             },
-            title = { androidx.compose.material3.Text("Cloud-Backup gefunden") },
+            title = { androidx.compose.material3.Text(stringResource(R.string.nav_cloud_backup_found)) },
             text = {
                 val date = java.text.SimpleDateFormat("dd.MM.yyyy HH:mm", java.util.Locale.getDefault())
                     .format(java.util.Date(avail.createdAt))
                 androidx.compose.material3.Text(
-                    "Für dieses Gerät liegt ein verschlüsseltes Backup vom $date " +
-                        "(App ${avail.sourceVersion}) auf dem Server. Wiederherstellen?"
+                    stringResource(R.string.nav_cloud_backup_text, date, avail.sourceVersion)
                 )
             },
             confirmButton = {
@@ -676,14 +694,14 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
                         restoreSummary = com.tamerin.sysmonitor.cloud.RestoreChecker
                             .applyAndMark(context, a)
                     }
-                }) { androidx.compose.material3.Text("Wiederherstellen") }
+                }) { androidx.compose.material3.Text(stringResource(R.string.nav_restore)) }
             },
             dismissButton = {
                 androidx.compose.material3.TextButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     com.tamerin.sysmonitor.cloud.RestoreChecker.decline(context, avail)
                     restoreAvailable = null
-                }) { androidx.compose.material3.Text("Nein, neu starten") }
+                }) { androidx.compose.material3.Text(stringResource(R.string.nav_restore_decline)) }
             }
         )
     }
@@ -692,11 +710,14 @@ private fun SysMonitorApp(initialRoute: String = Routes.LIVE) {
     if (summary != null) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { restoreSummary = null },
-            title = { androidx.compose.material3.Text("Wiederherstellung fertig") },
+            title = { androidx.compose.material3.Text(stringResource(R.string.nav_restore_done)) },
             text = {
                 androidx.compose.material3.Text(
-                    "${summary.prefsApplied} Settings + ${summary.batterySamplesInserted} " +
-                        "Akku-Samples übernommen."
+                    stringResource(
+                        R.string.nav_restore_summary,
+                        summary.prefsApplied,
+                        summary.batterySamplesInserted
+                    )
                 )
             },
             confirmButton = {

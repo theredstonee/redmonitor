@@ -14,10 +14,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.PercentBar
 import com.tamerin.sysmonitor.ui.components.Sparkline
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -127,21 +129,21 @@ fun MicTestScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!granted) {
-            StatCard("Mikrofon-Berechtigung") {
+            StatCard(stringResource(R.string.hw_mic_perm_title)) {
                 Text(
-                    "Für den Pegelmeter brauchen wir Zugriff aufs Mikrofon.",
+                    stringResource(R.string.hw_mic_perm_desc),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = { permLauncher.launch(Manifest.permission.RECORD_AUDIO) }) {
-                    Text("Berechtigung erteilen")
+                    Text(stringResource(R.string.hw_grant_permission))
                 }
             }
             return@Column
         }
 
-        StatCard("Pegelmeter") {
+        StatCard(stringResource(R.string.hw_mic_level_meter)) {
             Text(
                 "${"%.0f".format(levelDb)} dB FS",
                 color = Accent,
@@ -150,11 +152,11 @@ fun MicTestScreen() {
             )
             Text("Peak: ${"%.0f".format(peakDb)} dB FS", color = OnSurfaceMuted, fontSize = 12.sp)
             Spacer(Modifier.height(12.dp))
-            PercentBar("Live-Pegel", levelPercent, valueText = "${levelPercent.toInt()} %")
+            PercentBar(stringResource(R.string.hw_mic_live_level), levelPercent, valueText = "${levelPercent.toInt()} %")
         }
 
         if (history.size > 1) {
-            StatCard("Verlauf") {
+            StatCard(stringResource(R.string.hw_mic_history)) {
                 Box(modifier = Modifier.fillMaxWidth().height(80.dp)) {
                     Sparkline(values = history.toList(), color = Accent, minY = 0f, maxY = 100f)
                 }
@@ -168,7 +170,7 @@ fun MicTestScreen() {
                     start()
                 },
                 enabled = !listening
-            ) { Text("Aufnahme starten") }
+            ) { Text(stringResource(R.string.hw_mic_start_recording)) }
             OutlinedButton(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -179,7 +181,7 @@ fun MicTestScreen() {
         }
 
         Text(
-            "Halt dem Mikrofon was vor (Klatschen, Pfeifen, Sprache) und prüf, ob die Anzeige reagiert.",
+            stringResource(R.string.hw_mic_hint),
             color = OnSurfaceMuted,
             fontSize = 11.sp
         )

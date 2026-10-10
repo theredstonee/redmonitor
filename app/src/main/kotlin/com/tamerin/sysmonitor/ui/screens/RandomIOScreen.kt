@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -47,11 +49,11 @@ fun RandomIOScreen() {
     ) {
         StatCard("Random I/O · 4K · QD 1/4/16") {
             Text(
-                "Random-4-KB-Operationen bei drei Queue-Depths. QD=1 = wie SQLite-Scrolling, QD=16 = was UFS+f2fs max. pipelinen kann.",
+                stringResource(R.string.bench_random_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
-            Text("Dauer pro Phase (3 QDs × 2 r/w)", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.bench_random_duration_per_phase), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 DURATIONS.forEach { (sec, short) ->
@@ -67,7 +69,7 @@ fun RandomIOScreen() {
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Gesamt: ${durationSec * 6} s",
+                stringResource(R.string.bench_random_total, durationSec * 6),
                 color = AccentSoft, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -79,7 +81,7 @@ fun RandomIOScreen() {
                         BenchmarkService.start(context, BenchmarkType.STORAGE_RANDOM, durationSec)
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Test starten", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.bench_start_test), fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -87,7 +89,7 @@ fun RandomIOScreen() {
                             Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
                         )
                     }
-                ) { Text("Verlauf") }
+                ) { Text(stringResource(R.string.bench_history)) }
             }
         }
     }

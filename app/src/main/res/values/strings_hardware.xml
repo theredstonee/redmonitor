@@ -1,0 +1,395 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== Shared / common ===== -->
+    <string name="hw_yes">Ja</string>
+    <string name="hw_no">Nein</string>
+    <string name="hw_yes_lc">ja</string>
+    <string name="hw_no_lc">nein</string>
+    <string name="hw_grant_permission">Berechtigung erteilen</string>
+    <string name="hw_color_red">Rot</string>
+    <string name="hw_color_green">Grün</string>
+    <string name="hw_color_blue">Blau</string>
+    <string name="hw_color_white">Weiß</string>
+    <string name="hw_color_black">Schwarz</string>
+    <string name="hw_color_cyan">Cyan</string>
+    <string name="hw_color_magenta">Magenta</string>
+    <string name="hw_color_yellow">Gelb</string>
+
+    <!-- ===== DisplayTestScreen ===== -->
+    <string name="hw_disptest_fullscreen_hint">%1$s  ·  Tap = nächste Farbe, Letzte = zurück</string>
+    <string name="hw_disptest_intro">Tippe auf eine Farbe, um den Screen vollflächig damit zu füllen. Im Vollbild bringt jeder Tap die nächste Farbe.</string>
+
+    <!-- ===== DisplayScreen ===== -->
+    <string name="hw_disp_device">Gerät</string>
+    <string name="hw_disp_brand">Marke</string>
+    <string name="hw_disp_manufacturer">Hersteller</string>
+    <string name="hw_disp_model">Modell</string>
+    <string name="hw_disp_product">Produkt</string>
+    <string name="hw_disp_android_version">Android-Version</string>
+    <string name="hw_disp_security_patch">Sicherheits-Patch</string>
+    <string name="hw_disp_build_date">Build-Datum</string>
+    <string name="hw_disp_resolution">Auflösung</string>
+    <string name="hw_disp_density">Dichte</string>
+    <string name="hw_disp_refresh_rate">Bildwiederholrate</string>
+    <string name="hw_disp_diagonal">Diagonale (geschätzt)</string>
+    <string name="hw_disp_inch">Zoll</string>
+
+    <!-- ===== ColorSpaceScreen ===== -->
+    <string name="hw_cs_spectrum">HSV-Spektrum</string>
+    <string name="hw_cs_grayscale">Graustufen-Ramp</string>
+    <string name="hw_cs_pure_red">Reines Rot</string>
+    <string name="hw_cs_pure_green">Reines Grün</string>
+    <string name="hw_cs_pure_blue">Reines Blau</string>
+    <string name="hw_cs_grad_red">Rot-Verlauf 0 → 255</string>
+    <string name="hw_cs_grad_green">Grün-Verlauf 0 → 255</string>
+    <string name="hw_cs_grad_blue">Blau-Verlauf 0 → 255</string>
+    <string name="hw_cs_display_colorspace">Display &amp; Farbraum</string>
+    <string name="hw_cs_display_info_unavailable">Display-Infos nicht verfügbar.</string>
+    <string name="hw_cs_auto_demo">Auto-Demo (Vollbild)</string>
+    <string name="hw_cs_auto_demo_desc">Spielt %1$d Farben, Verläufe und Test-Muster automatisch nacheinander ab. Tap = Pause/Weiter, Buttons = manuell, ✕ = Ende.</string>
+    <string name="hw_cs_duration_per_step">Dauer pro Schritt: %1$s s</string>
+    <string name="hw_cs_start_demo">Demo starten</string>
+    <string name="hw_cs_pure_colors_srgb">Reine Farben (sRGB)</string>
+    <string name="hw_cs_gradients">Farbverläufe</string>
+    <string name="hw_cs_grad_red_short">Rot 0 → 255</string>
+    <string name="hw_cs_grad_green_short">Grün 0 → 255</string>
+    <string name="hw_cs_grad_blue_short">Blau 0 → 255</string>
+    <string name="hw_cs_spectrum_hsv">Spektrum (HSV)</string>
+    <string name="hw_cs_grayscale_ramp_depth">Graustufen-Ramp (Bit-Tiefe prüfen)</string>
+    <string name="hw_cs_grayscale_desc">Sauber abgestufte Streifen = mind. 8 Bit pro Kanal. Banding = nur 6 Bit + Dithering.</string>
+    <string name="hw_cs_stepless">Stufenlos:</string>
+    <string name="hw_cs_continue">▶ Weiter</string>
+    <string name="hw_cs_pause_btn">⏸ Pause</string>
+    <string name="hw_cs_end">✕ Ende</string>
+    <string name="hw_cs_current_color_mode">Aktueller Color-Mode</string>
+    <string name="hw_cs_none">Keine</string>
+    <string name="hw_cs_hdr_support">HDR-Unterstützung</string>
+    <string name="hw_cs_max_luminance">Max Luminanz</string>
+    <string name="hw_cs_min_luminance">Min Luminanz</string>
+    <string name="hw_cs_modes">Modi</string>
+
+    <!-- ===== BrightnessTestScreen ===== -->
+    <string name="hw_bt_back">Zurück</string>
+    <string name="hw_bt_window_brightness">Window-Brightness</string>
+    <string name="hw_bt_window_desc" formatted="false">Überschreibt die System-Helligkeit nur für diese Activity. Schiebe den Regler auf 5% / 10% / 20% — viele OLEDs zeigen dort sichtbares PWM-Flicker oder Color-Banding. 100% deckt Max-Brightness ab.</string>
+    <string name="hw_bt_window_value">Window-Wert</string>
+    <string name="hw_bt_system_value">System-Wert</string>
+    <string name="hw_bt_white_screen">Weißbild</string>
+
+    <!-- ===== FullscreenDisplayTestScreen ===== -->
+    <string name="hw_fs_checkerboard">Schachbrett (fein)</string>
+    <string name="hw_fs_rgb_spectrum">RGB-Spektrum</string>
+    <string name="hw_fs_grayscale_ramp">Graustufen-Ramp</string>
+    <string name="hw_fs_colorbars">Farbbalken (SMPTE-Style)</string>
+    <string name="hw_fs_crosshatch">Gitter (Geometrie)</string>
+    <string name="hw_fs_red_full">Rot vollflächig</string>
+    <string name="hw_fs_green_full">Grün vollflächig</string>
+    <string name="hw_fs_blue_full">Blau vollflächig</string>
+    <string name="hw_fs_white_full">Weiß vollflächig</string>
+    <string name="hw_fs_black_full">Schwarz vollflächig</string>
+    <string name="hw_fs_gray50" formatted="false">50 % Grau</string>
+    <string name="hw_fs_display_test">Display-Test</string>
+    <string name="hw_fs_auto_desc">Spielt automatisch %1$d Vollbild-Muster nacheinander ab. Tap auf den Bildschirm = Pause / Weiter, Buttons unten = manuell.</string>
+    <string name="hw_fs_duration_per_pattern">Dauer pro Muster: %1$s s</string>
+    <string name="hw_fs_start_auto">Auto-Sequenz starten</string>
+    <string name="hw_fs_test_single">Einzeln testen</string>
+
+    <!-- ===== SpeakerTestScreen ===== -->
+    <string name="hw_spk_left">Nur Links</string>
+    <string name="hw_spk_right">Nur Rechts</string>
+    <string name="hw_spk_both">Beide</string>
+    <string name="hw_spk_title">Speaker-Tongenerator</string>
+    <string name="hw_spk_desc">Spielt einen Sinuston über den ausgewählten Kanal. Lass den Ton kurz laufen und prüfe, ob beide Lautsprecher tatsächlich klingen.</string>
+    <string name="hw_spk_frequency">Frequenz</string>
+    <string name="hw_spk_volume">Lautstärke</string>
+    <string name="hw_spk_channel">Kanal</string>
+    <string name="hw_spk_control">Steuerung</string>
+    <string name="hw_spk_start_tone">Ton starten</string>
+    <string name="hw_spk_440">440 Hz (A4)</string>
+    <string name="hw_spk_1khz">1 kHz Referenz</string>
+    <string name="hw_spk_10khz">10 kHz (Höhen)</string>
+    <string name="hw_spk_100hz">100 Hz (Bass)</string>
+
+    <!-- ===== EarpieceTestScreen ===== -->
+    <string name="hw_ear_title">Earpiece (Hörmuschel)</string>
+    <string name="hw_ear_desc">Spielt einen Ton mit USAGE_VOICE_COMMUNICATION + Mode IN_COMMUNICATION und SpeakerphoneOff — damit routet Android den Stream auf die kleine Hörmuschel oben am Telefon, nicht auf den Loudspeaker.</string>
+    <string name="hw_ear_current_routing">Aktuelles Routing</string>
+    <string name="hw_ear_tone_params">Tonparameter</string>
+    <string name="hw_ear_frequency">Frequenz</string>
+    <string name="hw_ear_volume">Lautstärke</string>
+    <string name="hw_ear_control">Steuerung</string>
+    <string name="hw_ear_tone_on">Earpiece-Ton an</string>
+    <string name="hw_ear_hint">Halte das Telefon ans Ohr wie bei einem Anruf, um den Ton aus der Hörmuschel zu hören.</string>
+
+    <!-- ===== MicTestScreen ===== -->
+    <string name="hw_mic_perm_title">Mikrofon-Berechtigung</string>
+    <string name="hw_mic_perm_desc">Für den Pegelmeter brauchen wir Zugriff aufs Mikrofon.</string>
+    <string name="hw_mic_level_meter">Pegelmeter</string>
+    <string name="hw_mic_live_level">Live-Pegel</string>
+    <string name="hw_mic_history">Verlauf</string>
+    <string name="hw_mic_start_recording">Aufnahme starten</string>
+    <string name="hw_mic_hint">Halt dem Mikrofon was vor (Klatschen, Pfeifen, Sprache) und prüf, ob die Anzeige reagiert.</string>
+
+    <!-- ===== FlashlightScreen ===== -->
+    <string name="hw_fl_title">Taschenlampe</string>
+    <string name="hw_fl_camera_with_flash">Kamera mit Blitz</string>
+    <string name="hw_fl_none_found">Keine gefunden</string>
+    <string name="hw_fl_error">Fehler: %1$s</string>
+    <string name="hw_fl_off">Aus</string>
+    <string name="hw_fl_on">Ein</string>
+    <string name="hw_fl_hint">Hinweis: Manche Geräte deaktivieren den Blitz, wenn der Akku zu niedrig oder das Gerät zu heiß ist.</string>
+
+    <!-- ===== MultiTouchScreen ===== -->
+    <string name="hw_mt_title">Multi-Touch-Test</string>
+    <string name="hw_mt_desc">Lege beliebig viele Finger auf den Screen. Jeder Finger wird mit eigener Farbe markiert.</string>
+    <string name="hw_mt_active">Aktive Punkte: %1$d   ·   Max gleichzeitig: %2$d</string>
+
+    <!-- ===== EdgeRejectionScreen ===== -->
+    <string name="hw_er_title">Edge-Rejection-Test</string>
+    <string name="hw_er_desc">Tippe absichtlich auf den orangen Rahmen-Bereich (Edge-Zone, ca. 24 dp). Wenn Touches dort als Hit gezählt werden, rejected dein Curved-Screen NICHT — schlecht für Palm-Rejection beim Spielen / Lesen.</string>
+    <string name="hw_er_touches_total">Touches gesamt</string>
+    <string name="hw_er_edge_hits">Edge-Hits</string>
+    <string name="hw_er_edge_hits_value">%1$d (höher = schlechter)</string>
+    <string name="hw_er_center_hits">Center-Hits</string>
+    <string name="hw_er_clear_markers">Marker löschen</string>
+
+    <!-- ===== SensorsScreen ===== -->
+    <string name="hw_sens_overview">Übersicht</string>
+    <string name="hw_sens_total">Sensoren gesamt</string>
+    <string name="hw_sens_active_live">Aktive Live-Werte</string>
+    <string name="hw_sens_tap_hint">Tippe einen Sensor an, um Detail-Verlauf und alle Specs zu sehen.</string>
+    <string name="hw_sens_waiting">warte…</string>
+
+    <!-- ===== SensorDetailScreen ===== -->
+    <string name="hw_sd_no_sensor">Kein Sensor dieses Typs vorhanden.</string>
+    <string name="hw_sd_live">Live</string>
+    <string name="hw_sd_waiting_data">warte auf Daten…</string>
+    <string name="hw_sd_axis_n">Achse %1$d</string>
+    <string name="hw_sd_history">Verlauf (letzte %1$d Samples)</string>
+    <string name="hw_sd_axis_minmax">Achse %1$s: min %2$s  ·  max %3$s</string>
+    <string name="hw_sd_specs">Sensor-Specs</string>
+    <string name="hw_sd_manufacturer">Hersteller</string>
+    <string name="hw_sd_type_id">Typ-ID</string>
+    <string name="hw_sd_max_range">Maximal-Range</string>
+    <string name="hw_sd_resolution">Auflösung</string>
+    <string name="hw_sd_min_delay">Min-Verzögerung</string>
+    <string name="hw_sd_max_delay">Max-Verzögerung</string>
+    <string name="hw_sd_fifo_reserved">FIFO reserviert</string>
+    <string name="hw_sd_wakeup">Wake-Up</string>
+    <string name="hw_sd_samples_received">Samples empfangen</string>
+
+    <!-- ===== CompassScreen ===== -->
+    <string name="hw_comp_title">Kompass</string>
+    <string name="hw_comp_no_rotvec">ROTATION_VECTOR-Sensor fehlt. Versuche Magnetfeld pur.</string>
+    <string name="hw_comp_magfield">Magnetfeld</string>
+    <string name="hw_comp_calibrate">Kalibrieren: Telefon in einer ∞-Bewegung schwenken (alle Achsen).</string>
+    <string name="hw_dir_n">N</string>
+    <string name="hw_dir_ne">NO</string>
+    <string name="hw_dir_e">O</string>
+    <string name="hw_dir_se">SO</string>
+    <string name="hw_dir_s">S</string>
+    <string name="hw_dir_sw">SW</string>
+    <string name="hw_dir_w">W</string>
+    <string name="hw_dir_nw">NW</string>
+    <string name="hw_acc_high">hoch ✓</string>
+    <string name="hw_acc_medium">mittel</string>
+    <string name="hw_acc_low">niedrig</string>
+    <string name="hw_acc_unreliable">unzuverlässig</string>
+    <string name="hw_acc_unknown">unbekannt</string>
+
+    <!-- ===== BarometerScreen ===== -->
+    <string name="hw_baro_title">Barometer (TYPE_PRESSURE)</string>
+    <string name="hw_baro_no_sensor">Kein Drucksensor verbaut. Standardmäßig haben das nur Premium-Phones (Pixel, Samsung S/Note/Fold, iPhone-Gegenstücke).</string>
+    <string name="hw_baro_pressure">Druck</string>
+    <string name="hw_baro_min_since_start">Min seit Start</string>
+    <string name="hw_baro_max_since_start">Max seit Start</string>
+    <string name="hw_baro_resolution">Auflösung</string>
+    <string name="hw_baro_altitude_title">Höhe (NN-Druck einstellbar)</string>
+    <string name="hw_baro_sealevel_label">Reduzierter Luftdruck auf NN (hPa)</string>
+    <string name="hw_baro_altitude_value">%1$s m über NN</string>
+    <string name="hw_baro_tip">Tipp: Aktuellen NN-Druck (QNH) für deinen Ort z.B. via dwd.de oder Aviation-Wetter (METAR) prüfen — Standard 1013.25 hPa ist die ICAO-Atmosphäre.</string>
+
+    <!-- ===== ProximityLightScreen ===== -->
+    <string name="hw_prox_title">Proximity (Annäherung)</string>
+    <string name="hw_prox_no_sensor">Kein Proximity-Sensor verbaut.</string>
+    <string name="hw_prox_max_value">Maximaler Wert</string>
+    <string name="hw_prox_current_value">Aktueller Wert</string>
+    <string name="hw_prox_object_near">OBJEKT NAH</string>
+    <string name="hw_prox_free">FREI</string>
+    <string name="hw_prox_hint">Halte den Finger vorne übers Display (oberhalb des Earpiece). Bei Annäherung leuchtet das Feld grün.</string>
+    <string name="hw_light_title">Lichtsensor</string>
+    <string name="hw_light_no_sensor">Kein Lichtsensor verbaut.</string>
+    <string name="hw_light_current">Aktuell</string>
+    <string name="hw_light_max_seen">Gesehenes Maximum</string>
+    <string name="hw_light_brightness">Helligkeit</string>
+    <string name="hw_light_hint">Halte das Telefon ans Fenster und ins Dunkle — der Wert ändert sich live.</string>
+    <string name="hw_lux_pitchdark">Stockfinster</string>
+    <string name="hw_lux_verydark">Sehr dunkel</string>
+    <string name="hw_lux_darkroom">Dunkler Raum</string>
+    <string name="hw_lux_living">Wohnraum</string>
+    <string name="hw_lux_brightroom">Helles Zimmer</string>
+    <string name="hw_lux_office">Büro</string>
+    <string name="hw_lux_overcast">Bewölkt draußen</string>
+    <string name="hw_lux_daylight">Tageslicht</string>
+    <string name="hw_lux_sunlight">Direktes Sonnenlicht</string>
+
+    <!-- ===== GpsTestScreen ===== -->
+    <string name="hw_gps_perm_title">Standort-Berechtigung</string>
+    <string name="hw_gps_perm_desc">Für GPS-Test brauchen wir die Berechtigung „Genauer Standort“. Außerdem muss GPS systemweit eingeschaltet sein.</string>
+    <string name="hw_gps_status">Status</string>
+    <string name="hw_gps_provider_active">GPS-Provider aktiv</string>
+    <string name="hw_gps_active_provider">Aktiver Provider</string>
+    <string name="hw_gps_sats_total">Satelliten gesamt</string>
+    <string name="hw_gps_used_in_fix">Im Fix verwendet</string>
+    <string name="hw_gps_best_signal">Beste Signalstärke</string>
+    <string name="hw_gps_position">Position</string>
+    <string name="hw_gps_waiting_fix">Warte auf Fix… Stell dich am besten ans Fenster oder ins Freie.</string>
+    <string name="hw_gps_latitude">Breitengrad</string>
+    <string name="hw_gps_longitude">Längengrad</string>
+    <string name="hw_gps_accuracy">Genauigkeit</string>
+    <string name="hw_gps_altitude">Höhe</string>
+    <string name="hw_gps_speed">Geschwindigkeit</string>
+    <string name="hw_gps_bearing">Richtung</string>
+
+    <!-- ===== GnssLiveScreen ===== -->
+    <string name="hw_gnss_perm_required">Location-Permission nötig</string>
+    <string name="hw_gnss_perm_desc">GNSS-Sat-Status braucht ACCESS_FINE_LOCATION. Erteile sie in den App-Settings oder via Shizuku-Auto-Grant.</string>
+    <string name="hw_gnss_android_old">Zu altes Android</string>
+    <string name="hw_gnss_android_old_desc">Brauche Android 7+ (GnssStatus.Callback API).</string>
+    <string name="hw_gnss_visible">Sichtbar</string>
+    <string name="hw_gnss_in_fix">Im Fix</string>
+    <string name="hw_gnss_const_count">%1$d (%2$d im Fix)</string>
+    <string name="hw_gnss_waiting">Warte auf GPS-Fix… (kann im Gebäude dauern)</string>
+
+    <!-- ===== NfcScreen ===== -->
+    <string name="hw_nfc_present">Vorhanden</string>
+    <string name="hw_nfc_no_chip">Dieses Gerät hat keinen NFC-Chip.</string>
+    <string name="hw_nfc_enabled">Aktiviert</string>
+    <string name="hw_nfc_enable_settings">NFC in Einstellungen aktivieren</string>
+    <string name="hw_nfc_hint">Hinweis: Live-Tag-Erkennung würde ein vollwertiges Foreground-Dispatch-System brauchen — hier zeigen wir nur Verfügbarkeit und Status.</string>
+
+    <!-- ===== NfcTapScreen ===== -->
+    <string name="hw_nfctap_ready">Bereit. Lege ein NFC-Tag aufs Handy.</string>
+    <string name="hw_nfctap_detected">Tag erkannt: %1$s</string>
+    <string name="hw_nfctap_unknown">unbekannt</string>
+    <string name="hw_nfctap_title">NFC-Tap-Test (ReaderMode)</string>
+    <string name="hw_nfctap_hardware">NFC-Hardware</string>
+    <string name="hw_nfctap_present">vorhanden</string>
+    <string name="hw_nfctap_missing">fehlt</string>
+    <string name="hw_nfctap_nfc_enabled">NFC aktiviert</string>
+    <string name="hw_nfctap_turn_on">NFC einschalten</string>
+    <string name="hw_nfctap_instructions">Anleitung</string>
+    <string name="hw_nfctap_instructions_desc">Halte eine NFC-Karte / einen NFC-Sticker / Tag an die Rückseite des Telefons (meist obere Hälfte). Der ReaderMode fängt jeden Read ab — auch leere Tags.</string>
+
+    <!-- ===== IrBlasterScreen ===== -->
+    <string name="hw_ir_title">IR-Blaster (ConsumerIrManager)</string>
+    <string name="hw_ir_service_present">Service vorhanden</string>
+    <string name="hw_ir_service_missing">Service fehlt</string>
+    <string name="hw_ir_no_blaster">Kein IR-Blaster verbaut. Standardmäßig haben nur Xiaomi (bis Mi 11/12), Huawei (Mate-Serie) und ältere LG/HTC IR-LEDs.</string>
+    <string name="hw_ir_carrier_freqs">Carrier-Frequenzen</string>
+    <string name="hw_ir_no_ranges">Hardware meldet keine Ranges.</string>
+    <string name="hw_ir_send_bursts">Test-Bursts senden</string>
+    <string name="hw_ir_bursts_desc">Sendet 5×40 kHz Pulse à 1 ms ein/aus — am Handy-Selfie-Cam ist die IR-LED als helles weiß-blaues Leuchten sichtbar.</string>
+    <string name="hw_ir_poweroff_sony">Power-Off Sony-Standard (12 Bits)</string>
+    <string name="hw_ir_manager_missing">ConsumerIrManager fehlt</string>
+    <string name="hw_ir_ok">OK · %1$d kHz · %2$d Slots</string>
+    <string name="hw_ir_error">Fehler: %1$s</string>
+
+    <!-- ===== CameraInfoScreen ===== -->
+    <string name="hw_cam_loading_title">Kameras</string>
+    <string name="hw_cam_loading">Lade Kamera-Eigenschaften…</string>
+    <string name="hw_cam_overview">Übersicht</string>
+    <string name="hw_cam_logical">Logische Kameras</string>
+    <string name="hw_cam_physical_sub">Physische Sub-Kameras</string>
+    <string name="hw_cam_overview_desc">Tippe auf eine Karte, um Details zu sehen. Auf Multi-Kamera-Geräten zeigt Android meistens nur die logische Hauptkamera. Die physischen Sub-Sensoren (Ultraweitwinkel/Tele/Tiefe) findest du unter ihren Parent-IDs.</string>
+    <string name="hw_cam_physical_cam">📷 Physische Cam #%1$s</string>
+    <string name="hw_cam_cam_id">📸 Cam ID %1$s</string>
+    <string name="hw_cam_subsensor">Sub-Sensor von logischer Cam #%1$s</string>
+    <string name="hw_cam_sec_sensor">Sensor</string>
+    <string name="hw_cam_sec_resolutions">Auflösungen</string>
+    <string name="hw_cam_sec_optics">Optik</string>
+    <string name="hw_cam_sec_exposure">Belichtung</string>
+    <string name="hw_cam_sec_features">Features</string>
+    <string name="hw_cam_sec_output_formats">Ausgabe-Formate</string>
+    <string name="hw_cam_sec_contains_sub">Enthält physische Sub-Kameras</string>
+    <string name="hw_cam_mp_effective">Megapixel (effektiv)</string>
+    <string name="hw_cam_mp_max">Megapixel (max. Sensor)</string>
+    <string name="hw_cam_active_pixels">Aktive Pixel</string>
+    <string name="hw_cam_pixel_array">Pixel-Array (gesamt)</string>
+    <string name="hw_cam_sensor_area">Sensor-Fläche</string>
+    <string name="hw_cam_sensor_diagonal">Sensor-Diagonale</string>
+    <string name="hw_cam_pixel_size">Pixel-Größe</string>
+    <string name="hw_cam_orientation">Orientierung</string>
+    <string name="hw_cam_max_photo">Max Foto (JPEG)</string>
+    <string name="hw_cam_focal_real">Brennweiten (real)</string>
+    <string name="hw_cam_focal_equiv">Brennweiten (KB-äquiv.)</string>
+    <string name="hw_cam_apertures">Blenden</string>
+    <string name="hw_cam_min_focus">Min Fokus</string>
+    <string name="hw_cam_hyperfocal">Hyperfokal</string>
+    <string name="hw_cam_max_zoom">Max Zoom (optisch+digital)</string>
+    <string name="hw_cam_max_digital_zoom">Max digitaler Zoom</string>
+    <string name="hw_cam_exposure_time">Belichtungszeit</string>
+    <string name="hw_cam_flash">Blitz</string>
+    <string name="hw_cam_raw_yes">Ja (DNG-Capture)</string>
+    <string name="hw_cam_ois_yes">Ja (optisch)</string>
+    <string name="hw_cam_eis">EIS / Video-Stab.</string>
+    <string name="hw_cam_facing_back">Rückseite</string>
+    <string name="hw_cam_facing_front">Vorderseite</string>
+    <string name="hw_cam_facing_external">Extern</string>
+    <string name="hw_cam_facing_unknown">Unbekannt</string>
+
+    <!-- ===== BluetoothScreen ===== -->
+    <string name="hw_bt_no_adapter">Kein Bluetooth-Adapter auf diesem Gerät.</string>
+    <string name="hw_bt_status">Status</string>
+    <string name="hw_bt_enabled">Aktiviert</string>
+    <string name="hw_bt_local_name">Lokaler Name</string>
+    <string name="hw_bt_local_address">Lokale Adresse</string>
+    <string name="hw_bt_perm_required">Berechtigung benötigt</string>
+    <string name="hw_bt_perm_desc">Für gekoppelte Geräte braucht es BLUETOOTH_CONNECT (Android 12+) bzw. BLUETOOTH (älter).</string>
+    <string name="hw_bt_paired">Gekoppelte Geräte (%1$d)</string>
+    <string name="hw_bt_no_paired">Keine gekoppelten Geräte.</string>
+    <string name="hw_bt_no_name">&lt;ohne Name&gt;</string>
+    <string name="hw_bt_address">Adresse</string>
+    <string name="hw_bt_type">Typ</string>
+    <string name="hw_bt_class">Klasse</string>
+    <string name="hw_bttype_classic">Classic</string>
+    <string name="hw_bttype_le">Low Energy</string>
+    <string name="hw_bttype_dual">Dual</string>
+    <string name="hw_bttype_unknown">Unbekannt</string>
+    <string name="hw_btclass_computer">Computer</string>
+    <string name="hw_btclass_phone">Telefon</string>
+    <string name="hw_btclass_network">Netzwerk</string>
+    <string name="hw_btclass_av">Audio/Video</string>
+    <string name="hw_btclass_peripheral">Peripherie</string>
+    <string name="hw_btclass_imaging">Imaging</string>
+    <string name="hw_btclass_wearable">Wearable</string>
+    <string name="hw_btclass_toy">Spielzeug</string>
+    <string name="hw_btclass_health">Gesundheit</string>
+    <string name="hw_btclass_dash">—</string>
+
+    <!-- ===== WifiScanScreen ===== -->
+    <string name="hw_wifi_perm_title">WLAN-Scan-Berechtigung</string>
+    <string name="hw_wifi_perm_desc">Für WLAN-Scans braucht Android ACCESS_FINE_LOCATION (auch wenn wir keinen Standort wollen — Google-Vorgabe).</string>
+    <string name="hw_wifi_scan_aps">Access-Points scannen</string>
+    <string name="hw_wifi_scanning">Scanne…</string>
+    <string name="hw_wifi_start_ap_scan">AP-Scan starten</string>
+    <string name="hw_wifi_networks_found">%1$d Netze gefunden</string>
+    <string name="hw_wifi_lan_title">Geräte im Netzwerk (LAN-Scan)</string>
+    <string name="hw_wifi_lan_desc">Findet alle Geräte im selben WLAN: TCP-Probe auf 10 gängige Ports + /proc/net/arp. Subnet wird automatisch erkannt, /24 wird voll gescannt.</string>
+    <string name="hw_wifi_lan_scanning">Scanne… (%1$d/%2$d)</string>
+    <string name="hw_wifi_start_lan_scan">LAN-Scan starten</string>
+    <string name="hw_wifi_devices_found">%1$d Geräte gefunden</string>
+    <string name="hw_wifi_lan_devices">LAN-Geräte</string>
+    <string name="hw_wifi_this_device">Dieses Gerät (%1$s)</string>
+    <string name="hw_wifi_router">Router/Gateway (%1$s)</string>
+    <string name="hw_wifi_manufacturer">Hersteller</string>
+    <string name="hw_wifi_open_ports">Offene Ports</string>
+    <string name="hw_wifi_you">← du</string>
+    <string name="hw_wifi_default_gateway">← Default-Gateway</string>
+    <string name="hw_wifi_aps_in_range">Access-Points in Reichweite</string>
+    <string name="hw_wifi_hidden_net">&lt;verstecktes Netz&gt;</string>
+    <string name="hw_wifi_frequency">Frequenz</string>
+    <string name="hw_wifi_channel">Kanal</string>
+    <string name="hw_wifi_security">Sicherheit</string>
+    <string name="hw_wifi_standard">WLAN-Standard</string>
+</resources>

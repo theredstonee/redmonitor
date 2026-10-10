@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 
 object UpdateNotifier {
     private const val CHANNEL = "redmonitor_updates"
@@ -21,10 +22,10 @@ object UpdateNotifier {
         val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         if (nm.getNotificationChannel(CHANNEL) == null) {
             val ch = NotificationChannel(
-                CHANNEL, "RedMonitor-Updates",
+                CHANNEL, context.getString(R.string.bg_update_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             )
-            ch.description = "Benachrichtigt über neue Versionen von RedMonitor"
+            ch.description = context.getString(R.string.bg_update_channel_desc)
             nm.createNotificationChannel(ch)
         }
     }
@@ -45,8 +46,8 @@ object UpdateNotifier {
         )
         val n = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_download_done)
-            .setContentTitle("Update verfügbar: ${release.name}")
-            .setContentText("Tippen für Details & Download")
+            .setContentTitle(context.getString(R.string.bg_update_notif_title, release.name))
+            .setContentText(context.getString(R.string.bg_update_notif_text))
             .setStyle(
                 NotificationCompat.BigTextStyle()
                     .bigText(release.body.take(500))

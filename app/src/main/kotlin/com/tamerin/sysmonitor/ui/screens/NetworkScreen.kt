@@ -6,6 +6,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.unit.dp
 import com.tamerin.sysmonitor.data.NetworkReader
 import com.tamerin.sysmonitor.data.NetworkSnapshot
@@ -40,29 +42,29 @@ fun NetworkScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Verbindung") {
+        StatCard(stringResource(R.string.bench_net_connection)) {
             KeyValueRow("Transport", snap.transportLabel)
             snap.ssid?.let { KeyValueRow("SSID", it) }
             snap.linkSpeedMbps?.let { KeyValueRow("Link-Speed", "$it Mbps") }
-            KeyValueRow("Downstream (gemeldet)", "${snap.downstreamKbps} kbps")
-            KeyValueRow("Upstream (gemeldet)", "${snap.upstreamKbps} kbps")
-            KeyValueRow("Datenintensiv (metered)?", if (snap.isMetered) "Ja" else "Nein")
+            KeyValueRow(stringResource(R.string.bench_net_downstream), "${snap.downstreamKbps} kbps")
+            KeyValueRow(stringResource(R.string.bench_net_upstream), "${snap.upstreamKbps} kbps")
+            KeyValueRow(stringResource(R.string.bench_net_metered), if (snap.isMetered) stringResource(R.string.bench_yes) else stringResource(R.string.bench_no))
         }
 
         snap.signalLevelPercent?.let { signal ->
-            StatCard("Signalstärke") {
-                PercentBar("WLAN-Signal", signal)
+            StatCard(stringResource(R.string.bench_net_signal_strength)) {
+                PercentBar(stringResource(R.string.bench_net_wifi_signal), signal)
             }
         }
 
-        StatCard("IP-Adressen") {
+        StatCard(stringResource(R.string.bench_net_ip_addresses)) {
             KeyValueRow("IPv4", snap.ipv4 ?: "—")
             KeyValueRow("IPv6", snap.ipv6 ?: "—")
         }
 
-        StatCard("Traffic (seit Boot)") {
-            KeyValueRow("Empfangen (RX)", snap.totalRxBytes.formatBytes())
-            KeyValueRow("Gesendet (TX)", snap.totalTxBytes.formatBytes())
+        StatCard(stringResource(R.string.bench_net_traffic_since_boot)) {
+            KeyValueRow(stringResource(R.string.bench_net_received_rx), snap.totalRxBytes.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_net_sent_tx), snap.totalTxBytes.formatBytes())
         }
     }
 }

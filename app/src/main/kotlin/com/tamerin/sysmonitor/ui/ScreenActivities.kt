@@ -1,6 +1,7 @@
 package com.tamerin.sysmonitor.ui
 
 import androidx.compose.runtime.Composable
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.screens.BarometerScreen
 import com.tamerin.sysmonitor.ui.screens.BatteryScreen
 import com.tamerin.sysmonitor.ui.screens.BenchHistoryScreen
@@ -52,82 +53,82 @@ import com.tamerin.sysmonitor.ui.screens.StressTestScreen
 import com.tamerin.sysmonitor.ui.screens.WakelockScreen
 
 class BatteryStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Akku & Drain-Test"
+    override val screenTitle get() = getString(R.string.scr_battery_drain)
     @Composable override fun ScreenContent() { BatteryScreen() }
 }
 
 class StressTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Stresstest"
+    override val screenTitle get() = getString(R.string.scr_stress_test)
     @Composable override fun ScreenContent() { StressTestScreen() }
 }
 
 class CpuBenchmarkStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "CPU-Benchmark"
+    override val screenTitle get() = getString(R.string.scr_cpu_benchmark)
     @Composable override fun ScreenContent() { CpuBenchmarkScreen() }
 }
 
 class GpuBenchmarkStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "GPU-FPS"
+    override val screenTitle get() = getString(R.string.scr_gpu_fps)
     @Composable override fun ScreenContent() { GpuBenchmarkScreen() }
 }
 
 class RamBenchmarkStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "RAM-Speed"
+    override val screenTitle get() = getString(R.string.scr_ram_speed)
     @Composable override fun ScreenContent() { RamBenchmarkScreen() }
 }
 
 class StorageBenchmarkStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Storage Sequenziell"
+    override val screenTitle get() = getString(R.string.scr_storage_seq)
     @Composable override fun ScreenContent() { StorageBenchmarkScreen() }
 }
 
 class RandomIOStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Storage Random 4K"
+    override val screenTitle get() = getString(R.string.scr_storage_random)
     @Composable override fun ScreenContent() { RandomIOScreen() }
 }
 
 class ImageBenchStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Bild-Verarbeitung"
+    override val screenTitle get() = getString(R.string.scr_image_processing)
     @Composable override fun ScreenContent() { ImageBenchScreen() }
 }
 
 class NetworkSpeedStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Netz-Speed"
+    override val screenTitle get() = getString(R.string.scr_network_speed)
     @Composable override fun ScreenContent() { NetworkSpeedScreen() }
 }
 
 class FullscreenDisplayTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Display-Test"
+    override val screenTitle get() = getString(R.string.scr_display_test)
     @Composable override fun ScreenContent() { FullscreenDisplayTestScreen() }
 }
 
 class DisplayTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Display-Farben"
+    override val screenTitle get() = getString(R.string.scr_display_colors)
     @Composable override fun ScreenContent() { DisplayTestScreen() }
 }
 
 class SpeakerTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Speaker-Ton"
+    override val screenTitle get() = getString(R.string.scr_speaker_tone)
     @Composable override fun ScreenContent() { SpeakerTestScreen() }
 }
 
 class MicTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Mikrofon"
+    override val screenTitle get() = getString(R.string.scr_microphone)
     @Composable override fun ScreenContent() { MicTestScreen() }
 }
 
 class FlashlightStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Taschenlampe"
+    override val screenTitle get() = getString(R.string.scr_flashlight)
     @Composable override fun ScreenContent() { FlashlightScreen() }
 }
 
 class MultiTouchStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Multi-Touch"
+    override val screenTitle get() = getString(R.string.scr_multitouch)
     @Composable override fun ScreenContent() { MultiTouchScreen() }
 }
 
 class SensorsStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Sensoren"
+    override val screenTitle get() = getString(R.string.scr_sensors)
     @Composable override fun ScreenContent() {
         SensorsScreen(onSelect = { sensorType ->
             startActivity(
@@ -143,7 +144,7 @@ class SensorDetailStandaloneActivity : BaseScreenActivity() {
         const val EXTRA_SENSOR_TYPE = "sensor_type"
     }
 
-    override val screenTitle = "Sensor-Detail"
+    override val screenTitle get() = getString(R.string.scr_sensor_detail)
     @Composable override fun ScreenContent() {
         val sensorType = intent.getIntExtra(EXTRA_SENSOR_TYPE, 1)
         SensorDetailScreen(sensorType = sensorType)
@@ -151,161 +152,161 @@ class SensorDetailStandaloneActivity : BaseScreenActivity() {
 }
 
 class SnakeGameStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "🐍 CPU-Snake"
+    override val screenTitle get() = getString(R.string.scr_cpu_snake)
     @Composable override fun ScreenContent() { SnakeGameScreen() }
 }
 
 class DevToolsStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Dev-Tools"
+    override val screenTitle get() = getString(R.string.scr_dev_tools)
     @Composable override fun ScreenContent() { DevToolsScreen() }
 }
 
 class RouletteStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "☠ Russian Roulette"
+    override val screenTitle get() = getString(R.string.scr_roulette)
     @Composable override fun ScreenContent() { RouletteScreen() }
 }
 
 class NetworkUsageStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Pro-App Netzwerk-Traffic"
+    override val screenTitle get() = getString(R.string.scr_network_usage)
     @Composable override fun ScreenContent() { NetworkUsageScreen() }
 }
 
 class WakelockStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Wake-Locks (dumpsys power)"
+    override val screenTitle get() = getString(R.string.scr_wakelocks)
     @Composable override fun ScreenContent() { WakelockScreen() }
 }
 
 class NotificationLogStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Notification-Log"
+    override val screenTitle get() = getString(R.string.scr_notification_log)
     @Composable override fun ScreenContent() { NotificationLogScreen() }
 }
 
 class PermissionAuditStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Permission-Audit"
+    override val screenTitle get() = getString(R.string.scr_permission_audit)
     @Composable override fun ScreenContent() { PermissionAuditScreen() }
 }
 
 class ShellTerminalStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Shell-Terminal (Shizuku)"
+    override val screenTitle get() = getString(R.string.scr_shell_terminal)
     @Composable override fun ScreenContent() { ShellTerminalScreen() }
 }
 
 class EarpieceTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Earpiece"
+    override val screenTitle get() = getString(R.string.scr_earpiece)
     @Composable override fun ScreenContent() { EarpieceTestScreen() }
 }
 
 class EdgeRejectionStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Edge-Rejection"
+    override val screenTitle get() = getString(R.string.scr_edge_rejection)
     @Composable override fun ScreenContent() { EdgeRejectionScreen() }
 }
 
 class BrightnessTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Brightness-Konsistenz"
+    override val screenTitle get() = getString(R.string.scr_brightness)
     @Composable override fun ScreenContent() { BrightnessTestScreen() }
 }
 
 class NfcTapStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "NFC-Tap-Test"
+    override val screenTitle get() = getString(R.string.scr_nfc_tap)
     @Composable override fun ScreenContent() { NfcTapScreen() }
 }
 
 class IrBlasterStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "IR-Blaster"
+    override val screenTitle get() = getString(R.string.scr_ir_blaster)
     @Composable override fun ScreenContent() { IrBlasterScreen() }
 }
 
 class CompassStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Kompass"
+    override val screenTitle get() = getString(R.string.scr_compass)
     @Composable override fun ScreenContent() { CompassScreen() }
 }
 
 class BarometerStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Barometer / Höhe"
+    override val screenTitle get() = getString(R.string.scr_barometer)
     @Composable override fun ScreenContent() { BarometerScreen() }
 }
 
 class DischargeCurveStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Akku-Verlauf"
+    override val screenTitle get() = getString(R.string.scr_discharge_curve)
     @Composable override fun ScreenContent() { DischargeCurveScreen() }
 }
 
 class ChargingLimitStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Smart Charging Limit"
+    override val screenTitle get() = getString(R.string.scr_charging_limit)
     @Composable override fun ScreenContent() { ChargingLimitScreen() }
 }
 
 class BatteryDoctorStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Akku-Doktor"
+    override val screenTitle get() = getString(R.string.scr_battery_doctor)
     @Composable override fun ScreenContent() { BatteryDoctorScreen() }
 }
 
 class StorageAnalyzerStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Storage-Analyzer"
+    override val screenTitle get() = getString(R.string.scr_storage_analyzer)
     @Composable override fun ScreenContent() { StorageAnalyzerScreen() }
 }
 
 class ApkExtractorStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "APK-Extractor"
+    override val screenTitle get() = getString(R.string.scr_apk_extractor)
     @Composable override fun ScreenContent() { ApkExtractorScreen() }
 }
 
 class CrashLogStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Crash-Logs"
+    override val screenTitle get() = getString(R.string.scr_crash_logs)
     @Composable override fun ScreenContent() { CrashLogScreen() }
 }
 
 class SpeedTestStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Speed-Test"
+    override val screenTitle get() = getString(R.string.scr_speed_test)
     @Composable override fun ScreenContent() { SpeedTestScreen() }
 }
 
 class PingMonitorStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Multi-Server-Ping"
+    override val screenTitle get() = getString(R.string.scr_ping_monitor)
     @Composable override fun ScreenContent() { PingMonitorScreen() }
 }
 
 class GnssLiveStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "GNSS Live"
+    override val screenTitle get() = getString(R.string.scr_gnss_live)
     @Composable override fun ScreenContent() { GnssLiveScreen() }
 }
 
 class PerfettoTraceStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Perfetto-Trace"
+    override val screenTitle get() = getString(R.string.scr_perfetto_trace)
     @Composable override fun ScreenContent() { PerfettoTraceScreen() }
 }
 
 class DpiAnimStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "DPI / Animation"
+    override val screenTitle get() = getString(R.string.scr_dpi_anim)
     @Composable override fun ScreenContent() { DpiAnimScreen() }
 }
 
 class BackgroundRestrictStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Background-Restrict"
+    override val screenTitle get() = getString(R.string.scr_background_restrict)
     @Composable override fun ScreenContent() { BackgroundRestrictScreen() }
 }
 
 class PrivacyPolicyStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Datenschutzerklärung"
+    override val screenTitle get() = getString(R.string.scr_privacy_policy)
     @Composable override fun ScreenContent() { PrivacyPolicyScreen() }
 }
 
 class TermsStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Nutzungsbedingungen"
+    override val screenTitle get() = getString(R.string.scr_terms)
     @Composable override fun ScreenContent() { TermsScreen() }
 }
 
 class PrivacyDashboardStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Privacy-Dashboard"
+    override val screenTitle get() = getString(R.string.scr_privacy_dashboard)
     @Composable override fun ScreenContent() { PrivacyDashboardScreen() }
 }
 
 class GlyphMatrixStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Glyph Matrix"
+    override val screenTitle get() = getString(R.string.scr_glyph_matrix)
     @Composable override fun ScreenContent() { GlyphMatrixScreen() }
 }
 
 class BenchHistoryStandaloneActivity : BaseScreenActivity() {
-    override val screenTitle = "Benchmark-Verlauf"
+    override val screenTitle get() = getString(R.string.scr_benchmark_history)
     @Composable override fun ScreenContent() { BenchHistoryScreen() }
 }

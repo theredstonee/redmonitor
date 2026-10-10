@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ================= TaskDetailScreen ================= -->
+    <string name="sys_td_package">Package</string>
+    <string name="sys_td_version">Version</string>
+    <string name="sys_td_type">Type</string>
+    <string name="sys_td_type_system">System</string>
+    <string name="sys_td_type_user">User</string>
+    <string name="sys_td_status">Status</string>
+    <string name="sys_td_status_disabled">Disabled</string>
+    <string name="sys_td_status_active">Active</string>
+    <string name="sys_td_shizuku_title">Shizuku for app actions</string>
+    <string name="sys_td_shizuku_desc">Force-stop, soft-kill, clear cache, reset app data, uninstall, deep-freeze, auto-start receivers, standby bucket, background AppOps — everything needs shell access via Shizuku.</string>
+    <string name="sys_td_open_appinfo_fallback">For now: open app info in system</string>
+    <string name="sys_td_instant_actions">Instant actions</string>
+    <string name="sys_td_instant_desc">Force-stop ends all processes. Crash intentionally triggers an ANR/crash (for stability tests). Soft-kill only kills cache/empty processes.</string>
+    <string name="sys_td_clear_cache">Clear cache</string>
+    <string name="sys_td_clear_cache_btn">Clear cache only (safe)</string>
+    <string name="sys_td_clear_cache_desc">Deletes only temporary files — settings, logins and data remain.</string>
+    <string name="sys_td_uninstall">Uninstall</string>
+    <string name="sys_td_hide_system_app">Hide system app for me</string>
+    <string name="sys_td_uninstall_app">Uninstall app</string>
+    <string name="sys_td_uninstall_system_desc">System apps can\'t be fully deleted without root. But: \'pm uninstall --user 0\' hides them for you — storage is freed, on a factory reset it comes back.</string>
+    <string name="sys_td_uninstall_user_desc">Completely uninstalled. Like removing from the Play Store.</string>
+    <string name="sys_td_app_status">App status</string>
+    <string name="sys_td_active">Active</string>
+    <string name="sys_td_suspended_desc">Suspended — can\'t start, data kept</string>
+    <string name="sys_td_running_normal">Running normally</string>
+    <string name="sys_td_disable_legacy">Disable (legacy)</string>
+    <string name="sys_td_disabled">Disabled</string>
+    <string name="sys_td_enabled_samsung">Enabled  ·  often blocked on Samsung</string>
+    <string name="sys_td_deepfreeze">Deep-freeze (strongest stop)</string>
+    <string name="sys_td_deepfreeze_desc">Force-stop + standby bucket \'never\' + UID idle + suspend in one click. Strongest method without root — the app effectively can\'t run anymore until you wake it.</string>
+    <string name="sys_td_freeze_btn">🥶 Freeze</string>
+    <string name="sys_td_unfreeze_btn">☀ Unfreeze</string>
+    <string name="sys_td_doze">Battery optimization (Doze whitelist)</string>
+    <string name="sys_td_on_whitelist">On whitelist</string>
+    <string name="sys_td_doze_on_desc">May run in Doze — uses more battery</string>
+    <string name="sys_td_doze_off_desc">Throttled in Doze — saves battery</string>
+    <string name="sys_td_standby">Standby bucket</string>
+    <string name="sys_td_standby_desc">The Android system sorts apps into buckets: active/working_set/frequent/rare/never. The rarer, the less background CPU/network/wakeups the app gets.</string>
+    <string name="sys_td_bg">Background behavior (AppOps)</string>
+    <string name="sys_td_loading">Loading…</string>
+    <string name="sys_td_bg_desc">Both set to \'deny\' = the app gets no more wake locks in the background. Very aggressive — some apps break (push missing, sync stops).</string>
+    <string name="sys_td_autostart">Auto-start (boot receiver)</string>
+    <string name="sys_td_no_boot_receivers">This app has no BOOT_COMPLETED receivers — so it doesn\'t start automatically after a reboot.</string>
+    <string name="sys_td_boot_receivers_count">%1$d receivers listen for boot. Toggle disables them individually.</string>
+    <string name="sys_td_misc">Other</string>
+    <string name="sys_td_open_in_system">Open in system app info</string>
+    <string name="sys_td_danger_zone">⚠ Danger zone</string>
+    <string name="sys_td_danger_desc">App reset deletes all settings, logins, cloud tokens, local databases and cache — the app behaves like a fresh install. Cannot be undone.</string>
+    <string name="sys_td_reset_btn">Reset app data completely</string>
+    <string name="sys_td_confirm">Confirm</string>
+    <string name="sys_td_cancel">Cancel</string>
+    <string name="sys_td_failed">failed</string>
+    <string name="sys_td_cd_title">Delete app data?</string>
+    <string name="sys_td_cd_body">%1$s will be reset to factory state. Logins, settings and everything local is gone.</string>
+    <string name="sys_td_cd_label">Data deleted</string>
+    <string name="sys_td_un_title">Uninstall app?</string>
+    <string name="sys_td_un_title_sys">Hide system app?</string>
+    <string name="sys_td_un_body">%1$s will be completely removed.</string>
+    <string name="sys_td_un_body_sys">%1$s will be hidden for you. It comes back on a factory reset.</string>
+    <string name="sys_td_un_label">Uninstalled</string>
+    <string name="sys_td_un_label_sys">Hidden</string>
+
+    <!-- ================= TaskManagerScreen ================= -->
+    <string name="sys_tm_shizuku_title">Shizuku for task manager</string>
+    <string name="sys_tm_shizuku_desc">Since Android 7 an app may only see its own process. With Shizuku (shell-user access) we see all running apps and can force-stop / clear cache / reset app data / deep-freeze.</string>
+    <string name="sys_tm_status">Status</string>
+    <string name="sys_tm_search">Search app</string>
+    <string name="sys_tm_system">System</string>
+    <string name="sys_tm_loading">loading…</string>
+    <string name="sys_tm_apps_shown">%1$d apps shown</string>
+    <string name="sys_tm_forcestop_cd">Force-Stop</string>
+
+    <!-- ================= RunningAppsScreen ================= -->
+    <string name="sys_ra_own_process">Own process</string>
+    <string name="sys_ra_perm_needed">Permission required</string>
+    <string name="sys_ra_perm_desc">Since Android 7 an app may only see its own process. For an overview of all active apps we need "usage data" access (PACKAGE_USAGE_STATS).</string>
+    <string name="sys_ra_grant_perm">Grant permission</string>
+    <string name="sys_ra_active_apps">Active apps (last hour)</string>
+    <string name="sys_ra_count">Count</string>
+    <string name="sys_ra_privacy_note">For privacy reasons Android no longer provides live PIDs of other apps — we show all apps that were recently in the foreground.</string>
+    <string name="sys_ra_foreground_time">Foreground time</string>
+    <string name="sys_ra_last_active">Last active</string>
+    <string name="sys_ra_ago_sec">%1$d s ago</string>
+    <string name="sys_ra_ago_min">%1$d min ago</string>
+    <string name="sys_ra_ago_hour">%1$d h ago</string>
+    <string name="sys_ra_ago_day">%1$d d ago</string>
+
+    <!-- ================= InstalledAppsScreen ================= -->
+    <string name="sys_ia_loading">Loading…</string>
+    <string name="sys_ia_apps_count">%1$d apps</string>
+    <string name="sys_ia_show_system">Show system apps</string>
+    <string name="sys_ia_package">Package</string>
+    <string name="sys_ia_version">Version</string>
+    <string name="sys_ia_apk_size">APK size</string>
+    <string name="sys_ia_system_app">System app</string>
+
+    <!-- ================= PermissionAuditScreen ================= -->
+    <string name="sys_pa_by_category">By category</string>
+    <string name="sys_pa_by_app">By app</string>
+    <string name="sys_pa_system">System</string>
+    <string name="sys_pa_filter_app_pkg">Filter (app, package)</string>
+    <string name="sys_pa_filter_app">Filter (app)</string>
+    <string name="sys_pa_loading">Loading installed packages…</string>
+    <string name="sys_pa_apps_total">%1$d apps / %2$d total</string>
+    <string name="sys_pa_less">Less</string>
+    <string name="sys_pa_more">+%1$d more…</string>
+    <string name="sys_pa_no_sensitive">No sensitive permissions granted</string>
+    <string name="sys_pa_granted_of">"%1$d of %2$d requested · "</string>
+    <string name="sys_pa_show_all">Show all</string>
+
+    <!-- ================= ApkExtractorScreen ================= -->
+    <string name="sys_ax_shizuku_title">Shizuku for APK extract</string>
+    <string name="sys_ax_shizuku_desc">`pm path &lt;pkg&gt;` lists the APK files (incl. split APKs). Copying from /data/app/.../ needs shell rights — Shizuku provides them.</string>
+    <string name="sys_ax_title">APK Extractor</string>
+    <string name="sys_ax_desc">Extracts the installed APK (base + all splits) to /sdcard/Download/redmonitor-apks/&lt;pkg&gt;/. From there you can share it, e.g. with a file manager.</string>
+    <string name="sys_ax_extracted">✓ Extracted</string>
+    <string name="sys_ax_error">✗ Error</string>
+    <string name="sys_ax_filter">Filter</string>
+    <string name="sys_ax_system_apps">System apps</string>
+
+    <!-- ================= StorageAnalyzerScreen ================= -->
+    <string name="sys_sa_shizuku_title">Shizuku for storage analyzer</string>
+    <string name="sys_sa_shizuku_desc">Deep directory scan on /sdcard and /data is blocked on Android 11+ without MANAGE_EXTERNAL_STORAGE. Shizuku shell sees everything.</string>
+    <string name="sys_sa_scanning">scanning (du -sh)…</string>
+    <string name="sys_sa_entries_total">%1$d entries · total %2$s</string>
+
+    <!-- ================= CrashLogScreen ================= -->
+    <string name="sys_cl_shizuku_title">Shizuku for crash logs</string>
+    <string name="sys_cl_shizuku_desc">/data/tombstones/ (native crashes) and dumpsys dropbox (Java crashes/ANRs) are only accessible as root or shell. Shizuku provides the shell access.</string>
+    <string name="sys_cl_loading">loading…</string>
+    <string name="sys_cl_entries">%1$d entries</string>
+    <string name="sys_cl_filter">Filter (package, tag)</string>
+    <string name="sys_cl_close">× Close</string>
+
+    <!-- ================= LogcatScreen ================= -->
+    <string name="sys_lc_shizuku_title">Shizuku for Logcat</string>
+    <string name="sys_lc_shizuku_desc">Logcat reads system logs of all apps. Android protects this with READ_LOGS - only system apps and the shell user have it. Shizuku gives us shell access.</string>
+    <string name="sys_lc_ready">Ready. Press \'Refresh\' or \'Live on\'.</string>
+    <string name="sys_lc_lines_all">%1$d lines from all buffers (depth %2$s).</string>
+    <string name="sys_lc_all_empty">All buffers empty. %1$s</string>
+    <string name="sys_lc_lines_merge">%1$d lines (merge: main+system+crash+events+radio · depth %2$s).</string>
+    <string name="sys_lc_stdout_empty">stdout empty</string>
+    <string name="sys_lc_buffer_empty">Buffer \'%1$s\' returns nothing. Try another buffer?</string>
+    <string name="sys_lc_lines_buffer">%1$d lines from buffer \'%2$s\' (depth %3$s).</string>
+    <string name="sys_lc_loading_buffer">Loading buffer \'%1$s\' (depth %2$s)...</string>
+    <string name="sys_lc_refresh">Refresh</string>
+    <string name="sys_lc_live_on">Live on</string>
+    <string name="sys_lc_live_off">Live off</string>
+    <string name="sys_lc_buffer_label">Buffer</string>
+    <string name="sys_lc_depth">Depth</string>
+    <string name="sys_lc_filter">Filter (tag, PID, text)</string>
+    <string name="sys_lc_raw">Raw (all)</string>
+    <string name="sys_lc_visible_loaded">%1$d visible / %2$d loaded</string>
+
+    <!-- ================= ShellTerminalScreen ================= -->
+    <string name="sys_st_shizuku_title">Shizuku for in-app shell</string>
+    <string name="sys_st_shizuku_desc">The terminal console runs commands as the `shell` user — same privileges as `adb shell`. Without Shizuku this would only be possible via root.</string>
+    <string name="sys_st_cmd_label">Shell command (sh -c)</string>
+    <string name="sys_st_running">running…</string>
+    <string name="sys_st_run">Run</string>
+
+    <!-- ================= DevToolsScreen ================= -->
+    <string name="sys_dt_title">Dev Tools — hidden area</string>
+    <string name="sys_dt_desc">You found the Easter egg. Here you see raw system dumps normally only visible via ADB shell. Some sources need Shizuku (protected /proc/ areas, /proc/net/*).</string>
+    <string name="sys_dt_shizuku_status">Shizuku status</string>
+    <string name="sys_dt_ready">Ready ✓</string>
+    <string name="sys_dt_not_ready">Not ready</string>
+    <string name="sys_dt_relock">Lock Easter egg (re-lock)</string>
+    <string name="sys_dt_proc_mem">App process memory</string>
+    <string name="sys_dt_active_threads">Active threads</string>
+    <string name="sys_dt_raw_source">Raw data source</string>
+    <string name="sys_dt_choose_proc">Choose a /proc file:</string>
+    <string name="sys_dt_error">Error: %1$s</string>
+    <string name="sys_dt_reading">Reading %1$s…</string>
+    <string name="sys_dt_empty_or_noaccess">(file empty or no access)</string>
+    <string name="sys_dt_shizuku_read_fail">Shizuku read failed: exit %1$d</string>
+    <string name="sys_dt_no_direct">No direct access. Start Shizuku for %1$s.</string>
+    <string name="sys_dt_unknown_error">Unknown error</string>
+
+    <!-- ================= PerfettoTraceScreen ================= -->
+    <string name="sys_pf_shizuku_title">Shizuku for system trace</string>
+    <string name="sys_pf_shizuku_desc">atrace / perfetto are shell-only tools. Output is a .pftrace file you can upload to ui.perfetto.dev for the full analysis.</string>
+    <string name="sys_pf_preset">Trace preset</string>
+    <string name="sys_pf_duration">Duration</string>
+    <string name="sys_pf_tracing">Tracing … %1$ds</string>
+    <string name="sys_pf_start">Start trace</string>
+    <string name="sys_pf_ok">OK · saved to %1$s</string>
+    <string name="sys_pf_fail">FAIL · exit %1$d\n%2$s</string>
+    <string name="sys_pf_last_run">Last run</string>
+    <string name="sys_pf_file">File</string>
+    <string name="sys_pf_analysis_hint">→ Pull the file to your PC and open it at ui.perfetto.dev for UI analysis (threads, CPU idle, wakeups, locks, frame timing).</string>
+
+    <!-- ================= NotificationLogScreen ================= -->
+    <string name="sys_nl_access_needed">Notification access needed</string>
+    <string name="sys_nl_access_desc">To log all incoming notifications, RedMonitor needs \'notification access\' (BIND_NOTIFICATION_LISTENER_SERVICE). Android denies this without explicit user granting.</string>
+    <string name="sys_nl_open_settings">Open notification settings</string>
+    <string name="sys_nl_privacy_desc">Notifications are kept only in RAM (max %1$d). Nothing is saved to disk or sent — gone when the app is closed.</string>
+    <string name="sys_nl_clear">Clear log</string>
+    <string name="sys_nl_filter">Filter (package, title, text)</string>
+    <string name="sys_nl_visible_count">%1$d visible / %2$d in log</string>
+    <string name="sys_nl_nothing_yet">Nothing received yet</string>
+    <string name="sys_nl_will_appear">As soon as a notification comes in, it appears here.</string>
+    <string name="sys_nl_no_match">No entry matches the filter.</string>
+
+    <!-- ================= PrivacyDashboardScreen ================= -->
+    <string name="sys_pd_shizuku_title">Shizuku for privacy dashboard</string>
+    <string name="sys_pd_shizuku_desc">Real permission usage comes from `dumpsys appops`. The Android API for it (AppOpsManager.getPackagesForOps) needs GET_APP_OPS_STATS — only the system has it. Shizuku gives us shell access to it.</string>
+    <string name="sys_pd_who_used">Who used WHAT last?</string>
+    <string name="sys_pd_desc">Reads the actual access times per app+op from the appops subsystem (camera, mic, location, contacts, SMS, storage, sensors and much more). Sorted by activity score: top = most recent sensitive activity.</string>
+    <string name="sys_pd_loading">loading…</string>
+    <string name="sys_pd_refresh">Refresh</string>
+    <string name="sys_pd_filter">Filter (app, package, op)</string>
+    <string name="sys_pd_system">System</string>
+    <string name="sys_pd_all_ops">All ops</string>
+    <string name="sys_pd_apps_total">%1$d apps · %2$d total</string>
+    <string name="sys_pd_cloud_title">My cloud data</string>
+    <string name="sys_pd_cloud_desc">Benchmark results only end up on the server if you explicitly contribute them in the benchmark history. Here you can delete everything again.</string>
+    <string name="sys_pd_cloud_delete_btn">Delete uploaded benchmark scores</string>
+    <string name="sys_pd_cloud_confirm_title">Delete scores?</string>
+    <string name="sys_pd_cloud_confirm_body">Permanently deletes all benchmark results uploaded from this device from the server. Your local benchmark history in the app stays untouched.</string>
+    <string name="sys_pd_cloud_deleting">Deleting ...</string>
+    <string name="sys_pd_cloud_deleted">Deleted.</string>
+    <string name="sys_pd_cloud_delete_fail">Deletion failed. Try again later.</string>
+    <string name="sys_pd_cloud_delete_confirm">Delete</string>
+    <string name="sys_pd_cancel">Cancel</string>
+</resources>

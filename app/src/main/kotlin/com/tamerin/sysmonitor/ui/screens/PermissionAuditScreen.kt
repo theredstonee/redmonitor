@@ -17,10 +17,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.AppPermissions
 import com.tamerin.sysmonitor.data.CategoryGroup
 import com.tamerin.sysmonitor.data.PermCategory
@@ -54,24 +56,24 @@ fun PermissionAuditScreen() {
             FilterChip(
                 selected = mode == ViewMode.ByCategory,
                 onClick = { mode = ViewMode.ByCategory },
-                label = { Text("Nach Kategorie", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.sys_pa_by_category), fontSize = 11.sp) }
             )
             FilterChip(
                 selected = mode == ViewMode.ByApp,
                 onClick = { mode = ViewMode.ByApp },
-                label = { Text("Nach App", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.sys_pa_by_app), fontSize = 11.sp) }
             )
             FilterChip(
                 selected = showSystem,
                 onClick = { showSystem = !showSystem },
-                label = { Text("System", fontSize = 11.sp) }
+                label = { Text(stringResource(R.string.sys_pa_system), fontSize = 11.sp) }
             )
         }
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(
             value = filterText,
             onValueChange = { filterText = it },
-            label = { Text(if (mode == ViewMode.ByApp) "Filter (App, Package)" else "Filter (App)") },
+            label = { Text(if (mode == ViewMode.ByApp) stringResource(R.string.sys_pa_filter_app_pkg) else stringResource(R.string.sys_pa_filter_app)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
@@ -91,7 +93,7 @@ fun PermissionAuditScreen() {
         }
 
         Text(
-            if (loading) "Lade installierte Pakete…" else "${filtered.size} Apps / ${apps.size} gesamt",
+            if (loading) stringResource(R.string.sys_pa_loading) else stringResource(R.string.sys_pa_apps_total, filtered.size, apps.size),
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(6.dp))
@@ -122,7 +124,7 @@ private fun CategoryList(apps: List<AppPermissions>) {
 @Composable
 private fun CategoryCard(group: CategoryGroup) {
     var expanded by remember { mutableStateOf(false) }
-    StatCard(group.category.label + "  ·  ${group.apps.size}") {
+    StatCard(stringResource(group.category.labelRes) + "  ·  ${group.apps.size}") {
         Text(group.category.description, color = OnSurfaceMuted, fontSize = 11.sp,
             fontFamily = FontFamily.Monospace)
         Spacer(Modifier.height(6.dp))
@@ -152,7 +154,7 @@ private fun CategoryCard(group: CategoryGroup) {
         if (group.apps.size > 6) {
             Spacer(Modifier.height(4.dp))
             Text(
-                if (expanded) "Weniger" else "+${group.apps.size - 6} weitere…",
+                if (expanded) stringResource(R.string.sys_pa_less) else stringResource(R.string.sys_pa_more, group.apps.size - 6),
                 color = Accent,
                 fontSize = 11.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -174,7 +176,8 @@ private fun AppList(apps: List<AppPermissions>, onOpenSettings: (String) -> Unit
 @Composable
 private fun AppCard(app: AppPermissions, onOpenSettings: (String) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
-    val cats = remember(app) { app.categories().sortedBy { it.label } }
+    val context = LocalContext.current
+    val cats = remember(app) { app.categories().sortedBy { context.getString(it.labelRes) } }
     StatCard(app.displayName) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -192,7 +195,7 @@ private fun AppCard(app: AppPermissions, onOpenSettings: (String) -> Unit) {
         }
         Spacer(Modifier.height(6.dp))
         if (cats.isEmpty()) {
-            Text("Keine sensiblen Rechte gewährt", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.sys_pa_no_sensitive), color = OnSurfaceMuted, fontSize = 11.sp)
         } else {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 cats.forEach { c ->
@@ -202,7 +205,7 @@ private fun AppCard(app: AppPermissions, onOpenSettings: (String) -> Unit) {
                             .background(AccentBubble)
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     ) {
-                        Text(c.label, color = AccentSoft, fontSize = 10.sp,
+                        Text(stringResource(c.labelRes), color = AccentSoft, fontSize = 10.sp,
                             fontWeight = FontWeight.Bold)
                     }
                 }
@@ -210,8 +213,8 @@ private fun AppCard(app: AppPermissions, onOpenSettings: (String) -> Unit) {
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "${app.granted.size} von ${app.requested.size} angefordert · " +
-                if (expanded) "Weniger" else "Alle anzeigen",
+            stringResource(R.string.sys_pa_granted_of, app.granted.size, app.requested.size) +
+                if (expanded) stringResource(R.string.sys_pa_less) else stringResource(R.string.sys_pa_show_all),
             color = Accent, fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold,
             modifier = Modifier.clickable { expanded = !expanded }

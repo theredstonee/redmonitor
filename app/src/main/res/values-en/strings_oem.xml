@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OemOnboardingScreen -->
+    <string name="oem_eyebrow_setup">Setup</string>
+    <string name="oem_title">Prepare device</string>
+    <string name="oem_intro">For RedMonitor to run reliably on your %1$s device, you need to relax a few limits depending on the manufacturer. We\'ll walk through them step by step here.</string>
+    <string name="oem_device_card">Device</string>
+    <string name="oem_device_android">Android %1$s (SDK %2$d)</string>
+    <string name="oem_xiaomi_strict_note">Xiaomi devices restrict apps the most - every step below matters here.</string>
+    <string name="oem_xiaomi_recents_title">Xiaomi-specific: lock in Recents</string>
+    <string name="oem_xiaomi_recents_body">In the Recents screen (overview of all open apps) long-press the RedMonitor card and tap \'Lock\' / the padlock. This lets the app survive the \'Close all\' swipe and the MIUI Memory Cleaner.</string>
+    <string name="oem_samsung_sleep_title">Samsung-specific: Sleeping apps</string>
+    <string name="oem_samsung_sleep_body">Settings -> Battery -> Background usage limits -> Sleeping apps. RedMonitor must NOT be in this list. If it is: remove it.</string>
+    <string name="oem_shizuku_title">Shizuku (for Logcat, Tasks, Doze, ...)</string>
+    <string name="oem_shizuku_body">Shizuku gives this app shell-user rights without root. Needed for: reading Logcat, finding the top-CPU app, managing the Doze whitelist, force-stopping apps.</string>
+    <string name="oem_shizuku_status_title">Shizuku status</string>
+    <string name="oem_shizuku_status_desc">Status &amp; setup steps if not ready yet.</string>
+    <string name="oem_done_button">Done - to the app</string>
+    <string name="oem_remind_later">Remind me later (don\'t show at startup again)</string>
+
+    <!-- OemDetect restriction notes -->
+    <string name="oem_note_miui_bg_limits">Aggressive background limits - allow autostart explicitly.</string>
+    <string name="oem_note_miui_optimization">\'MIUI optimization\' in developer options can interfere with Shizuku/ADB - turn it off if there are problems.</string>
+    <string name="oem_note_miui_popups">\'Show pop-ups while running in background\' required for live updates.</string>
+    <string name="oem_note_miui_memory">Memory cleanup can kill the app in the background - \'Lock\' it in the Recents screen.</string>
+    <string name="oem_note_samsung_battery">Battery optimization &amp; \'Sleeping apps\' otherwise block updates.</string>
+    <string name="oem_note_samsung_booster">Game Booster / Edge panel can block the overlay.</string>
+    <string name="oem_note_coloros_autostart">Enable ColorOS autostart + \'Allow running in background\'.</string>
+    <string name="oem_note_vivo">Raise background power usage + allow \'background calls\'.</string>
+    <string name="oem_note_huawei">Manage app launch manually - turn all three toggles ON.</string>
+    <string name="oem_note_standby_bucket">Restricted app standby bucket can slow the app down.</string>
+</resources>

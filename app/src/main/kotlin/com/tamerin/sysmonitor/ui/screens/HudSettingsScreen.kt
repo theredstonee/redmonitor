@@ -27,10 +27,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.overlay.HudColor
 import com.tamerin.sysmonitor.overlay.HudConfig
 import com.tamerin.sysmonitor.overlay.HudMetric
@@ -71,7 +73,7 @@ fun HudSettingsScreen() {
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Live Preview
-        StatCard("Vorschau") {
+        StatCard(stringResource(R.string.scr2_hud_preview_title)) {
             HudPreview(config = config)
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -83,7 +85,7 @@ fun HudSettingsScreen() {
                     },
                     modifier = Modifier.weight(1f),
                     enabled = hasPerm
-                ) { Text("HUD starten") }
+                ) { Text(stringResource(R.string.scr2_hud_start)) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -91,27 +93,27 @@ fun HudSettingsScreen() {
                         hudRunning = false
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Stopp") }
+                ) { Text(stringResource(R.string.scr2_hud_stop)) }
             }
             if (!hasPerm) {
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Overlay-Berechtigung fehlt — siehe System → Floating HUD",
+                    stringResource(R.string.scr2_hud_perm_missing),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
         }
 
         // Metriken
-        StatCard("Metriken") {
+        StatCard(stringResource(R.string.scr2_hud_metrics_title)) {
             Text(
-                "Welche Werte sollen im HUD angezeigt werden?",
+                stringResource(R.string.scr2_hud_metrics_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
             HudMetric.values().forEach { metric ->
                 ToggleRow(
-                    label = metric.label,
+                    label = stringResource(metric.labelRes),
                     checked = metric in config.enabledMetrics
                 ) { checked ->
                     val newMetrics = config.enabledMetrics.toMutableSet().also {
@@ -125,7 +127,7 @@ fun HudSettingsScreen() {
         HudProfileCard(config = config, onChange = { apply(it) })
 
         // Größe
-        StatCard("Größe") {
+        StatCard(stringResource(R.string.scr2_hud_size_title)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 HudSize.values().forEach { size ->
                     val selected = config.size == size
@@ -138,7 +140,7 @@ fun HudSettingsScreen() {
                         border = if (selected) BorderStroke(2.dp, Accent) else null
                     ) {
                         Text(
-                            size.label,
+                            stringResource(size.labelRes),
                             color = if (selected) Accent else Color.Unspecified,
                             fontSize = 13.sp
                         )
@@ -148,8 +150,8 @@ fun HudSettingsScreen() {
         }
 
         // Transparenz
-        StatCard("Transparenz") {
-            KeyValueRow("Deckkraft", "${(config.opacity * 100).toInt()} %")
+        StatCard(stringResource(R.string.scr2_hud_transparency_title)) {
+            KeyValueRow(stringResource(R.string.scr2_hud_opacity), "${(config.opacity * 100).toInt()} %")
             Slider(
                 value = config.opacity,
                 onValueChange = {
@@ -163,9 +165,9 @@ fun HudSettingsScreen() {
         }
 
         // Akzentfarbe
-        StatCard("Akzentfarbe") {
+        StatCard(stringResource(R.string.scr2_hud_accent_title)) {
             Text(
-                "Farbe für Labels und Border",
+                stringResource(R.string.scr2_hud_accent_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
@@ -194,13 +196,13 @@ fun HudSettingsScreen() {
                 }
             }
             Spacer(Modifier.height(6.dp))
-            Text(config.color.label, color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(config.color.labelRes), color = OnSurfaceMuted, fontSize = 11.sp)
         }
 
         // Edge-Snap
         StatCard("Edge-Snapping") {
             ToggleRow(
-                label = "Beim Loslassen an Bildschirmrand schnappen",
+                label = stringResource(R.string.scr2_hud_edgesnap_label),
                 checked = config.edgeSnap
             ) { apply(config.copy(edgeSnap = it)) }
         }
@@ -208,7 +210,7 @@ fun HudSettingsScreen() {
         // Reset
         StatCard("Reset") {
             Text(
-                "Setzt alle HUD-Einstellungen auf den Standard zurück.",
+                stringResource(R.string.scr2_hud_reset_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -216,7 +218,7 @@ fun HudSettingsScreen() {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 apply(HudConfig.DEFAULT)
             }) {
-                Text("Auf Standard zurücksetzen")
+                Text(stringResource(R.string.scr2_hud_reset_btn))
             }
         }
     }
@@ -283,7 +285,7 @@ private fun HudPreview(config: HudConfig) {
             }
             if (config.enabledMetrics.isEmpty()) {
                 Text(
-                    "(keine Metriken aktiv)",
+                    stringResource(R.string.scr2_hud_no_metrics),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -319,9 +321,9 @@ private fun HudProfileCard(config: HudConfig, onChange: (HudConfig) -> Unit) {
     var showPicker by remember { mutableStateOf(false) }
     var hasUsagePerm by remember { mutableStateOf(ForegroundAppReader.hasPermission(context)) }
 
-    StatCard("Profil") {
+    StatCard(stringResource(R.string.scr2_hud_profile_title)) {
         Text(
-            "Steuert, in welchen Apps das HUD auftaucht.",
+            stringResource(R.string.scr2_hud_profile_desc),
             color = OnSurfaceMuted, fontSize = 12.sp
         )
         Spacer(Modifier.height(10.dp))
@@ -338,7 +340,7 @@ private fun HudProfileCard(config: HudConfig, onChange: (HudConfig) -> Unit) {
                     border = if (selected) BorderStroke(2.dp, Accent) else null
                 ) {
                     Text(
-                        mode.label,
+                        stringResource(mode.labelRes),
                         color = if (selected) Accent else Color.Unspecified,
                         fontSize = 13.sp
                     )
@@ -350,16 +352,14 @@ private fun HudProfileCard(config: HudConfig, onChange: (HudConfig) -> Unit) {
             Spacer(Modifier.height(12.dp))
             if (!hasUsagePerm) {
                 Text(
-                    "Dafuer braucht RedMonitor Zugriff auf Nutzungsdaten - sonst laesst " +
-                        "sich die Vordergrund-App nicht ermitteln. Solange die Berechtigung " +
-                        "fehlt, bleibt das HUD immer sichtbar.",
+                    stringResource(R.string.scr2_hud_usage_perm),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                     runCatching { context.startActivity(ForegroundAppReader.permissionIntent()) }
-                }) { Text("Zugriff erteilen") }
+                }) { Text(stringResource(R.string.scr2_hud_grant_access)) }
                 Spacer(Modifier.height(10.dp))
             }
             OutlinedButton(
@@ -368,7 +368,7 @@ private fun HudProfileCard(config: HudConfig, onChange: (HudConfig) -> Unit) {
                     showPicker = true
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Apps auswaehlen (" + config.profileApps.size + ")") }
+            ) { Text(stringResource(R.string.scr2_hud_pick_apps_count, config.profileApps.size)) }
         }
     }
 
@@ -419,19 +419,19 @@ private fun AppPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Apps auswaehlen") },
+        title = { Text(stringResource(R.string.scr2_hud_pick_apps_title)) },
         text = {
             Column {
                 OutlinedTextField(
                     value = query,
                     onValueChange = { query = it },
-                    label = { Text("Suchen") },
+                    label = { Text(stringResource(R.string.scr2_hud_search)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 if (apps.isEmpty()) {
-                    Text("Lade Apps ...", color = OnSurfaceMuted, fontSize = 12.sp)
+                    Text(stringResource(R.string.scr2_hud_loading_apps), color = OnSurfaceMuted, fontSize = 12.sp)
                 } else {
                     LazyColumn(modifier = Modifier.height(320.dp)) {
                         items(visible, key = { it.pkg }) { app ->
@@ -461,10 +461,10 @@ private fun AppPickerDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(picked.toSet()) }) { Text("Uebernehmen") }
+            TextButton(onClick = { onConfirm(picked.toSet()) }) { Text(stringResource(R.string.scr2_hud_apply)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.scr2_hud_cancel)) }
         }
     )
 }

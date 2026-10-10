@@ -10,8 +10,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -24,15 +26,15 @@ fun NfcScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         StatCard("NFC") {
             if (adapter == null) {
-                KeyValueRow("Vorhanden", "Nein")
+                KeyValueRow(stringResource(R.string.hw_nfc_present), stringResource(R.string.hw_no))
                 Text(
-                    "Dieses Gerät hat keinen NFC-Chip.",
+                    stringResource(R.string.hw_nfc_no_chip),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 return@StatCard
             }
-            KeyValueRow("Vorhanden", "Ja")
-            KeyValueRow("Aktiviert", if (adapter.isEnabled) "Ja" else "Nein")
+            KeyValueRow(stringResource(R.string.hw_nfc_present), stringResource(R.string.hw_yes))
+            KeyValueRow(stringResource(R.string.hw_nfc_enabled), if (adapter.isEnabled) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
             if (!adapter.isEnabled) {
                 Spacer(Modifier.height(8.dp))
                 val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
@@ -41,11 +43,11 @@ fun NfcScreen() {
                     val intent = Intent(Settings.ACTION_NFC_SETTINGS)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
-                }) { Text("NFC in Einstellungen aktivieren") }
+                }) { Text(stringResource(R.string.hw_nfc_enable_settings)) }
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                "Hinweis: Live-Tag-Erkennung würde ein vollwertiges Foreground-Dispatch-System brauchen — hier zeigen wir nur Verfügbarkeit und Status.",
+                stringResource(R.string.hw_nfc_hint),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- BatteryReader: plugged source -->
+    <string name="data_bat_plugged_ac">AC (power adapter)</string>
+    <string name="data_bat_plugged_battery">On battery</string>
+
+    <!-- BatteryReader: health -->
+    <string name="data_bat_health_good">Good</string>
+    <string name="data_bat_health_overheat">Overheated</string>
+    <string name="data_bat_health_dead">Dead</string>
+    <string name="data_bat_health_overvoltage">Over-voltage</string>
+    <string name="data_bat_health_failure">Failure</string>
+    <string name="data_bat_health_cold">Too cold</string>
+    <string name="data_bat_health_unknown">Unknown</string>
+
+    <!-- BatteryReader: status -->
+    <string name="data_bat_status_charging">Charging</string>
+    <string name="data_bat_status_discharging">Discharging</string>
+    <string name="data_bat_status_full">Full</string>
+    <string name="data_bat_status_not_charging">Not charging</string>
+    <string name="data_bat_status_unknown">Unknown</string>
+
+    <!-- BatteryReader: watts source -->
+    <string name="data_bat_watts_usb">USB input (actual PD power)</string>
+    <string name="data_bat_watts_delta">Battery side via charge counter Δ (accurate)</string>
+    <string name="data_bat_watts_bm">Battery side via BatteryManager (instant value)</string>
+    <string name="data_bat_watts_discharge">Battery side (system consumption)</string>
+
+    <!-- BatteryReader: charging speed -->
+    <string name="data_bat_speed_no_sensor">Sensor provides no values</string>
+    <string name="data_bat_speed_hyper">Hyper-Charging (%1$.1f W)</string>
+    <string name="data_bat_speed_superfast2">Super-Fast-Charging 2.0 (%1$.1f W)</string>
+    <string name="data_bat_speed_superfast">Super-Fast-Charging (%1$.1f W)</string>
+    <string name="data_bat_speed_fast">Fast charging (%1$.1f W)</string>
+    <string name="data_bat_speed_standard_fast">Standard fast charging (%1$.1f W)</string>
+    <string name="data_bat_speed_normal">Normal charging (%1$.1f W)</string>
+    <string name="data_bat_speed_trickle">Trickle-Charging (%1$.2f W)</string>
+
+    <!-- BatteryEstimator -->
+    <string name="data_bte_full">Full</string>
+    <string name="data_bte_source_android">Android charge API</string>
+    <string name="data_bte_source_current_capacity">Current × capacity</string>
+    <string name="data_bte_no_current">no current</string>
+    <string name="data_bte_remaining_min">%1$d min</string>
+    <string name="data_bte_remaining_hm">%1$d h %2$s min</string>
+    <string name="data_bte_remaining_days">%1$d days %2$d h</string>
+
+    <!-- SensorRegistry: type labels -->
+    <string name="data_sensor_accelerometer">Acceleration</string>
+    <string name="data_sensor_magnetic">Magnetic field</string>
+    <string name="data_sensor_gyroscope">Gyroscope</string>
+    <string name="data_sensor_light">Light sensor</string>
+    <string name="data_sensor_pressure">Air pressure</string>
+    <string name="data_sensor_proximity">Proximity</string>
+    <string name="data_sensor_gravity">Gravity</string>
+    <string name="data_sensor_linear_accel">Linear acceleration</string>
+    <string name="data_sensor_rotation_vector">Rotation vector</string>
+    <string name="data_sensor_humidity">Humidity</string>
+    <string name="data_sensor_ambient_temp">Ambient temperature</string>
+    <string name="data_sensor_game_rotation">Game rotation vector</string>
+    <string name="data_sensor_gyro_uncal">Gyroscope (uncal.)</string>
+    <string name="data_sensor_magnetic_uncal">Magnetic field (uncal.)</string>
+    <string name="data_sensor_significant_motion">Significant motion</string>
+    <string name="data_sensor_step_detector">Step detection</string>
+    <string name="data_sensor_step_counter">Step counter</string>
+    <string name="data_sensor_heart_rate">Heart rate</string>
+    <string name="data_sensor_stationary">Stationary</string>
+    <string name="data_sensor_motion">Motion</string>
+    <string name="data_sensor_heartbeat">Heartbeat</string>
+    <string name="data_sensor_unknown">Sensor #%1$d</string>
+
+    <!-- SensorRegistry: unit (only non-token unit) -->
+    <string name="data_sensor_unit_steps">steps</string>
+
+    <!-- DrainEngine: active channels -->
+    <string name="data_drain_cpu">CPU 100 % all cores</string>
+    <string name="data_drain_brightness">Screen max brightness + always-on</string>
+    <string name="data_drain_torch">Flashlight ON</string>
+    <string name="data_drain_vibration">Continuous vibration</string>
+    <string name="data_drain_audio">Loud 1 kHz sine tone</string>
+    <string name="data_drain_gps">GPS continuous tracking (100 ms)</string>
+    <string name="data_drain_sensors">All %1$d sensors @ max rate</string>
+    <string name="data_drain_wifi">Wi-Fi continuous scan (every 2 s)</string>
+    <string name="data_drain_ble">Bluetooth LE scan</string>
+    <string name="data_drain_memory">Memory churn (32 MB blocks)</string>
+    <string name="data_drain_network">Network loop (DNS + HTTPS requests)</string>
+    <string name="data_drain_wakelock">PARTIAL_WAKE_LOCK (CPU stays awake)</string>
+    <string name="data_drain_gpu">GPU render loop (Compose canvas max FPS)</string>
+    <string name="data_drain_multi_audio">3 additional audio layers (523/740/880 Hz)</string>
+    <string name="data_drain_storage">Storage I/O burst (writes + random reads)</string>
+    <string name="data_drain_crypto">AES-256 crypto loop (1 MB per pass)</string>
+    <string name="data_drain_multi_crypto">SHA-256 + stream cipher loops</string>
+    <string name="data_drain_bt_classic">Bluetooth Classic discovery</string>
+    <string name="data_drain_mediacodec">Video encoder H.264 (hardware encoder)</string>
+    <string name="data_drain_tcp">TCP socket flood (6 parallel connections)</string>
+    <string name="data_drain_biginteger">BigInteger modPow (2048-bit RSA math)</string>
+    <string name="data_drain_sqlite">SQLite thrash (200 INSERTs/loop)</string>
+    <string name="data_drain_bitmap">Bitmap churn (1024² ARGB allocations)</string>
+    <string name="data_drain_camera">Camera preview (ISP running)</string>
+
+    <!-- PermissionUsageReader: relative time -->
+    <string name="data_pua_never">never</string>
+    <string name="data_pua_ago_s">%1$ds ago</string>
+    <string name="data_pua_ago_m">%1$dm ago</string>
+    <string name="data_pua_ago_h">%1$dh ago</string>
+    <string name="data_pua_ago_d">%1$dd ago</string>
+
+    <!-- ChargingControl: strategy description -->
+    <string name="data_cc_hard_stop">Hardware stop via kernel sysfs</string>
+    <string name="data_cc_soft_stop">Soft stop via OS (not a true hardware stop, but the PMIC no longer receives \"keep charging\" commands)</string>
+
+    <!-- WakelockReader: result messages -->
+    <string name="data_wl_shizuku_not_ready">Shizuku not ready.</string>
+    <string name="data_wl_empty_output">empty output</string>
+    <string name="data_wl_dumpsys_error">dumpsys power exit %1$d: %2$s</string>
+    <string name="data_wl_no_section">No \'Wake Locks:\' section found.</string>
+    <string name="data_wl_no_active">No wake locks active.</string>
+    <string name="data_wl_count">%1$d wake locks (%2$d lines parsed)</string>
+
+    <!-- NetworkReader: transport -->
+    <string name="data_net_offline">Offline</string>
+    <string name="data_net_wifi">Wi-Fi</string>
+    <string name="data_net_cellular">Cellular</string>
+    <string name="data_net_ethernet">Ethernet</string>
+    <string name="data_net_vpn">VPN</string>
+    <string name="data_net_unknown">Unknown</string>
+
+    <!-- SocIdentifier -->
+    <string name="data_soc_unknown">Unknown</string>
+</resources>

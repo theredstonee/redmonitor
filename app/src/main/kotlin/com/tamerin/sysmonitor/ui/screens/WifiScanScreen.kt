@@ -19,9 +19,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.LanDevice
 import com.tamerin.sysmonitor.data.LanScanner
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -76,34 +78,33 @@ fun WifiScanScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp)
     ) {
         if (!hasPerm) {
-            StatCard("WLAN-Scan-Berechtigung") {
+            StatCard(stringResource(R.string.hw_wifi_perm_title)) {
                 Text(
-                    "Für WLAN-Scans braucht Android ACCESS_FINE_LOCATION (auch wenn wir keinen Standort wollen — Google-Vorgabe).",
+                    stringResource(R.string.hw_wifi_perm_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
                 Button(onClick = { launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION) }) {
-                    Text("Berechtigung erteilen")
+                    Text(stringResource(R.string.hw_grant_permission))
                 }
             }
             return@Column
         }
-        StatCard("Access-Points scannen") {
+        StatCard(stringResource(R.string.hw_wifi_scan_aps)) {
             Button(onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 scanning = true
                 @Suppress("DEPRECATION")
                 wm.startScan()
-            }) { Text(if (scanning) "Scanne…" else "AP-Scan starten") }
+            }) { Text(if (scanning) stringResource(R.string.hw_wifi_scanning) else stringResource(R.string.hw_wifi_start_ap_scan)) }
             Spacer(Modifier.height(4.dp))
-            Text("${results.size} Netze gefunden", color = OnSurfaceMuted, fontSize = 12.sp)
+            Text(stringResource(R.string.hw_wifi_networks_found, results.size), color = OnSurfaceMuted, fontSize = 12.sp)
         }
         Spacer(Modifier.height(12.dp))
 
-        StatCard("Geräte im Netzwerk (LAN-Scan)") {
+        StatCard(stringResource(R.string.hw_wifi_lan_title)) {
             Text(
-                "Findet alle Geräte im selben WLAN: TCP-Probe auf 10 gängige Ports + /proc/net/arp. " +
-                    "Subnet wird automatisch erkannt, /24 wird voll gescannt.",
+                stringResource(R.string.hw_wifi_lan_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -124,10 +125,10 @@ fun WifiScanScreen() {
                     }
                 },
                 enabled = !lanScanning
-            ) { Text(if (lanScanning) "Scanne… ($lanProgress/$lanTotal)" else "LAN-Scan starten") }
+            ) { Text(if (lanScanning) stringResource(R.string.hw_wifi_lan_scanning, lanProgress, lanTotal) else stringResource(R.string.hw_wifi_start_lan_scan)) }
             Spacer(Modifier.height(4.dp))
             Text(
-                "${lanDevices.size} Geräte gefunden",
+                stringResource(R.string.hw_wifi_devices_found, lanDevices.size),
                 color = if (lanDevices.isNotEmpty()) GaugeGreen else OnSurfaceMuted,
                 fontSize = 12.sp
             )
@@ -138,7 +139,7 @@ fun WifiScanScreen() {
             if (lanDevices.isNotEmpty()) {
                 item {
                     Text(
-                        "LAN-Geräte",
+                        stringResource(R.string.hw_wifi_lan_devices),
                         color = Accent,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -147,8 +148,8 @@ fun WifiScanScreen() {
                 items(lanDevices, key = { it.ip }) { d ->
                     StatCard(
                         when {
-                            d.isSelf -> "Dieses Gerät (${d.ip})"
-                            d.isGateway -> "Router/Gateway (${d.ip})"
+                            d.isSelf -> stringResource(R.string.hw_wifi_this_device, d.ip)
+                            d.isGateway -> stringResource(R.string.hw_wifi_router, d.ip)
                             else -> d.hostname ?: d.ip
                         }
                     ) {
@@ -156,17 +157,17 @@ fun WifiScanScreen() {
                         d.mac?.let {
                             KeyValueRow("MAC", it)
                             val vendor = ouiVendor(it)
-                            if (vendor != null) KeyValueRow("Hersteller", vendor)
+                            if (vendor != null) KeyValueRow(stringResource(R.string.hw_wifi_manufacturer), vendor)
                         }
                         d.hostname?.takeIf { it != d.ip }?.let { KeyValueRow("Hostname", it) }
                         if (d.openPorts.isNotEmpty()) {
-                            KeyValueRow("Offene Ports", d.openPorts.joinToString(", "))
+                            KeyValueRow(stringResource(R.string.hw_wifi_open_ports), d.openPorts.joinToString(", "))
                         }
                         if (d.isSelf) {
-                            Text("← du", color = AccentSoft, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.hw_wifi_you), color = AccentSoft, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                         if (d.isGateway) {
-                            Text("← Default-Gateway", color = AccentSoft, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.hw_wifi_default_gateway), color = AccentSoft, fontSize = 11.sp, fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -175,7 +176,7 @@ fun WifiScanScreen() {
                 item {
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Access-Points in Reichweite",
+                        stringResource(R.string.hw_wifi_aps_in_range),
                         color = Accent,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold
@@ -183,14 +184,14 @@ fun WifiScanScreen() {
                 }
             }
             items(results, key = { it.BSSID + it.SSID }) { r ->
-                StatCard(r.SSID.ifBlank { "<verstecktes Netz>" }) {
+                StatCard(r.SSID.ifBlank { stringResource(R.string.hw_wifi_hidden_net) }) {
                     KeyValueRow("BSSID", r.BSSID ?: "—")
                     KeyValueRow("Signal", "${r.level} dBm (${signalPercent(r.level)} %)")
-                    KeyValueRow("Frequenz", "${r.frequency} MHz (${bandLabel(r.frequency)})")
-                    KeyValueRow("Kanal", channelOf(r.frequency).toString())
-                    KeyValueRow("Sicherheit", securityOf(r))
+                    KeyValueRow(stringResource(R.string.hw_wifi_frequency), "${r.frequency} MHz (${bandLabel(r.frequency)})")
+                    KeyValueRow(stringResource(R.string.hw_wifi_channel), channelOf(r.frequency).toString())
+                    KeyValueRow(stringResource(R.string.hw_wifi_security), securityOf(r))
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        KeyValueRow("WLAN-Standard", standardOf(r.wifiStandard))
+                        KeyValueRow(stringResource(R.string.hw_wifi_standard), standardOf(r.wifiStandard))
                     }
                 }
             }

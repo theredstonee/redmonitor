@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Standalone screen/activity titles (ScreenActivities.kt) -->
+    <string name="scr_battery_drain">Battery &amp; Drain Test</string>
+    <string name="scr_stress_test">Stress Test</string>
+    <string name="scr_cpu_benchmark">CPU Benchmark</string>
+    <string name="scr_gpu_fps">GPU FPS</string>
+    <string name="scr_ram_speed">RAM Speed</string>
+    <string name="scr_storage_seq">Storage Sequential</string>
+    <string name="scr_storage_random">Storage Random 4K</string>
+    <string name="scr_image_processing">Image Processing</string>
+    <string name="scr_network_speed">Network Speed</string>
+    <string name="scr_display_test">Display Test</string>
+    <string name="scr_display_colors">Display Colors</string>
+    <string name="scr_speaker_tone">Speaker Tone</string>
+    <string name="scr_microphone">Microphone</string>
+    <string name="scr_flashlight">Flashlight</string>
+    <string name="scr_multitouch">Multi-Touch</string>
+    <string name="scr_sensors">Sensors</string>
+    <string name="scr_sensor_detail">Sensor Detail</string>
+    <string name="scr_cpu_snake">🐍 CPU Snake</string>
+    <string name="scr_dev_tools">Dev Tools</string>
+    <string name="scr_roulette">☠ Russian Roulette</string>
+    <string name="scr_network_usage">Per-App Network Traffic</string>
+    <string name="scr_wakelocks">Wake Locks (dumpsys power)</string>
+    <string name="scr_notification_log">Notification Log</string>
+    <string name="scr_permission_audit">Permission Audit</string>
+    <string name="scr_shell_terminal">Shell Terminal (Shizuku)</string>
+    <string name="scr_earpiece">Earpiece</string>
+    <string name="scr_edge_rejection">Edge Rejection</string>
+    <string name="scr_brightness">Brightness Consistency</string>
+    <string name="scr_nfc_tap">NFC Tap Test</string>
+    <string name="scr_ir_blaster">IR Blaster</string>
+    <string name="scr_compass">Compass</string>
+    <string name="scr_barometer">Barometer / Altitude</string>
+    <string name="scr_discharge_curve">Battery History</string>
+    <string name="scr_charging_limit">Smart Charging Limit</string>
+    <string name="scr_battery_doctor">Battery Doctor</string>
+    <string name="scr_storage_analyzer">Storage Analyzer</string>
+    <string name="scr_apk_extractor">APK Extractor</string>
+    <string name="scr_crash_logs">Crash Logs</string>
+    <string name="scr_speed_test">Speed Test</string>
+    <string name="scr_ping_monitor">Multi-Server Ping</string>
+    <string name="scr_gnss_live">GNSS Live</string>
+    <string name="scr_perfetto_trace">Perfetto Trace</string>
+    <string name="scr_dpi_anim">DPI / Animation</string>
+    <string name="scr_background_restrict">Background Restrict</string>
+    <string name="scr_privacy_policy">Privacy Policy</string>
+    <string name="scr_terms">Terms of Use</string>
+    <string name="scr_privacy_dashboard">Privacy Dashboard</string>
+    <string name="scr_glyph_matrix">Glyph Matrix</string>
+    <string name="scr_benchmark_history">Benchmark History</string>
+
+    <!-- Nav / top-bar / tab titles (MainActivity.kt titleFor + TOP_TABS) -->
+    <string name="nav_app">SysMonitor</string>
+    <string name="nav_live">Live</string>
+    <string name="nav_system">System</string>
+    <string name="nav_benchmark">Benchmark</string>
+    <string name="nav_tests">Tests</string>
+    <string name="nav_info">Info</string>
+    <string name="nav_tasks">Tasks</string>
+    <string name="nav_tab_bench">Bench</string>
+    <string name="nav_more">More</string>
+    <string name="nav_app_details">App Details</string>
+    <string name="nav_cpu">CPU</string>
+    <string name="nav_ram_storage">RAM &amp; Storage</string>
+    <string name="nav_battery">Battery</string>
+    <string name="nav_sensors">Sensors</string>
+    <string name="nav_sensor_detail">Sensor Detail</string>
+    <string name="nav_gpu">GPU</string>
+    <string name="nav_network">Network</string>
+    <string name="nav_display_device">Display &amp; Device</string>
+    <string name="nav_floating_hud">Floating HUD</string>
+    <string name="nav_glyph_matrix">Glyph Matrix</string>
+    <string name="nav_hud_customize">Customize HUD</string>
+    <string name="nav_cpu_benchmark">CPU Benchmark</string>
+    <string name="nav_ram_speed">RAM Speed</string>
+    <string name="nav_storage_seq">Storage Sequential</string>
+    <string name="nav_storage_random">Storage Random 4K</string>
+    <string name="nav_gpu_fps">GPU FPS</string>
+    <string name="nav_stress_test">Stress Test</string>
+    <string name="nav_color_gamut">Color Space &amp; Gamut</string>
+    <string name="nav_display_test">Display Test</string>
+    <string name="nav_network_speed">Network Speed</string>
+    <string name="nav_image_processing">Image Processing</string>
+    <string name="nav_multitouch">Multi-Touch</string>
+    <string name="nav_display_colors">Display Colors</string>
+    <string name="nav_vibration">Vibration</string>
+    <string name="nav_flashlight">Flashlight</string>
+    <string name="nav_speaker_tone">Speaker Tone</string>
+    <string name="nav_microphone">Microphone</string>
+    <string name="nav_gps_satellites">GPS &amp; Satellites</string>
+    <string name="nav_proximity_light">Proximity &amp; Light</string>
+    <string name="nav_thermal_zones">Thermal Zones</string>
+    <string name="nav_system_properties">System Properties</string>
+    <string name="nav_hardware_features">Hardware Features</string>
+    <string name="nav_sim_telephony">SIM &amp; Telephony</string>
+    <string name="nav_cameras">Cameras</string>
+    <string name="nav_codecs">Codecs</string>
+    <string name="nav_running_apps">Running Apps</string>
+    <string name="nav_installed_apps">Installed Apps</string>
+    <string name="nav_wifi_scan">Wi-Fi Scan</string>
+    <string name="nav_bluetooth">Bluetooth</string>
+    <string name="nav_nfc">NFC</string>
+    <string name="nav_logcat">Logcat</string>
+    <string name="nav_doze_whitelist">Doze Whitelist</string>
+    <string name="nav_display_tweaks">Display Tweaks</string>
+    <string name="nav_update">Update</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_device_setup">Device Setup</string>
+
+    <!-- Back button content description -->
+    <string name="nav_back">Back</string>
+
+    <!-- Startup update dialog -->
+    <string name="nav_update_available">Update available</string>
+    <string name="nav_update_body">%1$s\n\nCurrent: %2$s\nNew: %3$s</string>
+    <string name="nav_update_prerelease">  (Pre-Release)</string>
+    <string name="nav_update_install">Details / Install</string>
+    <string name="nav_update_ignore">Ignore</string>
+
+    <!-- Cloud backup restore dialog -->
+    <string name="nav_cloud_backup_found">Cloud backup found</string>
+    <string name="nav_cloud_backup_text">An encrypted backup for this device from %1$s (app %2$s) is on the server. Restore?</string>
+    <string name="nav_restore">Restore</string>
+    <string name="nav_restore_decline">No, start fresh</string>
+    <string name="nav_restore_done">Restore complete</string>
+    <string name="nav_restore_summary">%1$d settings + %2$d battery samples restored.</string>
+</resources>

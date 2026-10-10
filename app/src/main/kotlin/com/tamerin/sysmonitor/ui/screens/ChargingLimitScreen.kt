@@ -13,9 +13,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ChargingControl
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -52,12 +54,12 @@ fun ChargingLimitScreen() {
 
             if (autoMode && probe != null && charging && pct >= limit) {
                 if (ChargingControl.stopCharging(context, probe!!)) {
-                    lastAction = "Auto-Stop bei ${pct.toInt()} %"
+                    lastAction = context.getString(R.string.pwr_chg_auto_stop, pct.toInt())
                 }
             }
             if (autoMode && probe != null && !charging && pct < limit - 5) {
                 if (ChargingControl.resumeCharging(context, probe!!)) {
-                    lastAction = "Auto-Resume bei ${pct.toInt()} %"
+                    lastAction = context.getString(R.string.pwr_chg_auto_resume, pct.toInt())
                 }
             }
             delay(15_000)
@@ -70,26 +72,26 @@ fun ChargingLimitScreen() {
     ) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Charging-Stop",
-                description = "Charge-Toggle schreibt direkt in den Kernel-Sysfs " +
-                    "(/sys/class/power_supply/battery/...). Das erlaubt nur der shell-User — " +
-                    "Shizuku gibt uns den Zugriff."
+                title = stringResource(R.string.pwr_chg_shizuku_title),
+                description = stringResource(R.string.pwr_chg_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Smart Charging Limit") {
+        StatCard(stringResource(R.string.pwr_chg_title)) {
             val p = probe
-            KeyValueRow("Akku jetzt", "${pct.toInt()} % " + if (charging) "(lädt)" else "(nicht am Strom)")
-            KeyValueRow("Methode", when (p?.strategy) {
-                ChargingControl.Strategy.KERNEL_SYSFS -> "Hardware-Stop (Sysfs)"
-                ChargingControl.Strategy.DUMPSYS_SOFT -> "Soft-Stop (dumpsys)"
+            KeyValueRow(stringResource(R.string.pwr_chg_battery_now), "${pct.toInt()} % " +
+                if (charging) stringResource(R.string.pwr_chg_charging_paren)
+                else stringResource(R.string.pwr_chg_not_plugged))
+            KeyValueRow(stringResource(R.string.pwr_chg_method), when (p?.strategy) {
+                ChargingControl.Strategy.KERNEL_SYSFS -> stringResource(R.string.pwr_chg_method_sysfs)
+                ChargingControl.Strategy.DUMPSYS_SOFT -> stringResource(R.string.pwr_chg_method_dumpsys)
                 else -> "—"
             })
-            KeyValueRow("Pfad", p?.path?.substringAfterLast('/') ?: "—")
+            KeyValueRow(stringResource(R.string.pwr_chg_path), p?.path?.substringAfterLast('/') ?: "—")
             if (p == null) {
                 Text(
-                    "Konnte weder Sysfs noch dumpsys-Fallback einrichten. Shizuku-shell down?",
+                    stringResource(R.string.pwr_chg_no_method),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 return@StatCard
@@ -99,44 +101,37 @@ fun ChargingLimitScreen() {
             if (p.strategy == ChargingControl.Strategy.DUMPSYS_SOFT) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "ℹ Auf modernem MIUI/HyperOS und Samsung Knox sind die Kernel-Pfade " +
-                        "gelocked — selbst mit root nicht aushebelbar ohne Kernel-Patch. " +
-                        "Wir nehmen daher den OS-Level-Soft-Stop: `dumpsys battery set ac/usb/wireless 0`. " +
-                        "Android stoppt seine Charging-Top-Up-Loop. Status-Icon zeigt entladen, " +
-                        "der PMIC bekommt kein 'weiter laden'-Kommando. Wirksamkeit variiert je nach " +
-                        "Vendor — manche PMICs fahren trotzdem mit minimaler Erhaltungsladung weiter.",
+                    stringResource(R.string.pwr_chg_softstop_note),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
             Spacer(Modifier.height(4.dp))
-            KeyValueRow("Letzte Aktion", lastAction)
+            KeyValueRow(stringResource(R.string.pwr_chg_last_action), lastAction)
         }
 
         if (probe != null) {
-            StatCard("Limit einstellen") {
-                Text("Limit: ${limit.toInt()} %", color = OnSurfaceMuted, fontSize = 12.sp)
+            StatCard(stringResource(R.string.pwr_chg_set_limit)) {
+                Text(stringResource(R.string.pwr_chg_limit_value, limit.toInt()), color = OnSurfaceMuted, fontSize = 12.sp)
                 Slider(value = limit, onValueChange = { limit = it }, valueRange = 50f..100f, steps = 10)
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Switch(checked = autoMode, onCheckedChange = { autoMode = it })
                     Spacer(Modifier.width(8.dp))
-                    Text("Auto-Stop wenn Akku Limit erreicht", fontSize = 13.sp)
+                    Text(stringResource(R.string.pwr_chg_auto_stop_label), fontSize = 13.sp)
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Polling alle 15 s. Resume automatisch wenn Akku 5 % unter Limit fällt. " +
-                        "Damit kann der Akku zwischen ${(limit - 5).toInt()}–${limit.toInt()} % " +
-                        "schweben, statt 24/7 auf 100 % gequetscht zu werden.",
+                    stringResource(R.string.pwr_chg_polling_note, (limit - 5).toInt(), limit.toInt()),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
 
-            StatCard("Manuelle Aktionen") {
+            StatCard(stringResource(R.string.pwr_chg_manual_actions)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {
                             if (ChargingControl.stopCharging(context, probe!!)) {
-                                lastAction = "Manuell gestoppt"
+                                lastAction = context.getString(R.string.pwr_chg_manual_stopped)
                             }
                         },
                         modifier = Modifier.weight(1f)
@@ -144,7 +139,7 @@ fun ChargingLimitScreen() {
                     OutlinedButton(
                         onClick = {
                             if (ChargingControl.resumeCharging(context, probe!!)) {
-                                lastAction = "Manuell fortgesetzt"
+                                lastAction = context.getString(R.string.pwr_chg_manual_resumed)
                             }
                         },
                         modifier = Modifier.weight(1f)

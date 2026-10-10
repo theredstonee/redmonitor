@@ -13,10 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -43,17 +45,15 @@ fun EdgeRejectionScreen() {
     var centerHits by remember { mutableStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
-        StatCard("Edge-Rejection-Test") {
+        StatCard(stringResource(R.string.hw_er_title)) {
             Text(
-                "Tippe absichtlich auf den orangen Rahmen-Bereich (Edge-Zone, ca. 24 dp). " +
-                    "Wenn Touches dort als Hit gezählt werden, rejected dein Curved-Screen NICHT — " +
-                    "schlecht für Palm-Rejection beim Spielen / Lesen.",
+                stringResource(R.string.hw_er_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Touches gesamt", "$totalTouches")
-            KeyValueRow("Edge-Hits", "$edgeHits (höher = schlechter)")
-            KeyValueRow("Center-Hits", "$centerHits")
+            KeyValueRow(stringResource(R.string.hw_er_touches_total), "$totalTouches")
+            KeyValueRow(stringResource(R.string.hw_er_edge_hits), stringResource(R.string.hw_er_edge_hits_value, edgeHits))
+            KeyValueRow(stringResource(R.string.hw_er_center_hits), "$centerHits")
         }
         Spacer(Modifier.height(8.dp))
 
@@ -68,7 +68,7 @@ fun EdgeRejectionScreen() {
             OutlinedButton(
                 onClick = { lastTouches = emptyList() },
                 modifier = Modifier.weight(1f)
-            ) { Text("Marker löschen", fontSize = 12.sp) }
+            ) { Text(stringResource(R.string.hw_er_clear_markers), fontSize = 12.sp) }
         }
         Spacer(Modifier.height(8.dp))
 

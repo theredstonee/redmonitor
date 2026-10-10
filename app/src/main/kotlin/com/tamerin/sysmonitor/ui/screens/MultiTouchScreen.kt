@@ -9,9 +9,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.BgDark
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -48,19 +50,19 @@ fun MultiTouchScreen() {
         }
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
-                "Multi-Touch-Test",
+                stringResource(R.string.hw_mt_title),
                 color = Accent,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 20.sp
             )
             Text(
-                "Lege beliebig viele Finger auf den Screen. Jeder Finger wird mit eigener Farbe markiert.",
+                stringResource(R.string.hw_mt_desc),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                "Aktive Punkte: ${pointers.size}   ·   Max gleichzeitig: $maxSimultaneous",
+                stringResource(R.string.hw_mt_active, pointers.size, maxSimultaneous),
                 color = Color.White,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium

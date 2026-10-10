@@ -18,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -37,12 +39,12 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.random.Random
 
-private enum class RouletteOutcome(val label: String, val color: Color) {
-    SAFE("Glück gehabt", GaugeGreen),
-    APP_KILLED("Random App gekillt", AccentSoft),
-    SYSTEMUI_KILLED("⚠ SystemUI gecrashed", GaugeOrange),
-    FORK_BOMB("☣ FORK-BOMB ausgelöst", GaugeRed),
-    SHUTDOWN("☠ SHUTDOWN", GaugeRed)
+private enum class RouletteOutcome(val labelRes: Int, val color: Color) {
+    SAFE(R.string.scr2_roul_outcome_safe, GaugeGreen),
+    APP_KILLED(R.string.scr2_roul_outcome_app, AccentSoft),
+    SYSTEMUI_KILLED(R.string.scr2_roul_outcome_sysui, GaugeOrange),
+    FORK_BOMB(R.string.scr2_roul_outcome_fork, GaugeRed),
+    SHUTDOWN(R.string.scr2_roul_outcome_shutdown, GaugeRed)
 }
 
 @Composable
@@ -89,7 +91,7 @@ fun RouletteScreen() {
     ) {
         StatCard("☠ Russian Roulette") {
             Text(
-                "59 % nichts. 30 % zufällige App gecrashed. 8 % SystemUI down (kommt nach 2 s wieder). 1 % Fork-Bomb (zwingt Reboot). 2 % das Handy schaltet sich AUS.",
+                stringResource(R.string.scr2_roul_intro),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         }
@@ -114,7 +116,7 @@ fun RouletteScreen() {
                 lastOutcome?.let { outcome ->
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        outcome.label,
+                        stringResource(outcome.labelRes),
                         color = outcome.color,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp
@@ -132,9 +134,9 @@ fun RouletteScreen() {
         }
 
         if (!shizukuReady) {
-            StatCard("Shizuku nötig") {
+            StatCard(stringResource(R.string.scr2_roul_shizuku_title)) {
                 Text(
-                    "Roulette braucht Shell-Zugriff via Shizuku — sonst kann das System keine Apps killen oder herunterfahren.",
+                    stringResource(R.string.scr2_roul_shizuku_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -161,7 +163,7 @@ fun RouletteScreen() {
                         // 2) System-Overlay-Service zeigt den Countdown über allem an —
                         //    selbst wenn der User die App wegswiped.
                         lastOutcome = outcome
-                        lastDetail = "shell-locked, kein cancel mehr"
+                        lastDetail = context.getString(R.string.scr2_roul_detail_shelllocked)
                         withContext(Dispatchers.IO) { executeOutcome(context, outcome) }
                         com.tamerin.sysmonitor.overlay.ShutdownOverlayService.start(context)
                     } else {
@@ -178,19 +180,19 @@ fun RouletteScreen() {
             colors = ButtonDefaults.buttonColors(containerColor = GaugeRed)
         ) {
             Text(
-                if (rolling) "Würfelt..." else "ABDRÜCKEN",
+                if (rolling) stringResource(R.string.scr2_roul_rolling) else stringResource(R.string.scr2_roul_fire),
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp
             )
         }
 
-        StatCard("Verteilung") {
-            DistRow("Nichts passiert", "59 %", GaugeGreen)
-            DistRow("Random User-App gecrashed", "30 %", AccentSoft)
-            DistRow("SystemUI gecrashed (kommt zurück)", "8 %", GaugeOrange)
-            DistRow("☣ Fork-Bomb × 24 (bis Reboot)", "1 %", GaugeRed)
-            DistRow("☠ Handy schaltet AUS", "2 %", GaugeRed)
+        StatCard(stringResource(R.string.scr2_roul_dist_title)) {
+            DistRow(stringResource(R.string.scr2_roul_dist_nothing), "59 %", GaugeGreen)
+            DistRow(stringResource(R.string.scr2_roul_dist_app), "30 %", AccentSoft)
+            DistRow(stringResource(R.string.scr2_roul_dist_sysui), "8 %", GaugeOrange)
+            DistRow(stringResource(R.string.scr2_roul_dist_fork), "1 %", GaugeRed)
+            DistRow(stringResource(R.string.scr2_roul_dist_shutdown), "2 %", GaugeRed)
         }
     }
 
@@ -218,22 +220,22 @@ private fun AcknowledgmentDialog(onAccept: () -> Unit, onDecline: () -> Unit) {
     AlertDialog(
         onDismissRequest = onDecline,
         title = {
-            Text("⚠ Russian Roulette — Warnung", fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.scr2_roul_warn_title), fontWeight = FontWeight.Bold)
         },
         text = {
             Column {
                 Text(
-                    "Diese Funktion macht echte zerstörerische Aktionen:",
+                    stringResource(R.string.scr2_roul_warn_intro),
                     fontWeight = FontWeight.SemiBold, fontSize = 13.sp
                 )
                 Spacer(Modifier.height(6.dp))
-                Text("• Bei 30 % wird eine zufällige installierte App gewaltsam beendet — ungespeicherter Fortschritt geht verloren", fontSize = 12.sp)
-                Text("• Bei 8 % wird die SystemUI gekillt — kurz keine Statusleiste/Navigation", fontSize = 12.sp)
-                Text("• Bei 1 % werden 24 parallele Fork-Bombs gestartet — sie überleben Sessions und respawnen sich. Das Handy bleibt zäh bis du es HART neu startest (Power-Button gedrückt halten)", fontSize = 12.sp)
-                Text("• Bei 2 % wird das Handy nach 3-Sekunden-Countdown SOFORT heruntergefahren — möglich dass aktive Schreibvorgänge corrupted werden", fontSize = 12.sp)
+                Text(stringResource(R.string.scr2_roul_warn_b1), fontSize = 12.sp)
+                Text(stringResource(R.string.scr2_roul_warn_b2), fontSize = 12.sp)
+                Text(stringResource(R.string.scr2_roul_warn_b3), fontSize = 12.sp)
+                Text(stringResource(R.string.scr2_roul_warn_b4), fontSize = 12.sp)
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Nur auf eigenes Risiko. Vorher alles speichern. Funktion ist als Spielerei gedacht.",
+                    stringResource(R.string.scr2_roul_warn_risk),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 12.sp
                 )
@@ -241,7 +243,7 @@ private fun AcknowledgmentDialog(onAccept: () -> Unit, onDecline: () -> Unit) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(checked = checked, onCheckedChange = { checked = it })
                     Text(
-                        "Verstanden — ich nutze auf eigenes Risiko",
+                        stringResource(R.string.scr2_roul_warn_check),
                         fontSize = 12.sp,
                         modifier = Modifier.padding(start = 4.dp)
                     )
@@ -252,10 +254,10 @@ private fun AcknowledgmentDialog(onAccept: () -> Unit, onDecline: () -> Unit) {
             TextButton(
                 onClick = onAccept,
                 enabled = checked
-            ) { Text("OK, freischalten") }
+            ) { Text(stringResource(R.string.scr2_roul_warn_ok)) }
         },
         dismissButton = {
-            TextButton(onClick = onDecline) { Text("Abbrechen") }
+            TextButton(onClick = onDecline) { Text(stringResource(R.string.scr2_roul_cancel)) }
         }
     )
 }
@@ -306,7 +308,7 @@ private suspend fun executeOutcome(
                 context,
                 "setsid sh -c 'sleep 3 && (svc power shutdown || reboot -p)' </dev/null >/dev/null 2>&1 &"
             )
-            "Shutdown in 3s (detached, kein cancel)"
+            context.getString(R.string.scr2_roul_detail_shutdown)
         }
     }
 }
@@ -360,7 +362,7 @@ private fun crashRandomRunningApp(context: android.content.Context): String {
         }
     }
 
-    if (running.isEmpty()) return "kein laufender Kandidat gefunden"
+    if (running.isEmpty()) return context.getString(R.string.scr2_roul_detail_no_candidate)
     val target = running.random()
 
     // Doppel-Treffer: `am crash` (Android 11+) triggert den echten Crash-Dialog

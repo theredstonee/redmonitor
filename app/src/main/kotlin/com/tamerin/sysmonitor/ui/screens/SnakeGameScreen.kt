@@ -18,10 +18,12 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.settings.AppPrefs
@@ -215,7 +217,7 @@ fun SnakeGameScreen() {
         }
         Spacer(Modifier.height(6.dp))
         Text(
-            "Wisch zum Steuern · Speed = CPU-Last × Device-Klasse × Watt-Boost · ⚠ Pause = 50 % Tod",
+            stringResource(R.string.scr2_snake_hint),
             color = OnSurfaceMuted, fontSize = 11.sp
         )
         Spacer(Modifier.height(12.dp))
@@ -304,7 +306,7 @@ fun SnakeGameScreen() {
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        if (pauseGameOver) "PAUSE = TOD" else "GAME OVER",
+                        if (pauseGameOver) stringResource(R.string.scr2_snake_pause_death) else "GAME OVER",
                         color = GaugeRed,
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Bold,
@@ -313,7 +315,7 @@ fun SnakeGameScreen() {
                     if (pauseGameOver) {
                         Spacer(Modifier.height(4.dp))
                         Text(
-                            "Pech (50 % Chance)",
+                            stringResource(R.string.scr2_snake_bad_luck),
                             color = GaugeOrange, fontSize = 12.sp
                         )
                     }
@@ -325,7 +327,7 @@ fun SnakeGameScreen() {
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(Modifier.height(16.dp))
-                    Button(onClick = { restart() }) { Text("Nochmal") }
+                    Button(onClick = { restart() }) { Text(stringResource(R.string.scr2_snake_again)) }
                 }
             } else if (paused) {
                 Column(
@@ -340,7 +342,7 @@ fun SnakeGameScreen() {
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Glück gehabt · tap zum Fortsetzen",
+                        stringResource(R.string.scr2_snake_resume),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
@@ -349,7 +351,7 @@ fun SnakeGameScreen() {
 
         Spacer(Modifier.height(12.dp))
         Text(
-            "🐍 Easter Egg: dieses Spiel passt seine Geschwindigkeit an die tatsächliche CPU-Last deines Geräts an. Bei hoher Last (z. B. läuft im Hintergrund ein Benchmark) wird die Schlange schneller.",
+            stringResource(R.string.scr2_snake_easter),
             color = OnSurfaceMuted,
             fontSize = 11.sp
         )

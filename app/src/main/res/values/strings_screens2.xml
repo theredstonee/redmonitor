@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- RouletteScreen -->
+    <string name="scr2_roul_outcome_safe">Glück gehabt</string>
+    <string name="scr2_roul_outcome_app">Random App gekillt</string>
+    <string name="scr2_roul_outcome_sysui">⚠ SystemUI gecrashed</string>
+    <string name="scr2_roul_outcome_fork">☣ FORK-BOMB ausgelöst</string>
+    <string name="scr2_roul_outcome_shutdown">☠ SHUTDOWN</string>
+    <string name="scr2_roul_intro" formatted="false">59 % nichts. 30 % zufällige App gecrashed. 8 % SystemUI down (kommt nach 2 s wieder). 1 % Fork-Bomb (zwingt Reboot). 2 % das Handy schaltet sich AUS.</string>
+    <string name="scr2_roul_shizuku_title">Shizuku nötig</string>
+    <string name="scr2_roul_shizuku_desc">Roulette braucht Shell-Zugriff via Shizuku — sonst kann das System keine Apps killen oder herunterfahren.</string>
+    <string name="scr2_roul_rolling">Würfelt...</string>
+    <string name="scr2_roul_fire">ABDRÜCKEN</string>
+    <string name="scr2_roul_dist_title">Verteilung</string>
+    <string name="scr2_roul_dist_nothing">Nichts passiert</string>
+    <string name="scr2_roul_dist_app">Random User-App gecrashed</string>
+    <string name="scr2_roul_dist_sysui">SystemUI gecrashed (kommt zurück)</string>
+    <string name="scr2_roul_dist_fork">☣ Fork-Bomb × 24 (bis Reboot)</string>
+    <string name="scr2_roul_dist_shutdown">☠ Handy schaltet AUS</string>
+    <string name="scr2_roul_warn_title">⚠ Russian Roulette — Warnung</string>
+    <string name="scr2_roul_warn_intro">Diese Funktion macht echte zerstörerische Aktionen:</string>
+    <string name="scr2_roul_warn_b1" formatted="false">• Bei 30 % wird eine zufällige installierte App gewaltsam beendet — ungespeicherter Fortschritt geht verloren</string>
+    <string name="scr2_roul_warn_b2" formatted="false">• Bei 8 % wird die SystemUI gekillt — kurz keine Statusleiste/Navigation</string>
+    <string name="scr2_roul_warn_b3" formatted="false">• Bei 1 % werden 24 parallele Fork-Bombs gestartet — sie überleben Sessions und respawnen sich. Das Handy bleibt zäh bis du es HART neu startest (Power-Button gedrückt halten)</string>
+    <string name="scr2_roul_warn_b4" formatted="false">• Bei 2 % wird das Handy nach 3-Sekunden-Countdown SOFORT heruntergefahren — möglich dass aktive Schreibvorgänge corrupted werden</string>
+    <string name="scr2_roul_warn_risk">Nur auf eigenes Risiko. Vorher alles speichern. Funktion ist als Spielerei gedacht.</string>
+    <string name="scr2_roul_warn_check">Verstanden — ich nutze auf eigenes Risiko</string>
+    <string name="scr2_roul_warn_ok">OK, freischalten</string>
+    <string name="scr2_roul_cancel">Abbrechen</string>
+    <string name="scr2_roul_detail_shelllocked">shell-locked, kein cancel mehr</string>
+    <string name="scr2_roul_detail_shutdown">Shutdown in 3s (detached, kein cancel)</string>
+    <string name="scr2_roul_detail_no_candidate">kein laufender Kandidat gefunden</string>
+
+    <!-- SnakeGameScreen -->
+    <string name="scr2_snake_hint" formatted="false">Wisch zum Steuern · Speed = CPU-Last × Device-Klasse × Watt-Boost · ⚠ Pause = 50 % Tod</string>
+    <string name="scr2_snake_pause_death">PAUSE = TOD</string>
+    <string name="scr2_snake_bad_luck" formatted="false">Pech (50 % Chance)</string>
+    <string name="scr2_snake_again">Nochmal</string>
+    <string name="scr2_snake_resume">Glück gehabt · tap zum Fortsetzen</string>
+    <string name="scr2_snake_easter">🐍 Easter Egg: dieses Spiel passt seine Geschwindigkeit an die tatsächliche CPU-Last deines Geräts an. Bei hoher Last (z. B. läuft im Hintergrund ein Benchmark) wird die Schlange schneller.</string>
+
+    <!-- GlyphMatrixScreen -->
+    <string name="scr2_glyph_preview_title">Vorschau (25 × 25)</string>
+    <string name="scr2_glyph_metric_title">Metrik</string>
+    <string name="scr2_glyph_metric_desc">Auf dem Geraet blaetterst du mit langem Druck auf den Glyph-Button weiter.</string>
+    <string name="scr2_glyph_brightness_title">Helligkeit</string>
+    <string name="scr2_glyph_aod_note">Im Always-On-Betrieb aktualisiert Nothing OS den Toy einmal pro Minute.</string>
+    <string name="scr2_glyph_sdk_in_build">Glyph-SDK im Build</string>
+    <string name="scr2_glyph_matrix_detected">Glyph Matrix erkannt</string>
+    <string name="scr2_glyph_yes">ja</string>
+    <string name="scr2_glyph_no">nein</string>
+    <string name="scr2_glyph_yes_phone3">ja (Phone 3)</string>
+    <string name="scr2_glyph_no_sdk">Dieser Build wurde ohne das Nothing-SDK erstellt. Der Toy ist deshalb inaktiv — die Vorschau oben funktioniert trotzdem, sie braucht kein SDK.</string>
+    <string name="scr2_glyph_only_phone3">Die Glyph Matrix gibt es nur beim Nothing Phone (3). Auf diesem Geraet laesst sich der Toy nicht aktivieren.</string>
+    <string name="scr2_glyph_activate_hint">Aktiviere RedMonitor in Nothings Toys-Manager, danach erreichst du ihn mit kurzem Druck auf den Glyph-Button.</string>
+    <string name="scr2_glyph_activate_btn">Toy aktivieren</string>
+    <string name="scr2_glyph_manager_failed">Toys-Manager liess sich nicht oeffnen (gibt es erst ab Nothing OS 20250829). Manuell: Einstellungen › Glyph-Interface › Glyph-Toys.</string>
+
+    <!-- HudSettingsScreen -->
+    <string name="scr2_hud_preview_title">Vorschau</string>
+    <string name="scr2_hud_start">HUD starten</string>
+    <string name="scr2_hud_stop">Stopp</string>
+    <string name="scr2_hud_perm_missing">Overlay-Berechtigung fehlt — siehe System → Floating HUD</string>
+    <string name="scr2_hud_metrics_title">Metriken</string>
+    <string name="scr2_hud_metrics_desc">Welche Werte sollen im HUD angezeigt werden?</string>
+    <string name="scr2_hud_size_title">Größe</string>
+    <string name="scr2_hud_transparency_title">Transparenz</string>
+    <string name="scr2_hud_opacity">Deckkraft</string>
+    <string name="scr2_hud_accent_title">Akzentfarbe</string>
+    <string name="scr2_hud_accent_desc">Farbe für Labels und Border</string>
+    <string name="scr2_hud_edgesnap_label">Beim Loslassen an Bildschirmrand schnappen</string>
+    <string name="scr2_hud_reset_desc">Setzt alle HUD-Einstellungen auf den Standard zurück.</string>
+    <string name="scr2_hud_reset_btn">Auf Standard zurücksetzen</string>
+    <string name="scr2_hud_no_metrics">(keine Metriken aktiv)</string>
+    <string name="scr2_hud_profile_title">Profil</string>
+    <string name="scr2_hud_profile_desc">Steuert, in welchen Apps das HUD auftaucht.</string>
+    <string name="scr2_hud_usage_perm">Dafuer braucht RedMonitor Zugriff auf Nutzungsdaten - sonst laesst sich die Vordergrund-App nicht ermitteln. Solange die Berechtigung fehlt, bleibt das HUD immer sichtbar.</string>
+    <string name="scr2_hud_grant_access">Zugriff erteilen</string>
+    <string name="scr2_hud_pick_apps_count">Apps auswaehlen (%1$d)</string>
+    <string name="scr2_hud_pick_apps_title">Apps auswaehlen</string>
+    <string name="scr2_hud_search">Suchen</string>
+    <string name="scr2_hud_loading_apps">Lade Apps ...</string>
+    <string name="scr2_hud_apply">Uebernehmen</string>
+    <string name="scr2_hud_cancel">Abbrechen</string>
+
+    <!-- OverlayHudScreen -->
+    <string name="scr2_ovl_desc">Zeigt eine kleine Live-Anzeige (CPU, RAM, Akku, Temp, FPS, Netz und mehr) über allen anderen Apps. Drag = verschieben, Tap = App öffnen.</string>
+    <string name="scr2_ovl_perm_label">Overlay-Berechtigung</string>
+    <string name="scr2_ovl_granted">Erteilt</string>
+    <string name="scr2_ovl_missing">Fehlt</string>
+    <string name="scr2_ovl_grant_title">Berechtigung erteilen</string>
+    <string name="scr2_ovl_grant_desc">Android verlangt für Overlays die spezielle Berechtigung „Über anderen Apps anzeigen“. Du musst sie in den Systemeinstellungen aktivieren.</string>
+    <string name="scr2_ovl_grant_btn">Berechtigung in Einstellungen erteilen</string>
+    <string name="scr2_ovl_recheck">Status neu prüfen</string>
+    <string name="scr2_ovl_control_title">Steuerung</string>
+    <string name="scr2_ovl_start">HUD starten</string>
+    <string name="scr2_ovl_stop">Stopp</string>
+    <string name="scr2_ovl_fg_note">Das HUD läuft als Foreground-Service mit dauerhafter Benachrichtigung — Android verlangt das.</string>
+    <string name="scr2_ovl_autostart_label">HUD beim Boot starten</string>
+    <string name="scr2_ovl_autostart_desc">OverlayService startet automatisch nach Reboot — bleibt als Foreground-Service dauerhaft im Hintergrund (wie Automate).</string>
+    <string name="scr2_ovl_autostart_warn">⚠ MIUI/HyperOS, OneUI, OPPO und Honor blocken BOOT_COMPLETED standardmäßig. Im \'Geräte-Setup\' (Info-Hub) findest du die Direktlinks zu den jeweiligen Autostart-Listen — dort \'RedMonitor\' aktivieren.</string>
+    <string name="scr2_ovl_customize_title">Anpassen</string>
+    <string name="scr2_ovl_customize_desc">Welche Werte angezeigt werden, Größe, Farbe, Transparenz und Edge-Snapping.</string>
+    <string name="scr2_ovl_customize_btn">HUD anpassen</string>
+
+    <!-- DpiAnimScreen -->
+    <string name="scr2_dpi_shizuku_title">Shizuku für DPI/Animation</string>
+    <string name="scr2_dpi_shizuku_desc">`wm density` und `settings put global animator_*` setzen DPI und Animationsdauer system-weit. Nur shell darf das.</string>
+    <string name="scr2_dpi_current_title">Aktuell</string>
+    <string name="scr2_dpi_quickset_desc">Niedriger DPI = mehr passt auf den Schirm. Stock-Wert ist meist 420 oder 480.</string>
+    <string name="scr2_dpi_reset_default">Auf Default zurücksetzen</string>
+    <string name="scr2_dpi_set">Setzen</string>
+    <string name="scr2_dpi_anim_desc">Wert 0 = sofort (kein Animation), 0.5 = doppelt so schnell, 1.0 = Stock.</string>
+
+    <!-- DisplayTweaksScreen -->
+    <string name="scr2_disp_shizuku_title">Shizuku benötigt</string>
+    <string name="scr2_disp_shizuku_desc">Display-Tweaks brauchen shell-Zugriff via Shizuku.</string>
+    <string name="scr2_disp_warn_title">⚠ Warnung</string>
+    <string name="scr2_disp_warn_desc">Falsche DPI/Auflösung kann UI bricken. Wenn du dich aussperrst: Smartphone neu starten — Werte gelten nur bis Reboot wenn du sie nicht über \'reset\' zurücksetzt.</string>
+    <string name="scr2_disp_dpi_title">Display-Dichte (DPI)</string>
+    <string name="scr2_disp_current">Aktuell</string>
+    <string name="scr2_disp_physical">Physisch (Werks)</string>
+    <string name="scr2_disp_set">Setzen</string>
+    <string name="scr2_disp_reset">Zurücksetzen</string>
+    <string name="scr2_disp_resolution_title">Auflösung</string>
+    <string name="scr2_disp_anim_title">Animations-Geschwindigkeit</string>
+    <string name="scr2_disp_window">Fenster</string>
+    <string name="scr2_disp_all_three">Alle drei gleichzeitig: %1$s×</string>
+    <string name="scr2_disp_anim_off">Aus (0×)</string>
+    <string name="scr2_disp_touches">Touches anzeigen</string>
+    <string name="scr2_disp_pointer">Pointer-Location (Koordinaten oben)</string>
+    <string name="scr2_disp_anim_partial_fail">✗ Anim teilweise fehlgeschlagen</string>
+    <string name="scr2_disp_anim_off_msg">✓ Animationen aus — UI maximal schnell</string>
+    <string name="scr2_disp_anim_normal_msg">✓ Animationen normal (1×)</string>
+
+    <!-- UpdateScreen -->
+    <string name="scr2_upd_current_version">Aktuelle Version</string>
+    <string name="scr2_upd_installed">Installiert</string>
+    <string name="scr2_upd_last_check">Letzter Check</string>
+    <string name="scr2_upd_checking_title">Prüfe…</string>
+    <string name="scr2_upd_connecting">Verbinde mit GitHub…</string>
+    <string name="scr2_upd_error_title">Fehler</string>
+    <string name="scr2_upd_available_title">🎉 Update verfügbar</string>
+    <string name="scr2_upd_downloading">Lade… %1$s / %2$s MB</string>
+    <string name="scr2_upd_installing">Installiere via Shizuku…</string>
+    <string name="scr2_upd_download_manual">APK laden + manuell installieren</string>
+    <string name="scr2_upd_open_release">Release-Seite öffnen</string>
+    <string name="scr2_upd_ignore">Update ignorieren</string>
+    <string name="scr2_upd_restart_now">App jetzt neu starten</string>
+    <string name="scr2_upd_restart_note">Wichtig: ohne Neustart zeigt der Update-Checker noch die alte Version, weil der laufende Prozess die alte VERSION_NAME im Speicher hat. Nach Neustart greift die neue APK.</string>
+    <string name="scr2_upd_uptodate_title">Aktuell</string>
+    <string name="scr2_upd_latest">✓ Du nutzt die neueste Version (%1$s).</string>
+    <string name="scr2_upd_install_ok">✓ Installation OK — App startet neu …</string>
+    <string name="scr2_upd_dismissed">Diese Version wird nicht mehr beworben</string>
+    <string name="scr2_upd_control_title">Steuerung</string>
+    <string name="scr2_upd_check_now">Jetzt auf Update prüfen</string>
+    <string name="scr2_upd_settings_title">Einstellungen</string>
+    <string name="scr2_upd_include_pre">Pre-Releases (Beta/RC) einschließen</string>
+    <string name="scr2_upd_notify">Benachrichtigungen bei neuen Versionen</string>
+
+    <!-- SecretVideoActivity -->
+    <string name="scr2_secret_load_failed">Easter Egg konnte nicht geladen werden</string>
+    <string name="scr2_secret_tap_close">Tap zum Schließen</string>
+    <string name="scr2_secret_loading">Easter Egg wird geladen…</string>
+
+    <!-- BaseScreenActivity -->
+    <string name="scr2_back">Zurück</string>
+
+    <!-- ShizukuCard -->
+    <string name="scr2_shz_title">Shizuku einrichten</string>
+    <string name="scr2_shz_desc">Mit Shizuku (offizielle, quelloffene App von Rikka) bekommt diese App Zugriff auf System-APIs im shell-User-Kontext — ohne Root. Damit sehen wir mehr Daten und können mehr Aktionen ausführen.</string>
+    <string name="scr2_shz_state_notinstalled">Nicht installiert</string>
+    <string name="scr2_shz_state_notrunning">Installiert, aber nicht gestartet</string>
+    <string name="scr2_shz_state_needsperm">Läuft — Berechtigung fehlt</string>
+    <string name="scr2_shz_state_ready_adb">Bereit ✓ (eigener ADB-Zugang)</string>
+    <string name="scr2_shz_state_ready_shizuku">Bereit ✓ (Shizuku)</string>
+    <string name="scr2_shz_setup_done">Perfekt. Setup abgeschlossen.</string>
+    <string name="scr2_shz_autogrant">Auto-Grant: %1$d erteilt · %2$d failed · %3$d skipped</string>
+    <string name="scr2_shz_autogrant_rerun">Auto-Grant erneut ausführen</string>
+    <string name="scr2_shz_adb_collapse">Ohne Shizuku: eigener ADB-Zugang ▲</string>
+    <string name="scr2_shz_adb_expand">Ohne Shizuku? Eigener ADB-Zugang (ohne separate App) ▾</string>
+    <string name="scr2_shz_adb_desc">RedMonitor holt sich die shell-Rechte selbst über ADB — ohne Shizuku-App. Einmal am PC aktivieren, danach verbindet die App automatisch und führt alle Kommandos selbst über ADB aus.</string>
+    <string name="scr2_shz_adb_label">ADB-Zugang</string>
+    <string name="scr2_shz_connected">Verbunden ✓</string>
+    <string name="scr2_shz_not_connected">Nicht verbunden</string>
+    <string name="scr2_shz_step_pc_title">Am PC einmal ausführen</string>
+    <string name="scr2_shz_step_pc_hint">Handy per USB an den PC (USB-Debugging AN), dann diesen Befehl:</string>
+    <string name="scr2_shz_copy_cmd">Befehl kopieren</string>
+    <string name="scr2_shz_step_connect_title">Verbinden</string>
+    <string name="scr2_shz_step_connect_hint">App verbindet zu 127.0.0.1:5555 — am Handy „USB-Debugging zulassen“ bestätigen</string>
+    <string name="scr2_shz_failed">Fehlgeschlagen: %1$s</string>
+    <string name="scr2_shz_unknown">unbekannt</string>
+    <string name="scr2_shz_connecting">Verbinde…</string>
+    <string name="scr2_shz_connect_now">Jetzt verbinden</string>
+    <string name="scr2_shz_disconnected_msg">Getrennt</string>
+    <string name="scr2_shz_disconnect">Trennen</string>
+    <string name="scr2_shz_tcpip_note">Hinweis: `adb tcpip 5555` bleibt bis zum Neustart aktiv — nach einem Reboot einmal wiederholen (ohne Root). Danach verbindet die App beim Start automatisch.</string>
+    <string name="scr2_shz_wireless_title">Ohne PC (Wireless Debugging)</string>
+    <string name="scr2_shz_wireless_desc">Ist der Key schon vertraut (einmal per „Jetzt verbinden“ zugelassen), verbindet die App auch über Wireless Debugging — ganz ohne PC. Erstmaliges In-App-Pairing per Code folgt, sobald der SPAKE2-Kern steht.</string>
+    <string name="scr2_shz_pairing_label">Pairing-Code (6-stellig)</string>
+    <string name="scr2_shz_paired">Gepairt ✓</string>
+    <string name="scr2_shz_pairing_fail">Pairing: %1$s</string>
+    <string name="scr2_shz_failed_word">fehlgeschlagen</string>
+    <string name="scr2_shz_pair">Pairen</string>
+    <string name="scr2_shz_wireless_connected">Wireless verbunden ✓</string>
+    <string name="scr2_shz_wireless_fail">Wireless: %1$s</string>
+    <string name="scr2_shz_wireless_connect">Wireless verbinden</string>
+    <string name="scr2_shz_open_dev_settings">Entwickleroptionen öffnen</string>
+    <string name="scr2_shz_open_wireless_settings">Wireless-Debugging öffnen</string>
+    <string name="scr2_adb_err_auth">Verbindung/Autorisierung fehlgeschlagen</string>
+    <string name="scr2_adb_err_no_connect_svc">Kein Wireless-Debugging-Connect-Dienst gefunden (Wireless Debugging an?)</string>
+    <string name="scr2_adb_err_wireless_fail">Wireless-Verbindung fehlgeschlagen — Key vertraut? (erst pairen/zulassen)</string>
+    <string name="scr2_adb_err_no_pairing_svc">Kein Pairing-Dienst gefunden — Dialog „Gerät mit Pairing-Code koppeln“ offen?</string>
+    <string name="scr2_adb_err_exec">ADB-Fehler</string>
+    <string name="scr2_adb_err_binder">Binder-Fehler</string>
+    <string name="scr2_adb_err_not_connected">ADB nicht verbunden</string>
+    <string name="scr2_shz_detected_github">Erkannt: Android %1$d · %2$s. Auf deinem Gerät blockiert der Play Store Shizuku meistens. Empfohlen: APK direkt von GitHub.</string>
+    <string name="scr2_shz_github_recommended">APK von GitHub laden (empfohlen)</string>
+    <string name="scr2_shz_try_play">Trotzdem Play Store versuchen</string>
+    <string name="scr2_shz_detected_play">Erkannt: Android %1$d · %2$s. Play Store sollte bei dir funktionieren.</string>
+    <string name="scr2_shz_open_play">Im Play Store öffnen</string>
+    <string name="scr2_shz_alt_github">Alternativ: APK von GitHub</string>
+    <string name="scr2_shz_setup_guide">Setup-Anleitung</string>
+    <string name="scr2_shz_notrunning_intro">Shizuku ist installiert, läuft aber nicht. Du musst ihn jetzt starten:</string>
+    <string name="scr2_shz_nr_step1_title">Einstellungen öffnen</string>
+    <string name="scr2_shz_nr_step1_hint">Android-Einstellungen → Entwickleroptionen</string>
+    <string name="scr2_shz_nr_step2_title">Drahtloses Debugging AN</string>
+    <string name="scr2_shz_nr_step2_hint">muss eingeschaltet bleiben</string>
+    <string name="scr2_shz_nr_step3_title">Pairing-Code holen</string>
+    <string name="scr2_shz_nr_step3_hint">in Entwickleroptionen: \'Gerät mit Pairing-Code koppeln\'</string>
+    <string name="scr2_shz_nr_step4_title">Shizuku öffnen</string>
+    <string name="scr2_shz_nr_step4_hint">Pair via Wireless Debugging → Code eingeben</string>
+    <string name="scr2_shz_nr_step5_title">In Shizuku: Start</string>
+    <string name="scr2_shz_nr_step5_hint">grüner Status oben muss erscheinen</string>
+    <string name="scr2_shz_nr_step6_title">Hierher zurückkommen</string>
+    <string name="scr2_shz_nr_step6_hint">Status springt automatisch</string>
+    <string name="scr2_shz_dev_settings">Entwickler-Settings</string>
+    <string name="scr2_shz_notrunning_note">Hinweis: Shizuku überlebt keinen Reboot. Nach jedem Neustart musst du Schritte 2-5 wiederholen (außer du hast Root).</string>
+    <string name="scr2_shz_needsperm_intro">Shizuku läuft. Jetzt fehlt nur noch deine Erlaubnis für diese App.</string>
+    <string name="scr2_shz_grant_perm">Berechtigung erteilen</string>
+    <string name="scr2_shz_allow_hint">Es erscheint ein Shizuku-Dialog — auf \'Allow\' tippen.</string>
+
+</resources>

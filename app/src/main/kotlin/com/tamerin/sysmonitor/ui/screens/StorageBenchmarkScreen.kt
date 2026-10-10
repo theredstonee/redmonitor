@@ -11,6 +11,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,14 +47,13 @@ fun StorageBenchmarkScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Storage Sequenziell — Sustained") {
+        StatCard(stringResource(R.string.bench_storage_title)) {
             Text(
-                "Schreibt und liest kontinuierlich. Sustained = echter Flash-Durchsatz (fsync alle 32 MB). " +
-                    "Peak = SLC-Cache-Burst.",
+                stringResource(R.string.bench_storage_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
-            Text("Dauer pro Phase (Write + Read)", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.bench_storage_duration_per_phase), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(4.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 DURATIONS.forEach { (sec, short) ->
@@ -68,7 +69,7 @@ fun StorageBenchmarkScreen() {
             }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Gesamt: ${durationSec * 2} s · 512 MB File-Cap",
+                stringResource(R.string.bench_storage_total, durationSec * 2),
                 color = AccentSoft, fontSize = 11.sp,
                 fontFamily = FontFamily.Monospace
             )
@@ -80,7 +81,7 @@ fun StorageBenchmarkScreen() {
                         BenchmarkService.start(context, BenchmarkType.STORAGE_SEQUENTIAL, durationSec)
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Test starten", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.bench_start_test), fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -88,7 +89,7 @@ fun StorageBenchmarkScreen() {
                             Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
                         )
                     }
-                ) { Text("Verlauf") }
+                ) { Text(stringResource(R.string.bench_history)) }
             }
         }
     }

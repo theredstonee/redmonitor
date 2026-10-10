@@ -18,9 +18,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -95,9 +97,9 @@ fun GpsTestScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!hasPerm) {
-            StatCard("Standort-Berechtigung") {
+            StatCard(stringResource(R.string.hw_gps_perm_title)) {
                 Text(
-                    "Für GPS-Test brauchen wir die Berechtigung „Genauer Standort“. Außerdem muss GPS systemweit eingeschaltet sein.",
+                    stringResource(R.string.hw_gps_perm_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -106,34 +108,34 @@ fun GpsTestScreen() {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     launcher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                 }) {
-                    Text("Berechtigung erteilen")
+                    Text(stringResource(R.string.hw_grant_permission))
                 }
             }
             return@Column
         }
 
-        StatCard("Status") {
-            KeyValueRow("GPS-Provider aktiv", if (gpsEnabled) "Ja" else "Nein")
-            KeyValueRow("Aktiver Provider", provider ?: "—")
-            KeyValueRow("Satelliten gesamt", totalSats.toString())
-            KeyValueRow("Im Fix verwendet", usedInFix.toString())
-            KeyValueRow("Beste Signalstärke", if (maxSnr > 0) "${"%.1f".format(maxSnr)} dB-Hz" else "—")
+        StatCard(stringResource(R.string.hw_gps_status)) {
+            KeyValueRow(stringResource(R.string.hw_gps_provider_active), if (gpsEnabled) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
+            KeyValueRow(stringResource(R.string.hw_gps_active_provider), provider ?: "—")
+            KeyValueRow(stringResource(R.string.hw_gps_sats_total), totalSats.toString())
+            KeyValueRow(stringResource(R.string.hw_gps_used_in_fix), usedInFix.toString())
+            KeyValueRow(stringResource(R.string.hw_gps_best_signal), if (maxSnr > 0) "${"%.1f".format(maxSnr)} dB-Hz" else "—")
         }
 
-        StatCard("Position") {
+        StatCard(stringResource(R.string.hw_gps_position)) {
             val l = loc
             if (l == null) {
                 Text(
-                    "Warte auf Fix… Stell dich am besten ans Fenster oder ins Freie.",
+                    stringResource(R.string.hw_gps_waiting_fix),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             } else {
-                KeyValueRow("Breitengrad", "${"%.6f".format(l.latitude)}")
-                KeyValueRow("Längengrad", "${"%.6f".format(l.longitude)}")
-                KeyValueRow("Genauigkeit", "${"%.1f".format(l.accuracy)} m")
-                if (l.hasAltitude()) KeyValueRow("Höhe", "${"%.1f".format(l.altitude)} m")
-                if (l.hasSpeed()) KeyValueRow("Geschwindigkeit", "${"%.2f".format(l.speed)} m/s")
-                if (l.hasBearing()) KeyValueRow("Richtung", "${"%.0f".format(l.bearing)}°")
+                KeyValueRow(stringResource(R.string.hw_gps_latitude), "${"%.6f".format(l.latitude)}")
+                KeyValueRow(stringResource(R.string.hw_gps_longitude), "${"%.6f".format(l.longitude)}")
+                KeyValueRow(stringResource(R.string.hw_gps_accuracy), "${"%.1f".format(l.accuracy)} m")
+                if (l.hasAltitude()) KeyValueRow(stringResource(R.string.hw_gps_altitude), "${"%.1f".format(l.altitude)} m")
+                if (l.hasSpeed()) KeyValueRow(stringResource(R.string.hw_gps_speed), "${"%.2f".format(l.speed)} m/s")
+                if (l.hasBearing()) KeyValueRow(stringResource(R.string.hw_gps_bearing), "${"%.0f".format(l.bearing)}°")
             }
         }
     }

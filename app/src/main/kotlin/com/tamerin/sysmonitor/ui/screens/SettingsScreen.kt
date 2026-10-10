@@ -18,9 +18,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.tamerin.sysmonitor.BuildConfig
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.settings.AppPrefs
 import kotlinx.coroutines.launch
 import com.tamerin.sysmonitor.settings.Haptic
@@ -45,24 +47,25 @@ fun SettingsScreen() {
     var haptics by remember { mutableStateOf(AppPrefs.hapticFeedbackEnabled(context)) }
     var hapticIntensity by remember { mutableStateOf(AppPrefs.hapticIntensity(context)) }
     var materialYou by remember { mutableStateOf(AppPrefs.isMaterialYouEnabled(context)) }
+    var appLocale by remember { mutableStateOf(AppPrefs.appLocale(context)) }
     val supportsDynamic = android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
 
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Updates") {
+        StatCard(stringResource(R.string.settings_updates_title)) {
             ToggleRow(
-                label = "Pre-Releases (Beta/RC) einschließen",
-                description = "Auch Vorab-Versionen werden gefunden",
+                label = stringResource(R.string.settings_prerelease_label),
+                description = stringResource(R.string.settings_prerelease_desc),
                 checked = includePre
             ) {
                 includePre = it
                 UpdatePrefs.setIncludePrerelease(context, it)
             }
             ToggleRow(
-                label = "Benachrichtigungen bei neuen Versionen",
-                description = "Push-Notification, auch wenn App geschlossen",
+                label = stringResource(R.string.settings_notify_label),
+                description = stringResource(R.string.settings_notify_desc),
                 checked = notify
             ) {
                 notify = it
@@ -77,13 +80,13 @@ fun SettingsScreen() {
                     runCatching { context.startActivity(intent) }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Auf Update prüfen") }
+            ) { Text(stringResource(R.string.settings_check_update)) }
         }
 
-        StatCard("Haptisches Feedback") {
+        StatCard(stringResource(R.string.settings_haptics_title)) {
             ToggleRow(
-                label = "Haptik bei Aktionen",
-                description = "Leichte Vibration bei Tap, kräftigere bei destruktiven Aktionen (Force-Stop, Delete, Drain)",
+                label = stringResource(R.string.settings_haptics_label),
+                description = stringResource(R.string.settings_haptics_desc),
                 checked = haptics
             ) {
                 haptics = it
@@ -93,7 +96,7 @@ fun SettingsScreen() {
 
             if (haptics) {
                 Spacer(Modifier.height(8.dp))
-                Text("Intensität", color = OnSurfaceMuted, fontSize = 12.sp)
+                Text(stringResource(R.string.settings_intensity), color = OnSurfaceMuted, fontSize = 12.sp)
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     HapticIntensity.values().forEach { lvl ->
@@ -108,7 +111,7 @@ fun SettingsScreen() {
                             border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, Accent) else null
                         ) {
                             Text(
-                                lvl.label,
+                                stringResource(lvl.labelRes),
                                 color = if (selected) Accent else androidx.compose.ui.graphics.Color.Unspecified,
                                 fontSize = 12.sp
                             )
@@ -116,24 +119,24 @@ fun SettingsScreen() {
                     }
                 }
                 Spacer(Modifier.height(10.dp))
-                Text("Tester:", color = OnSurfaceMuted, fontSize = 11.sp)
+                Text(stringResource(R.string.settings_tester), color = OnSurfaceMuted, fontSize = 11.sp)
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     OutlinedButton(
                         onClick = { Haptic.perform(context, HapticType.TAP) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Tap", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_tap), fontSize = 11.sp) }
                     OutlinedButton(
                         onClick = { Haptic.perform(context, HapticType.TOGGLE) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Toggle", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_toggle), fontSize = 11.sp) }
                     OutlinedButton(
                         onClick = { Haptic.perform(context, HapticType.DESTRUCTIVE) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Destruktiv", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_destructive), fontSize = 11.sp) }
                 }
                 Spacer(Modifier.height(4.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -141,26 +144,26 @@ fun SettingsScreen() {
                         onClick = { Haptic.perform(context, HapticType.CONFIRM) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Confirm", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_confirm), fontSize = 11.sp) }
                     OutlinedButton(
                         onClick = { Haptic.perform(context, HapticType.ERROR) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Error", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_error), fontSize = 11.sp) }
                     OutlinedButton(
                         onClick = { Haptic.perform(context, HapticType.SLIDER_TICK) },
                         modifier = Modifier.weight(1f),
                         contentPadding = PaddingValues(4.dp)
-                    ) { Text("Slider", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_haptic_test_slider), fontSize = 11.sp) }
                 }
             }
         }
 
-        StatCard("Design") {
+        StatCard(stringResource(R.string.settings_design_title)) {
             if (supportsDynamic) {
                 ToggleRow(
-                    label = "Material-You Dynamic-Theming",
-                    description = "Übernimmt die Akzent-Farbe aus deinem Wallpaper (Android 12+). Sonst bleibt das Default-Rot.",
+                    label = stringResource(R.string.settings_materialyou_label),
+                    description = stringResource(R.string.settings_materialyou_desc),
                     checked = materialYou
                 ) {
                     materialYou = it
@@ -170,27 +173,55 @@ fun SettingsScreen() {
                 if (materialYou) {
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Wirksam nach App-Neustart.",
+                        stringResource(R.string.settings_materialyou_restart),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
             } else {
                 Text(
-                    "Material-You Dynamic-Theming braucht Android 12+ — dein Gerät läuft auf älterer Version.",
+                    stringResource(R.string.settings_materialyou_unavailable),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
         }
 
-        StatCard("Cloud-Backup") {
+        StatCard("Sprache / Language") {
+            Text("Sprache der App · App language", color = OnSurfaceMuted, fontSize = 12.sp)
+            Spacer(Modifier.height(8.dp))
+            val localeOptions = listOf("system" to "System", "de" to "Deutsch", "en" to "English")
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                localeOptions.forEach { (tag, label) ->
+                    val selected = appLocale == tag
+                    OutlinedButton(
+                        onClick = {
+                            Haptic.perform(context, HapticType.TAP)
+                            appLocale = tag
+                            AppPrefs.setAppLocale(context, tag)
+                            // Alle Activities lesen die Sprache in attachBaseContext — recreate wendet sie an.
+                            (context as? android.app.Activity)?.recreate()
+                        },
+                        modifier = Modifier.weight(1f),
+                        border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, Accent) else null
+                    ) {
+                        Text(
+                            label,
+                            color = if (selected) Accent else androidx.compose.ui.graphics.Color.Unspecified,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Text("Wirkt sofort · applies immediately", color = OnSurfaceMuted, fontSize = 11.sp)
+        }
+
+        StatCard(stringResource(R.string.settings_cloud_title)) {
             var cbEnabled by remember { mutableStateOf(com.tamerin.sysmonitor.cloud.CloudPrefs.isEnabled(context)) }
             val lastHb = com.tamerin.sysmonitor.cloud.CloudPrefs.lastHeartbeatMs(context)
             val lastBu = com.tamerin.sysmonitor.cloud.CloudPrefs.lastBackupMs(context)
             ToggleRow(
-                label = "Cloud-Sync aktiv",
-                description = "Sendet anonymen Heartbeat + verschlüsseltes Backup (App-Settings + Akku-Verlauf) " +
-                    "an redmonitor.redst.de. Schlüssel wird aus Hardware abgeleitet — Server kann NICHTS lesen. " +
-                    "Nach Reinstall wird Backup automatisch zurückgespielt.",
+                label = stringResource(R.string.settings_cloud_label),
+                description = stringResource(R.string.settings_cloud_desc),
                 checked = cbEnabled
             ) {
                 cbEnabled = it
@@ -201,13 +232,19 @@ fun SettingsScreen() {
             if (cbEnabled) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Letzter Heartbeat: " + if (lastHb > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
-                        java.util.Locale.getDefault()).format(java.util.Date(lastHb)) else "—",
+                    stringResource(
+                        R.string.settings_cloud_last_heartbeat,
+                        if (lastHb > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
+                            java.util.Locale.getDefault()).format(java.util.Date(lastHb)) else "—"
+                    ),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 Text(
-                    "Letztes Backup: " + if (lastBu > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
-                        java.util.Locale.getDefault()).format(java.util.Date(lastBu)) else "—",
+                    stringResource(
+                        R.string.settings_cloud_last_backup,
+                        if (lastBu > 0) java.text.SimpleDateFormat("dd.MM HH:mm",
+                            java.util.Locale.getDefault()).format(java.util.Date(lastBu)) else "—"
+                    ),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -225,7 +262,7 @@ fun SettingsScreen() {
                             }
                         },
                         modifier = Modifier.weight(1f)
-                    ) { Text("Heartbeat jetzt", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_cloud_heartbeat_now), fontSize = 11.sp) }
                     OutlinedButton(
                         onClick = {
                             Haptic.perform(context, HapticType.TAP)
@@ -241,21 +278,23 @@ fun SettingsScreen() {
                             }
                         },
                         modifier = Modifier.weight(1f)
-                    ) { Text("Backup jetzt", fontSize = 11.sp) }
+                    ) { Text(stringResource(R.string.settings_cloud_backup_now), fontSize = 11.sp) }
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Device-ID (Hardware-Hash, opak): " +
-                        com.tamerin.sysmonitor.cloud.DeviceIdProvider.deviceId(context).take(16) + "…",
+                    stringResource(
+                        R.string.settings_cloud_device_id,
+                        com.tamerin.sysmonitor.cloud.DeviceIdProvider.deviceId(context).take(16)
+                    ),
                     color = OnSurfaceMuted, fontSize = 10.sp,
                     fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                 )
             }
         }
 
-        StatCard("Bug melden / Feedback") {
+        StatCard(stringResource(R.string.settings_bug_title)) {
             Text(
-                "Wenn was nicht funktioniert oder du Wünsche hast — schreib ein Issue auf GitHub. Open Source, jeder kann mitlesen und mitschreiben.",
+                stringResource(R.string.settings_bug_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -269,7 +308,7 @@ fun SettingsScreen() {
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("🐛 Bug melden / Feature anfragen") }
+            ) { Text(stringResource(R.string.settings_bug_report_button)) }
             Spacer(Modifier.height(6.dp))
             OutlinedButton(
                 onClick = {
@@ -281,12 +320,12 @@ fun SettingsScreen() {
                     context.startActivity(intent)
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("GitHub-Repository öffnen") }
+            ) { Text(stringResource(R.string.settings_open_github)) }
         }
 
-        StatCard("App bewerten") {
+        StatCard(stringResource(R.string.settings_rate_title)) {
             Text(
-                "Wenn dir RedMonitor gefällt — lass eine Bewertung auf Trustpilot da. Hilft anderen, die App zu finden, und mir, sie besser zu machen.",
+                stringResource(R.string.settings_rate_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -301,7 +340,7 @@ fun SettingsScreen() {
                     runCatching { context.startActivity(intent) }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("⭐ Auf Trustpilot bewerten") }
+            ) { Text(stringResource(R.string.settings_rate_button)) }
             Spacer(Modifier.height(6.dp))
             OutlinedButton(
                 onClick = {
@@ -313,14 +352,17 @@ fun SettingsScreen() {
                     runCatching { context.startActivity(intent) }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Bewertungen ansehen") }
+            ) { Text(stringResource(R.string.settings_rate_view)) }
         }
 
-        StatCard("Rechtliches") {
+        StatCard(stringResource(R.string.settings_legal_title)) {
             Text(
-                "Datenschutzerklärung v${com.tamerin.sysmonitor.legal.LegalConstants.PRIVACY_VERSION} · " +
-                    "AGB v${com.tamerin.sysmonitor.legal.LegalConstants.TERMS_VERSION} · " +
-                    "Stand ${com.tamerin.sysmonitor.legal.LegalConstants.LEGAL_LAST_UPDATED}",
+                stringResource(
+                    R.string.settings_legal_versions,
+                    com.tamerin.sysmonitor.legal.LegalConstants.PRIVACY_VERSION.toString(),
+                    com.tamerin.sysmonitor.legal.LegalConstants.TERMS_VERSION.toString(),
+                    com.tamerin.sysmonitor.legal.LegalConstants.LEGAL_LAST_UPDATED
+                ),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -332,7 +374,7 @@ fun SettingsScreen() {
                             com.tamerin.sysmonitor.ui.PrivacyPolicyStandaloneActivity::class.java))
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Datenschutz", fontSize = 11.sp) }
+                ) { Text(stringResource(R.string.settings_legal_privacy), fontSize = 11.sp) }
                 OutlinedButton(
                     onClick = {
                         Haptic.perform(context, HapticType.TAP)
@@ -340,7 +382,7 @@ fun SettingsScreen() {
                             com.tamerin.sysmonitor.ui.TermsStandaloneActivity::class.java))
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("AGB", fontSize = 11.sp) }
+                ) { Text(stringResource(R.string.settings_legal_terms), fontSize = 11.sp) }
             }
             Spacer(Modifier.height(6.dp))
             OutlinedButton(
@@ -351,14 +393,14 @@ fun SettingsScreen() {
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Volles Impressum (theredstonee.de)") }
+            ) { Text(stringResource(R.string.settings_legal_imprint)) }
         }
 
-        StatCard("Über") {
+        StatCard(stringResource(R.string.settings_about_title)) {
             VersionRow(context)
-            KeyValueRow("Build", BuildConfig.VERSION_CODE.toString())
-            KeyValueRow("Anwendungs-ID", BuildConfig.APPLICATION_ID)
-            KeyValueRow("Lizenz", "MIT")
+            KeyValueRow(stringResource(R.string.settings_about_build), BuildConfig.VERSION_CODE.toString())
+            KeyValueRow(stringResource(R.string.settings_about_appid), BuildConfig.APPLICATION_ID)
+            KeyValueRow(stringResource(R.string.settings_about_license), "MIT")
             HerstellerRow(context)
             Spacer(Modifier.height(12.dp))
             AppComponentsBlock(context)
@@ -377,9 +419,9 @@ fun SettingsScreen() {
         }
 
         if (AppPrefs.isEasterEggUnlocked(context)) {
-            StatCard("🐍 Geheimer Bereich") {
+            StatCard(stringResource(R.string.settings_secret_title)) {
                 Text(
-                    "Du hast das Easter Egg entdeckt. Diese Sektion bleibt freigeschaltet.",
+                    stringResource(R.string.settings_secret_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
                 Spacer(Modifier.height(10.dp))
@@ -391,7 +433,7 @@ fun SettingsScreen() {
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("CPU-Snake spielen") }
+                ) { Text(stringResource(R.string.settings_secret_snake)) }
                 Spacer(Modifier.height(6.dp))
                 Button(
                     onClick = {
@@ -404,7 +446,7 @@ fun SettingsScreen() {
                         containerColor = com.tamerin.sysmonitor.ui.theme.GaugeRed
                     ),
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("☠ Russian Roulette") }
+                ) { Text(stringResource(R.string.settings_secret_roulette)) }
                 Spacer(Modifier.height(6.dp))
                 OutlinedButton(
                     onClick = {
@@ -414,7 +456,7 @@ fun SettingsScreen() {
                         )
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Dev-Tools (Roh-Dumps)") }
+                ) { Text(stringResource(R.string.settings_secret_devtools)) }
             }
         }
     }
@@ -451,7 +493,7 @@ private fun VersionRow(context: Context) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Version", color = OnSurfaceMuted, fontSize = 13.sp)
+        Text(stringResource(R.string.settings_version), color = OnSurfaceMuted, fontSize = 13.sp)
         val label = when {
             tapCount in 4..6 -> "${BuildConfig.VERSION_NAME}  …${VIDEO_EGG_TAPS - tapCount}"
             else -> BuildConfig.VERSION_NAME
@@ -493,7 +535,7 @@ private fun HerstellerRow(context: Context) {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("Hersteller", color = OnSurfaceMuted, fontSize = 13.sp)
+        Text(stringResource(R.string.settings_manufacturer), color = OnSurfaceMuted, fontSize = 13.sp)
         val label = when {
             tapCount in 3..4 -> "TheRedStonee  …${EASTER_EGG_TAPS - tapCount}"
             else -> "TheRedStonee"
@@ -567,13 +609,13 @@ private fun AppComponentsBlock(context: Context) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Komponenten",
+                stringResource(R.string.settings_components),
                 color = androidx.compose.material3.MaterialTheme.colorScheme.onSurface,
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Medium
             )
             Text(
-                "${comps.size} interne $pkg.* Klassen",
+                stringResource(R.string.settings_components_count, comps.size, pkg),
                 color = OnSurfaceMuted,
                 fontSize = 11.sp
             )
@@ -613,7 +655,7 @@ private fun AppComponentsBlock(context: Context) {
                     )
                     if (kind == "Service" && c.running) {
                         Text(
-                            "• läuft",
+                            stringResource(R.string.settings_running),
                             color = GaugeGreen,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold

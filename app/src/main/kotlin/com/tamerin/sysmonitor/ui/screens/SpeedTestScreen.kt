@@ -9,6 +9,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -32,8 +34,10 @@ private data class PhaseResult(val mbps: Double, val transferredMb: Double, val 
 @Composable
 fun SpeedTestScreen() {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val readyLabel = stringResource(R.string.bench_ready)
     var running by remember { mutableStateOf(false) }
-    var currentPhase by remember { mutableStateOf("Bereit") }
+    var currentPhase by remember { mutableStateOf(readyLabel) }
     var liveMbps by remember { mutableDoubleStateOf(0.0) }
     var latencyMs by remember { mutableIntStateOf(0) }
     var jitterMs by remember { mutableIntStateOf(0) }
@@ -66,10 +70,10 @@ fun SpeedTestScreen() {
                             .getOrNull()
                     }
                 }
-                currentPhase = if (errorMsg != null) "Fehler" else "Fertig"
+                currentPhase = if (errorMsg != null) context.getString(R.string.bench_error) else context.getString(R.string.bench_done)
             } catch (t: Throwable) {
-                errorMsg = t.message ?: t::class.simpleName ?: "Unbekannter Fehler"
-                currentPhase = "Fehler"
+                errorMsg = t.message ?: t::class.simpleName ?: context.getString(R.string.bench_speed_unknown_error)
+                currentPhase = context.getString(R.string.bench_error)
             } finally {
                 running = false
             }
@@ -80,11 +84,9 @@ fun SpeedTestScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Speed-Test (Cloudflare)") {
+        StatCard(stringResource(R.string.bench_speed_title)) {
             Text(
-                "Latency, Download und Upload gegen speed.cloudflare.com. " +
-                    "Single-Connection — d.h. der typische 'realistische' Real-World-Wert, " +
-                    "nicht der maximale Multi-Stream-Wert wie bei Ookla.",
+                stringResource(R.string.bench_speed_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(10.dp))
@@ -95,7 +97,7 @@ fun SpeedTestScreen() {
         }
 
         errorMsg?.let {
-            StatCard("Fehler") {
+            StatCard(stringResource(R.string.bench_error)) {
                 Text(it, color = androidx.compose.ui.graphics.Color(0xFFDC2626),
                     fontSize = 12.sp, fontFamily = FontFamily.Monospace)
             }
@@ -109,26 +111,26 @@ fun SpeedTestScreen() {
             StatCard("Download") {
                 Text("${"%.2f".format(r.mbps)} Mbps", color = GaugeGreen, fontSize = 32.sp,
                     fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                KeyValueRow("Übertragen", "${"%.1f".format(r.transferredMb)} MB")
-                KeyValueRow("Dauer", "${"%.1f".format(r.seconds)} s")
+                KeyValueRow(stringResource(R.string.bench_speed_transferred), "${"%.1f".format(r.transferredMb)} MB")
+                KeyValueRow(stringResource(R.string.bench_duration), "${"%.1f".format(r.seconds)} s")
             }
         }
         uploadResult?.let { r ->
             StatCard("Upload") {
                 Text("${"%.2f".format(r.mbps)} Mbps", color = Accent, fontSize = 32.sp,
                     fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                KeyValueRow("Übertragen", "${"%.1f".format(r.transferredMb)} MB")
-                KeyValueRow("Dauer", "${"%.1f".format(r.seconds)} s")
+                KeyValueRow(stringResource(R.string.bench_speed_transferred), "${"%.1f".format(r.transferredMb)} MB")
+                KeyValueRow(stringResource(R.string.bench_duration), "${"%.1f".format(r.seconds)} s")
             }
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Button(onClick = { start() }, enabled = !running, modifier = Modifier.weight(1f)) {
-                Text(if (running) "Läuft…" else "Start")
+                Text(if (running) stringResource(R.string.bench_running) else "Start")
             }
             OutlinedButton(onClick = {
                 downloadResult = null; uploadResult = null; latencyMs = 0; jitterMs = 0
-                currentPhase = "Bereit"
+                currentPhase = readyLabel
             }, enabled = !running, modifier = Modifier.weight(1f)) { Text("Reset") }
         }
     }

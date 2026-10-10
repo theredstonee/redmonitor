@@ -7,6 +7,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,22 +43,22 @@ fun SystemPropertiesScreen() {
         OutlinedTextField(
             value = query,
             onValueChange = { query = it },
-            label = { Text("Filter (Schlüssel oder Wert)") },
+            label = { Text(stringResource(R.string.bench_props_filter)) },
             singleLine = true,
             modifier = Modifier.fillMaxWidth()
         )
         Spacer(Modifier.height(8.dp))
         Text(
-            if (loading) "Lade…" else "${filtered.size} von ${props.size} Properties",
+            if (loading) stringResource(R.string.bench_props_loading) else stringResource(R.string.bench_props_count, filtered.size, props.size),
             color = OnSurfaceMuted,
             fontSize = 12.sp
         )
         Spacer(Modifier.height(8.dp))
 
         if (props.isEmpty() && !loading) {
-            StatCard("Keine Daten") {
+            StatCard(stringResource(R.string.bench_no_data)) {
                 Text(
-                    "Konnte `getprop` nicht ausführen — auf diesem Gerät gesperrt.",
+                    stringResource(R.string.bench_props_getprop_failed),
                     fontSize = 13.sp
                 )
             }
@@ -65,10 +67,11 @@ fun SystemPropertiesScreen() {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             items(filtered, key = { it.first }) { (k, v) ->
+                val emptyLabel = stringResource(R.string.bench_props_empty)
                 Column(modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
                     Text(k, color = Accent, fontSize = 11.sp, fontFamily = FontFamily.Monospace)
                     Text(
-                        v.ifBlank { "(leer)" },
+                        v.ifBlank { emptyLabel },
                         fontSize = 12.sp,
                         fontFamily = FontFamily.Monospace
                     )

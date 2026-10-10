@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OnboardingDialog -->
+    <string name="comp_onb_step1_title">Welcome to RedMonitor</string>
+    <string name="comp_onb_step1_body">A local, ad-free system-info app. Shows live CPU, RAM, battery, sensors, benchmarks, hardware tests and much more. Everything stays on the device — no cloud, no telemetry.</string>
+    <string name="comp_onb_step1_cta">Next</string>
+    <string name="comp_onb_step2_title">What you can do</string>
+    <string name="comp_onb_step2_body">• Live stats in the \'Live\' tab\n• Benchmark suite: CPU, RAM, storage, GPU, stress test\n• Hardware tests: touch, display, speaker, mic, NFC, IR, compass…\n• Per-app traffic, wake locks, notification log, permission audit\n• Floating HUD over all apps + quick-settings tile</string>
+    <string name="comp_onb_step2_cta">Next</string>
+    <string name="comp_onb_step3_title">Shizuku = more depth</string>
+    <string name="comp_onb_step3_body">Many power features (Logcat, wake locks, shell terminal, force-stop, automatic permission unblocks) need Shizuku — a small app that gives RedMonitor shell privileges without root. Optional, but recommended.</string>
+    <string name="comp_onb_step3_cta">Let\'s go</string>
+    <string name="comp_onb_back">Back</string>
+    <string name="comp_onb_skip">Skip</string>
+
+    <!-- OemSetupCard / OemHintBanner -->
+    <string name="comp_oem_badge_setup">Needs setup</string>
+    <string name="comp_oem_badge_recommended">Adjustment recommended</string>
+    <string name="comp_oem_badge_optional">Optional</string>
+    <string name="comp_oem_detected">%1$s detected</string>
+    <string name="comp_oem_hint_high">%1$s - otherwise the system kills the app in the background.</string>
+    <string name="comp_oem_hint_tap">%1$s - tap for setup guide.</string>
+    <string name="comp_oem_setup_arrow">Setup &gt;</string>
+    <string name="comp_oem_level_high">Aggressive limits</string>
+    <string name="comp_oem_level_medium">Moderate limits</string>
+    <string name="comp_oem_level_low">Near stock</string>
+    <string name="comp_oem_perm_battery">Battery optimization off</string>
+    <string name="comp_oem_perm_battery_help">Otherwise Doze kills the app in deep sleep.</string>
+    <string name="comp_oem_perm_usage">Usage stats (top app)</string>
+    <string name="comp_oem_perm_usage_help">For \'active app\' display and fair drain measurement.</string>
+    <string name="comp_oem_perm_notif">Notifications</string>
+    <string name="comp_oem_perm_notif_help">Update alerts &amp; foreground-service status.</string>
+    <string name="comp_oem_perm_overlay">Display over other apps</string>
+    <string name="comp_oem_perm_overlay_help">Required for the floating HUD overlay.</string>
+    <string name="comp_oem_btn_samsung_sleep">Open sleeping apps</string>
+    <string name="comp_oem_btn_autostart">Open autostart manager</string>
+    <string name="comp_oem_btn_miui_perms">MIUI: Other permissions (pop-ups)</string>
+    <string name="comp_oem_btn_developer">Developer options (MIUI optimization)</string>
+    <string name="comp_oem_btn_app_details">App details (all permissions)</string>
+    <string name="comp_oem_status_ok">OK</string>
+    <string name="comp_oem_status_open">Open &gt;</string>
+
+    <!-- LegalAcceptanceDialog -->
+    <string name="comp_legal_welcome">Welcome to RedMonitor</string>
+    <string name="comp_legal_subtitle">A brief note on data processing.</string>
+    <string name="comp_legal_cloud_title">Enable cloud sync</string>
+    <string name="comp_legal_cloud_body">Anonymous heartbeat + end-to-end encrypted backup to %1$s. Default: on. Can be toggled anytime in settings.</string>
+    <string name="comp_legal_privacy">Privacy Policy</string>
+    <string name="comp_legal_terms">Terms of Use</string>
+    <string name="comp_legal_settings_hint">Also available anytime in settings under \'Legal\'.</string>
+    <string name="comp_legal_accept">Got it, let\'s go</string>
+    <string name="comp_legal_version">As of %1$s · Privacy v%2$s · Terms v%3$s</string>
+
+    <!-- RateDialog -->
+    <string name="comp_rate_title">Do you like RedMonitor?</string>
+    <string name="comp_rate_body">Help us with a quick review on Trustpilot. Takes 30 seconds and helps a lot to make the app better known.</string>
+    <string name="comp_rate_confirm">⭐ Rate now</string>
+    <string name="comp_rate_later">Later</string>
+
+    <!-- UpdateBanner -->
+    <string name="comp_update_available">Update available</string>
+    <string name="comp_update_detail">%1$s  →  %2$s  ·  Tap for details</string>
+</resources>

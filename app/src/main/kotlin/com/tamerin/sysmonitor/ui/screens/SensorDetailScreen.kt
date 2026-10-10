@@ -14,9 +14,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.SensorRegistry
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.Sparkline
@@ -33,8 +35,8 @@ fun SensorDetailScreen(sensorType: Int) {
         context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
     }
     val sensor = remember { sensorManager.getDefaultSensor(sensorType) }
-    val unit = remember { SensorRegistry.unit(sensorType) }
-    val label = remember { SensorRegistry.typeLabel(sensorType) }
+    val unit = remember { SensorRegistry.unit(context, sensorType) }
+    val label = remember { SensorRegistry.typeLabel(context, sensorType) }
 
     var current by remember { mutableStateOf(FloatArray(0)) }
     val history = remember { mutableStateListOf<FloatArray>() }
@@ -59,7 +61,7 @@ fun SensorDetailScreen(sensorType: Int) {
     if (sensor == null) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
             StatCard(label) {
-                Text("Kein Sensor dieses Typs vorhanden.", color = OnSurfaceMuted, fontSize = 13.sp)
+                Text(stringResource(R.string.hw_sd_no_sensor), color = OnSurfaceMuted, fontSize = 13.sp)
             }
         }
         return
@@ -72,12 +74,12 @@ fun SensorDetailScreen(sensorType: Int) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Live") {
+        StatCard(stringResource(R.string.hw_sd_live)) {
             if (current.isEmpty()) {
-                Text("warte auf Daten…", color = OnSurfaceMuted, fontSize = 13.sp)
+                Text(stringResource(R.string.hw_sd_waiting_data), color = OnSurfaceMuted, fontSize = 13.sp)
             } else {
                 current.forEachIndexed { idx, v ->
-                    val axis = when (idx) { 0 -> "X"; 1 -> "Y"; 2 -> "Z"; else -> "Achse $idx" }
+                    val axis = when (idx) { 0 -> "X"; 1 -> "Y"; 2 -> "Z"; else -> stringResource(R.string.hw_sd_axis_n, idx) }
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Text(axis, color = OnSurfaceMuted, fontSize = 14.sp, modifier = Modifier.width(40.dp))
                         Text(
@@ -94,11 +96,16 @@ fun SensorDetailScreen(sensorType: Int) {
         if (history.size > 1) {
             val axes = current.size.coerceAtMost(3)
             val colors = listOf(Accent, GaugeGreen, GaugeRed)
-            StatCard("Verlauf (letzte ${history.size} Samples)") {
+            StatCard(stringResource(R.string.hw_sd_history, history.size)) {
                 for (axis in 0 until axes) {
                     val axisValues = history.map { it.getOrNull(axis) ?: 0f }
                     Text(
-                        "Achse ${"XYZ".getOrNull(axis) ?: '?'}: min ${"%.3f".format(axisValues.min())}  ·  max ${"%.3f".format(axisValues.max())}",
+                        stringResource(
+                            R.string.hw_sd_axis_minmax,
+                            ("XYZ".getOrNull(axis) ?: '?').toString(),
+                            "%.3f".format(axisValues.min()),
+                            "%.3f".format(axisValues.max())
+                        ),
                         color = OnSurfaceMuted,
                         fontSize = 11.sp
                     )
@@ -110,19 +117,19 @@ fun SensorDetailScreen(sensorType: Int) {
             }
         }
 
-        StatCard("Sensor-Specs") {
+        StatCard(stringResource(R.string.hw_sd_specs)) {
             KeyValueRow("Name", sensor.name)
-            KeyValueRow("Hersteller", sensor.vendor)
-            KeyValueRow("Typ-ID", sensor.type.toString())
-            KeyValueRow("Maximal-Range", "${sensor.maximumRange} $unit")
-            KeyValueRow("Auflösung", "${sensor.resolution} $unit")
+            KeyValueRow(stringResource(R.string.hw_sd_manufacturer), sensor.vendor)
+            KeyValueRow(stringResource(R.string.hw_sd_type_id), sensor.type.toString())
+            KeyValueRow(stringResource(R.string.hw_sd_max_range), "${sensor.maximumRange} $unit")
+            KeyValueRow(stringResource(R.string.hw_sd_resolution), "${sensor.resolution} $unit")
             KeyValueRow("Power", "${sensor.power} mA")
-            KeyValueRow("Min-Verzögerung", "${sensor.minDelay} µs")
-            KeyValueRow("Max-Verzögerung", "${sensor.maxDelay} µs")
+            KeyValueRow(stringResource(R.string.hw_sd_min_delay), "${sensor.minDelay} µs")
+            KeyValueRow(stringResource(R.string.hw_sd_max_delay), "${sensor.maxDelay} µs")
             KeyValueRow("FIFO max", sensor.fifoMaxEventCount.toString())
-            KeyValueRow("FIFO reserviert", sensor.fifoReservedEventCount.toString())
-            KeyValueRow("Wake-Up", if (sensor.isWakeUpSensor) "Ja" else "Nein")
-            KeyValueRow("Samples empfangen", samples.toString())
+            KeyValueRow(stringResource(R.string.hw_sd_fifo_reserved), sensor.fifoReservedEventCount.toString())
+            KeyValueRow(stringResource(R.string.hw_sd_wakeup), if (sensor.isWakeUpSensor) stringResource(R.string.hw_yes) else stringResource(R.string.hw_no))
+            KeyValueRow(stringResource(R.string.hw_sd_samples_received), samples.toString())
         }
     }
 }

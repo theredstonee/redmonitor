@@ -6,8 +6,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ThermalReader
 import com.tamerin.sysmonitor.data.ThermalZone
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -31,9 +33,9 @@ fun ThermalScreen() {
 
     if (zones.isEmpty()) {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-            StatCard("Thermalzonen") {
+            StatCard(stringResource(R.string.pwr_thermal_zones_title)) {
                 Text(
-                    "Auf diesem Gerät sind keine Thermalzonen lesbar (Kernel-Restriktionen oder Hersteller hat Zugriff gesperrt).",
+                    stringResource(R.string.pwr_thermal_none),
                     color = OnSurfaceMuted,
                     fontSize = 13.sp
                 )
@@ -47,21 +49,21 @@ fun ThermalScreen() {
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         item {
-            StatCard("Übersicht") {
-                KeyValueRow("Zonen gesamt", zones.size.toString())
+            StatCard(stringResource(R.string.pwr_thermal_overview)) {
+                KeyValueRow(stringResource(R.string.pwr_thermal_zones_total), zones.size.toString())
                 val hottest = zones.filter { !it.tempCelsius.isNaN() }.maxByOrNull { it.tempCelsius }
                 if (hottest != null) {
                     KeyValueRow(
-                        "Heißeste Zone",
+                        stringResource(R.string.pwr_thermal_hottest),
                         "${hottest.type}: ${"%.1f".format(hottest.tempCelsius)} °C"
                     )
                 }
             }
         }
         items(zones, key = { it.index }) { z ->
-            StatCard("Zone ${z.index}: ${z.type}") {
+            StatCard(stringResource(R.string.pwr_thermal_zone_title, z.index, z.type)) {
                 KeyValueRow(
-                    "Temperatur",
+                    stringResource(R.string.pwr_thermal_temperature),
                     if (z.tempCelsius.isNaN()) "—" else "${"%.1f".format(z.tempCelsius)} °C"
                 )
             }

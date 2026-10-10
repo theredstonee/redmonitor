@@ -2,6 +2,8 @@ package com.tamerin.sysmonitor.data
 
 import android.content.Context
 import android.content.pm.PackageManager
+import com.tamerin.sysmonitor.privileged.PrivilegedManager
+import com.tamerin.sysmonitor.privileged.adb.AdbConnectionManager
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -12,7 +14,21 @@ object ShizukuHelper {
 
     private const val SHIZUKU_PKG = "moe.shizuku.privileged.api"
 
-    fun state(context: Context): State {
+    /**
+     * Gate-Status für privilegierten Zugang, den alle Feature-Screens abfragen.
+     * Ist der eigene ADB-Dienst verbunden, gilt der Zugang als [State.Ready] —
+     * unabhängig davon, ob Shizuku installiert/gestartet ist. Sonst spiegelt er den
+     * reinen Shizuku-Status ([shizukuState]).
+     *
+     * WICHTIG: Für die Backend-AUSWAHL zählt weiterhin der jeweils eigene Zustand
+     * (Shizuku-Backend prüft [shizukuState], ADB-Backend prüft die ADB-Verbindung) —
+     * diese Kombination hier ist nur der UI-/Feature-Gate-Status.
+     */
+    fun state(context: Context): State =
+        if (AdbConnectionManager.isConnected()) State.Ready else shizukuState(context)
+
+    /** Reiner Shizuku-Status (ohne ADB-Backend) — Grundlage für [ShizukuBackend]. */
+    fun shizukuState(context: Context): State {
         val installed = isInstalled(context)
         if (!installed) return State.NotInstalled
         return try {
@@ -53,17 +69,8 @@ object ShizukuHelper {
      * but still exists in the bytecode and works at runtime.
      */
     fun readFile(context: Context, path: String): String? {
-        if (state(context) != State.Ready) return null
-        return runCatching {
-            val process = newProcessReflected(arrayOf("cat", path)) ?: return@runCatching null
-            try {
-                val text = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
-                val exit = process.waitFor()
-                if (exit == 0 && text.isNotBlank()) text.trim() else null
-            } finally {
-                runCatching { process.destroy() }
-            }
-        }.getOrNull()
+        val res = PrivilegedManager.exec(context, arrayOf("cat", path))
+        return if (res.ok && res.stdout.isNotBlank()) res.stdout.trim() else null
     }
 
     fun readLong(context: Context, path: String): Long? = readFile(context, path)?.toLongOrNull()
@@ -73,14 +80,22 @@ object ShizukuHelper {
     }
 
     /**
-     * Run an arbitrary command via Shizuku as `shell` user.
-     * Returns stdout, stderr and exit code.
+     * Run an arbitrary command as `shell` user über das aktuell aktive privilegierte
+     * Backend (Shizuku oder eigener ADB-Client). Returns stdout, stderr and exit code.
+     *
+     * Delegiert an [PrivilegedManager] — dadurch sind alle Call-Sites automatisch
+     * backend-agnostisch, ohne dass sie geändert werden müssen.
      */
-    fun runCommand(context: Context, vararg cmd: String): CmdResult {
-        if (state(context) != State.Ready) {
-            return CmdResult(-1, "", "Shizuku not ready")
-        }
-        val process = newProcessReflected(arrayOf(*cmd))
+    fun runCommand(context: Context, vararg cmd: String): CmdResult =
+        PrivilegedManager.exec(context, arrayOf(*cmd))
+
+    /**
+     * Führt ein Kommando DIREKT über Shizuku (`newProcess`) aus, ohne Backend-Auswahl.
+     * Nur für [com.tamerin.sysmonitor.privileged.ShizukuBackend] gedacht — regulärer
+     * Code geht über [runCommand]/[PrivilegedManager].
+     */
+    internal fun execDirect(cmd: Array<String>): CmdResult {
+        val process = newProcessReflected(cmd)
             ?: return CmdResult(-1, "", "newProcess failed")
         return runCatching {
             val out = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
@@ -251,17 +266,9 @@ object ShizukuHelper {
      * The dumpsys output contains the negotiated PD voltage/current.
      */
     fun dumpsysBattery(context: Context): DumpsysBattery? {
-        if (state(context) != State.Ready) return null
-        val process = newProcessReflected(arrayOf("dumpsys", "battery")) ?: return null
-        return runCatching {
-            val text = try {
-                BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
-            } finally {
-                runCatching { process.waitFor() }
-                runCatching { process.destroy() }
-            }
-            parseDumpsys(text)
-        }.getOrNull()
+        val res = runCommand(context, "dumpsys", "battery")
+        if (!res.ok || res.stdout.isBlank()) return null
+        return parseDumpsys(res.stdout)
     }
 
     /** Reines Parsing der `dumpsys battery`-Ausgabe. `internal` statt `private`,

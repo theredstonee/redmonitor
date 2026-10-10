@@ -13,10 +13,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.WakelockReader
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -61,17 +63,15 @@ fun BatteryDoctorScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Akku-Doktor",
-                description = "Korreliert Wake-Locks (dumpsys power) mit dumpsys batterystats — " +
-                    "beides braucht shell-Privileg."
+                title = stringResource(R.string.pwr_bd_shizuku_title),
+                description = stringResource(R.string.pwr_bd_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Was killt meinen Akku?") {
+        StatCard(stringResource(R.string.pwr_bd_title)) {
             Text(
-                "Analysiert die letzten Stunden: wer hält Wake-Locks, wer wacht am häufigsten auf, " +
-                    "wer hat die meisten Foreground-Service-Wechsel. Score hoch = verdächtig.",
+                stringResource(R.string.pwr_bd_explain),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -79,12 +79,12 @@ fun BatteryDoctorScreen() {
                 onClick = { analyze() },
                 enabled = !loading,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text(if (loading) "Analysiere…" else "Analyse starten") }
+            ) { Text(if (loading) stringResource(R.string.pwr_bd_analyzing) else stringResource(R.string.pwr_bd_start)) }
         }
         Spacer(Modifier.height(8.dp))
 
         if (globalNotes.isNotEmpty()) {
-            StatCard("System-Beobachtungen") {
+            StatCard(stringResource(R.string.pwr_bd_system_obs)) {
                 globalNotes.forEach { n ->
                     Text("• $n", color = OnSurfaceMuted, fontSize = 12.sp,
                         modifier = Modifier.padding(vertical = 2.dp))
@@ -98,8 +98,8 @@ fun BatteryDoctorScreen() {
                 items(suspects, key = { it.pkg }) { s -> SuspectCard(s) }
             }
         } else if (!loading) {
-            StatCard("Noch keine Analyse") {
-                Text("Tap auf 'Analyse starten'. Dauert 1-3 s.",
+            StatCard(stringResource(R.string.pwr_bd_no_analysis_title)) {
+                Text(stringResource(R.string.pwr_bd_no_analysis_body),
                     color = OnSurfaceMuted, fontSize = 12.sp)
             }
         }
@@ -121,7 +121,7 @@ private fun SuspectCard(s: Suspect) {
                     .background(AccentBubble)
                     .padding(horizontal = 6.dp, vertical = 2.dp)
             ) {
-                Text("Score ${s.score}", color = color, fontSize = 11.sp,
+                Text(stringResource(R.string.pwr_bd_score, s.score), color = color, fontSize = 11.sp,
                     fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
             }
             Spacer(Modifier.width(8.dp))
@@ -145,7 +145,7 @@ private suspend fun runAnalysis(context: android.content.Context): Pair<List<Sus
     wl.entries.filterNot { it.isSystem }.forEach { entry ->
         val pkg = entry.packageName ?: "uid:${entry.uid}"
         scoreByPkg.getOrPut(pkg) { mutableListOf() } +=
-            "Hält Wake-Lock '${entry.tag}' (${entry.type.removeSuffix("_WAKE_LOCK")})"
+            context.getString(R.string.pwr_bd_reason_wakelock, entry.tag, entry.type.removeSuffix("_WAKE_LOCK"))
     }
 
     // 2) dumpsys batterystats Per-App-Wakeups + Job-Scheduler-Stats
@@ -161,16 +161,16 @@ private suspend fun runAnalysis(context: android.content.Context): Pair<List<Sus
             val times = m.groupValues[2].toIntOrNull() ?: 0
             if (times > 0) {
                 scoreByPkg.getOrPut(pkg) { mutableListOf() } +=
-                    "$times× Wakeup-Alarme (dumpsys batterystats)"
+                    context.getString(R.string.pwr_bd_reason_wakeups, times)
             }
         }
         // Top-mobile-radio-active oder TopApp-Section grob
         if (text.contains("Mobile radio active")) {
-            notes += "Mobilfunk-Modem war aktiv — Roaming oder schlechtes Signal?"
+            notes += context.getString(R.string.pwr_bd_note_modem)
         }
         if (text.contains("Wifi scan")) {
             val scans = Regex("""Wifi scan: (\d+)""").find(text)?.groupValues?.get(1)?.toIntOrNull()
-            if (scans != null && scans > 50) notes += "$scans WLAN-Scans — viele Apps suchen Netze"
+            if (scans != null && scans > 50) notes += context.getString(R.string.pwr_bd_note_wifi_scans, scans)
         }
     } else {
         notes += "dumpsys batterystats Exit ${bs.exitCode}: ${bs.stderr.take(80)}"
@@ -185,7 +185,7 @@ private suspend fun runAnalysis(context: android.content.Context): Pair<List<Sus
             val pn = Regex("""packageName=(\S+)""").find(line)?.groupValues?.get(1)
             if (pn != null) current = pn
             if (line.contains("isForeground=true") && current != null && current != context.packageName) {
-                scoreByPkg.getOrPut(current!!) { mutableListOf() } += "Hält Foreground-Service"
+                scoreByPkg.getOrPut(current!!) { mutableListOf() } += context.getString(R.string.pwr_bd_reason_fgservice)
             }
         }
     }
@@ -198,7 +198,7 @@ private suspend fun runAnalysis(context: android.content.Context): Pair<List<Sus
         Suspect(pkg = pkg, displayName = label, score = reasons.size, reasons = reasons.distinct())
     }.sortedByDescending { it.score }.take(20)
 
-    if (suspects.isEmpty()) notes += "Keine verdächtigen User-Apps gefunden — System läuft sauber."
+    if (suspects.isEmpty()) notes += context.getString(R.string.pwr_bd_note_clean)
     return suspects to notes
 }
 

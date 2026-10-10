@@ -12,6 +12,8 @@ import androidx.compose.material.icons.filled.Sensors
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.Routes
 import com.tamerin.sysmonitor.ui.BatteryStandaloneActivity
 import com.tamerin.sysmonitor.ui.GlyphMatrixStandaloneActivity
@@ -19,23 +21,22 @@ import com.tamerin.sysmonitor.ui.SensorsStandaloneActivity
 import com.tamerin.sysmonitor.ui.components.HubEntry
 import com.tamerin.sysmonitor.ui.components.HubGrid
 
-private val SYSTEM_ENTRIES = listOf(
-    HubEntry(Routes.CPU, "CPU", "Last, Frequenzen, Kerne", Icons.Filled.Speed),
-    HubEntry(Routes.RAM, "RAM & Speicher", "Auslastung & Storage", Icons.Filled.Memory),
-    HubEntry(Routes.BATTERY, "Akku", "Stand, Watt, Schnelllad-Erkennung", Icons.Filled.BatteryFull,
-        activityClass = BatteryStandaloneActivity::class.java),
-    HubEntry(Routes.SENSORS, "Sensoren", "Liste + Klick = Detail-Graph", Icons.Filled.Sensors,
-        activityClass = SensorsStandaloneActivity::class.java),
-    HubEntry(Routes.GPU, "GPU", "Renderer, OpenGL, GLSL", Icons.Filled.DeveloperBoard),
-    HubEntry(Routes.NETWORK, "Netzwerk", "WLAN, Signal, IP, Traffic", Icons.Filled.NetworkCheck),
-    HubEntry(Routes.DISPLAY, "Display & Gerät", "Build, Uptime, Display", Icons.Filled.PhoneAndroid),
-    HubEntry(Routes.HUD, "Floating HUD", "Live-Overlay über allen Apps", Icons.Filled.Layers),
-    HubEntry(Routes.GLYPH, "Glyph Matrix", "Live-Werte auf der Rückseite", Icons.Filled.GridView,
-        badge = "Phone (3)", activityClass = GlyphMatrixStandaloneActivity::class.java),
-    HubEntry(Routes.SYSTEM_TWEAKS, "Display-Tweaks", "DPI, Auflösung, Animationen", Icons.Filled.Tune)
-)
-
 @Composable
 fun SystemHubScreen(onNavigate: (String) -> Unit) {
-    HubGrid(entries = SYSTEM_ENTRIES, onClick = { onNavigate(it.route) })
+    val entries = listOf(
+        HubEntry(Routes.CPU, "CPU", stringResource(R.string.bench_sys_cpu_sub), Icons.Filled.Speed),
+        HubEntry(Routes.RAM, stringResource(R.string.bench_sys_ram_title), stringResource(R.string.bench_sys_ram_sub), Icons.Filled.Memory),
+        HubEntry(Routes.BATTERY, stringResource(R.string.bench_sys_battery_title), stringResource(R.string.bench_sys_battery_sub), Icons.Filled.BatteryFull,
+            activityClass = BatteryStandaloneActivity::class.java),
+        HubEntry(Routes.SENSORS, stringResource(R.string.bench_sys_sensors_title), stringResource(R.string.bench_sys_sensors_sub), Icons.Filled.Sensors,
+            activityClass = SensorsStandaloneActivity::class.java),
+        HubEntry(Routes.GPU, "GPU", stringResource(R.string.bench_sys_gpu_sub), Icons.Filled.DeveloperBoard),
+        HubEntry(Routes.NETWORK, stringResource(R.string.bench_sys_network_title), stringResource(R.string.bench_sys_network_sub), Icons.Filled.NetworkCheck),
+        HubEntry(Routes.DISPLAY, stringResource(R.string.bench_sys_display_title), stringResource(R.string.bench_sys_display_sub), Icons.Filled.PhoneAndroid),
+        HubEntry(Routes.HUD, stringResource(R.string.bench_sys_hud_title), stringResource(R.string.bench_sys_hud_sub), Icons.Filled.Layers),
+        HubEntry(Routes.GLYPH, stringResource(R.string.bench_sys_glyph_title), stringResource(R.string.bench_sys_glyph_sub), Icons.Filled.GridView,
+            badge = "Phone (3)", activityClass = GlyphMatrixStandaloneActivity::class.java),
+        HubEntry(Routes.SYSTEM_TWEAKS, stringResource(R.string.bench_sys_tweaks_title), stringResource(R.string.bench_sys_tweaks_sub), Icons.Filled.Tune)
+    )
+    HubGrid(entries = entries, onClick = { onNavigate(it.route) })
 }

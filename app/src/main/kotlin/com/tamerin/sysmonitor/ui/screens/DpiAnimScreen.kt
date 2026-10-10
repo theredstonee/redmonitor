@@ -10,10 +10,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
@@ -79,21 +81,20 @@ fun DpiAnimScreen() {
     ) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für DPI/Animation",
-                description = "`wm density` und `settings put global animator_*` setzen DPI " +
-                    "und Animationsdauer system-weit. Nur shell darf das."
+                title = stringResource(R.string.scr2_dpi_shizuku_title),
+                description = stringResource(R.string.scr2_dpi_shizuku_desc)
             )
             return@Column
         }
 
-        StatCard("Aktuell") {
+        StatCard(stringResource(R.string.scr2_dpi_current_title)) {
             KeyValueRow("DPI", currentDpi)
             KeyValueRow("Anim-Scales", currentAnim)
         }
 
         StatCard("DPI Quick-Set") {
             Text(
-                "Niedriger DPI = mehr passt auf den Schirm. Stock-Wert ist meist 420 oder 480.",
+                stringResource(R.string.scr2_dpi_quickset_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -107,7 +108,7 @@ fun DpiAnimScreen() {
             }
             Spacer(Modifier.height(6.dp))
             Button(onClick = { setDpi(0) }, modifier = Modifier.fillMaxWidth()) {
-                Text("Auf Default zurücksetzen")
+                Text(stringResource(R.string.scr2_dpi_reset_default))
             }
             Spacer(Modifier.height(6.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -116,14 +117,14 @@ fun DpiAnimScreen() {
                     label = { Text("Custom") }, singleLine = true,
                     modifier = Modifier.weight(1f))
                 Button(onClick = { customDpi.toIntOrNull()?.let { setDpi(it) } }) {
-                    Text("Setzen")
+                    Text(stringResource(R.string.scr2_dpi_set))
                 }
             }
         }
 
         StatCard("Animation Speed") {
             Text(
-                "Wert 0 = sofort (kein Animation), 0.5 = doppelt so schnell, 1.0 = Stock.",
+                stringResource(R.string.scr2_dpi_anim_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))

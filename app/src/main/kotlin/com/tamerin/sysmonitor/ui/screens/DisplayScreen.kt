@@ -7,7 +7,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.DeviceInfo
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -42,20 +44,20 @@ fun DisplayScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Gerät") {
-            KeyValueRow("Marke", device.brand)
-            KeyValueRow("Hersteller", device.manufacturer)
-            KeyValueRow("Modell", device.model)
+        StatCard(stringResource(R.string.hw_disp_device)) {
+            KeyValueRow(stringResource(R.string.hw_disp_brand), device.brand)
+            KeyValueRow(stringResource(R.string.hw_disp_manufacturer), device.manufacturer)
+            KeyValueRow(stringResource(R.string.hw_disp_model), device.model)
             KeyValueRow("Codename", device.device)
-            KeyValueRow("Produkt", device.product)
+            KeyValueRow(stringResource(R.string.hw_disp_product), device.product)
             KeyValueRow("Board", device.board)
             KeyValueRow("Bootloader", device.bootloader)
         }
 
         StatCard("System") {
-            KeyValueRow("Android-Version", device.androidVersion)
+            KeyValueRow(stringResource(R.string.hw_disp_android_version), device.androidVersion)
             KeyValueRow("SDK-Level", device.sdk.toString())
-            KeyValueRow("Sicherheits-Patch", device.securityPatch)
+            KeyValueRow(stringResource(R.string.hw_disp_security_patch), device.securityPatch)
             KeyValueRow("Kernel", device.kernel)
             KeyValueRow("Java VM", device.javaVm)
             KeyValueRow("OpenSSL", device.openSslVersion)
@@ -64,16 +66,16 @@ fun DisplayScreen() {
         StatCard("Build") {
             KeyValueRow("Build-ID", device.buildId)
             KeyValueRow("Build-Host", device.buildHost)
-            KeyValueRow("Build-Datum", df.format(Date(device.buildTimeMs)))
+            KeyValueRow(stringResource(R.string.hw_disp_build_date), df.format(Date(device.buildTimeMs)))
             KeyValueRow("Uptime", formatUptime(device.uptimeMs))
         }
 
         displaySnap?.let {
             StatCard("Display") {
-                KeyValueRow("Auflösung", "${it.widthPx} × ${it.heightPx} px")
-                KeyValueRow("Dichte", "${it.densityDpi} dpi")
-                KeyValueRow("Bildwiederholrate", "${"%.1f".format(it.refreshRateHz)} Hz")
-                KeyValueRow("Diagonale (geschätzt)", "${"%.2f".format(it.sizeInches)} Zoll")
+                KeyValueRow(stringResource(R.string.hw_disp_resolution), "${it.widthPx} × ${it.heightPx} px")
+                KeyValueRow(stringResource(R.string.hw_disp_density), "${it.densityDpi} dpi")
+                KeyValueRow(stringResource(R.string.hw_disp_refresh_rate), "${"%.1f".format(it.refreshRateHz)} Hz")
+                KeyValueRow(stringResource(R.string.hw_disp_diagonal), "${"%.2f".format(it.sizeInches)} ${stringResource(R.string.hw_disp_inch)}")
             }
         }
 

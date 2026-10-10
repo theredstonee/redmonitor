@@ -24,11 +24,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.tamerin.sysmonitor.R
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -90,11 +92,13 @@ private fun SecretVideoContent(onExit: () -> Unit) {
         if (ready) return@LaunchedEffect
         downloading = true
         error = null
+        val unknownError = context.getString(R.string.misc_unknown_error)
         val result = withContext(Dispatchers.IO) {
             downloadVideo(
                 urlStr = "https://cdn.redst.de/raw/73573486753486756834908509437345.mp4",
                 dest = cachedFile,
-                onProgress = { pct -> progressPct = pct }
+                onProgress = { pct -> progressPct = pct },
+                unknownError = unknownError
             )
         }
         downloading = false
@@ -118,7 +122,7 @@ private fun SecretVideoContent(onExit: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Easter Egg konnte nicht geladen werden",
+                    stringResource(R.string.scr2_secret_load_failed),
                     color = Color(0xFFF87171),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
@@ -132,7 +136,7 @@ private fun SecretVideoContent(onExit: () -> Unit) {
                 )
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "Tap zum Schließen",
+                    stringResource(R.string.scr2_secret_tap_close),
                     color = Color(0xFF6B7280),
                     fontSize = 12.sp,
                     modifier = Modifier.clickable { onExit() }
@@ -144,7 +148,7 @@ private fun SecretVideoContent(onExit: () -> Unit) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    "Easter Egg wird geladen…",
+                    stringResource(R.string.scr2_secret_loading),
                     color = Color.White,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
@@ -185,7 +189,8 @@ private fun SecretVideoContent(onExit: () -> Unit) {
 private fun downloadVideo(
     urlStr: String,
     dest: File,
-    onProgress: (Int) -> Unit
+    onProgress: (Int) -> Unit,
+    unknownError: String
 ): String? {
     val tmp = File(dest.parentFile, dest.name + ".part")
     return try {
@@ -223,6 +228,6 @@ private fun downloadVideo(
         null
     } catch (e: Exception) {
         tmp.delete()
-        e.message ?: "unbekannter Fehler"
+        e.message ?: unknownError
     }
 }

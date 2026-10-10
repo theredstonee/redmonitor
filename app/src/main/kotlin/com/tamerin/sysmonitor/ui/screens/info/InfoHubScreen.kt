@@ -35,6 +35,8 @@ import androidx.compose.material.icons.filled.AspectRatio
 import androidx.compose.material.icons.filled.Block
 import androidx.compose.material.icons.filled.PrivacyTip
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.Routes
 import com.tamerin.sysmonitor.ui.ApkExtractorStandaloneActivity
 import com.tamerin.sysmonitor.ui.BackgroundRestrictStandaloneActivity
@@ -57,60 +59,60 @@ import com.tamerin.sysmonitor.ui.WakelockStandaloneActivity
 import com.tamerin.sysmonitor.ui.components.HubEntry
 import com.tamerin.sysmonitor.ui.components.HubGrid
 
-private val INFO_ENTRIES = listOf(
-    HubEntry(Routes.INFO_THERMAL, "Thermalzonen", "Live-Temperaturen", Icons.Filled.Thermostat),
-    HubEntry(Routes.INFO_TELEPHONY, "SIM & Telefonie", "Operator, Netz, Signal", Icons.Filled.SimCard),
-    HubEntry(Routes.INFO_WIFI, "WLAN-Scan", "Umliegende Netze", Icons.Filled.Wifi),
-    HubEntry(Routes.INFO_BLUETOOTH, "Bluetooth", "Adapter + gekoppelt", Icons.Filled.Bluetooth),
-    HubEntry(Routes.INFO_NFC, "NFC", "Status & Verfügbarkeit", Icons.Filled.Nfc),
-    HubEntry(Routes.INFO_CAMERAS, "Kameras", "Specs aller Kameras", Icons.Filled.CameraAlt),
-    HubEntry(Routes.INFO_CODECS, "Codecs", "Audio & Video, HW?", Icons.Filled.Movie),
-    HubEntry(Routes.INFO_RUNNING, "Laufende Apps", "Aktiv + RAM", Icons.Filled.Memory),
-    HubEntry(Routes.INFO_INSTALLED, "Installierte Apps", "Pakete + Größe", Icons.Filled.Apps),
-    HubEntry(Routes.INFO_FEATURES, "Hardware-Features", "Was hat das Gerät", Icons.Filled.DeviceHub),
-    HubEntry(Routes.INFO_PROPS, "System-Properties", "Alle Build-Props", Icons.Filled.Storage),
-    HubEntry(Routes.INFO_LOGCAT, "Logcat", "Live System-Logs (Shizuku)", Icons.Filled.ListAlt),
-    HubEntry(Routes.INFO_DOZE, "Doze-Whitelist", "Akku-Optimierung verwalten", Icons.Filled.BatteryAlert),
-    HubEntry(Routes.OEM_SETUP, "Geräte-Setup", "MIUI/HyperOS/OneUI Permissions", Icons.Filled.Tune),
-    HubEntry("info/network-usage", "Pro-App Traffic", "WLAN + Mobil pro App", Icons.Filled.NetworkCheck,
-        activityClass = NetworkUsageStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/wakelocks", "Wake-Locks", "Was hält das Gerät wach", Icons.Filled.Lock,
-        activityClass = WakelockStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/notif-log", "Notification-Log", "Alle eingehenden Notifications", Icons.Filled.Notifications,
-        activityClass = NotificationLogStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/perm-audit", "Permission-Audit", "Wer hat welche Rechte", Icons.Filled.Security,
-        activityClass = PermissionAuditStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/shell", "Shell-Terminal", "ADB-Shell in-app via Shizuku", Icons.Filled.Terminal,
-        activityClass = ShellTerminalStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/discharge", "Akku-Verlauf", "Discharge-Kurve aus History", Icons.Filled.ShowChart,
-        activityClass = DischargeCurveStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/charging-limit", "Charging-Limit", "Auto-Stop bei X % via Shizuku", Icons.Filled.BatteryChargingFull,
-        activityClass = ChargingLimitStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/battery-doctor", "Akku-Doktor", "Wer killt deinen Akku?", Icons.Filled.HealthAndSafety,
-        activityClass = BatteryDoctorStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/storage", "Storage-Analyzer", "Was frisst deinen Speicher", Icons.Filled.FolderOpen,
-        activityClass = StorageAnalyzerStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/apk-extract", "APK-Extract", "Installierte App als APK ziehen", Icons.Filled.GetApp,
-        activityClass = ApkExtractorStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/crash-logs", "Crash-Logs", "Tombstones + Dropbox-Reports", Icons.Filled.BugReport,
-        activityClass = CrashLogStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/speed-test", "Speed-Test", "Cloudflare Down/Up + Latency", Icons.Filled.Speed,
-        activityClass = SpeedTestStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/ping", "Ping-Monitor", "4 Server live + Jitter-Graph", Icons.Filled.NetworkPing,
-        activityClass = PingMonitorStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/gnss", "GNSS Live", "Satelliten-Status + SNR", Icons.Filled.Satellite,
-        activityClass = GnssLiveStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/perfetto", "Perfetto-Trace", "System-Trace für ui.perfetto.dev", Icons.Filled.Timeline,
-        activityClass = PerfettoTraceStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/dpi-anim", "DPI / Animation", "wm density + animator-scales", Icons.Filled.AspectRatio,
-        activityClass = DpiAnimStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/bg-restrict", "BG-Restrict", "Bulk RUN_ANY_IN_BACKGROUND-Toggle", Icons.Filled.Block,
-        activityClass = BackgroundRestrictStandaloneActivity::class.java, badge = "NEU"),
-    HubEntry("info/privacy-dashboard", "Privacy-Dashboard", "Wer hat WAS zuletzt benutzt", Icons.Filled.PrivacyTip,
-        activityClass = PrivacyDashboardStandaloneActivity::class.java, badge = "NEU")
-)
-
 @Composable
 fun InfoHubScreen(onNavigate: (String) -> Unit) {
-    HubGrid(entries = INFO_ENTRIES, onClick = { onNavigate(it.route) })
+    val new = stringResource(R.string.bench_badge_new)
+    val entries = listOf(
+        HubEntry(Routes.INFO_THERMAL, stringResource(R.string.bench_info_thermal_title), stringResource(R.string.bench_info_thermal_sub), Icons.Filled.Thermostat),
+        HubEntry(Routes.INFO_TELEPHONY, stringResource(R.string.bench_info_telephony_title), stringResource(R.string.bench_info_telephony_sub), Icons.Filled.SimCard),
+        HubEntry(Routes.INFO_WIFI, stringResource(R.string.bench_info_wifi_title), stringResource(R.string.bench_info_wifi_sub), Icons.Filled.Wifi),
+        HubEntry(Routes.INFO_BLUETOOTH, "Bluetooth", stringResource(R.string.bench_info_bluetooth_sub), Icons.Filled.Bluetooth),
+        HubEntry(Routes.INFO_NFC, "NFC", stringResource(R.string.bench_info_nfc_sub), Icons.Filled.Nfc),
+        HubEntry(Routes.INFO_CAMERAS, stringResource(R.string.bench_info_cameras_title), stringResource(R.string.bench_info_cameras_sub), Icons.Filled.CameraAlt),
+        HubEntry(Routes.INFO_CODECS, stringResource(R.string.bench_info_codecs_title), stringResource(R.string.bench_info_codecs_sub), Icons.Filled.Movie),
+        HubEntry(Routes.INFO_RUNNING, stringResource(R.string.bench_info_running_title), stringResource(R.string.bench_info_running_sub), Icons.Filled.Memory),
+        HubEntry(Routes.INFO_INSTALLED, stringResource(R.string.bench_info_installed_title), stringResource(R.string.bench_info_installed_sub), Icons.Filled.Apps),
+        HubEntry(Routes.INFO_FEATURES, stringResource(R.string.bench_info_features_title), stringResource(R.string.bench_info_features_sub), Icons.Filled.DeviceHub),
+        HubEntry(Routes.INFO_PROPS, stringResource(R.string.bench_info_props_title), stringResource(R.string.bench_info_props_sub), Icons.Filled.Storage),
+        HubEntry(Routes.INFO_LOGCAT, "Logcat", stringResource(R.string.bench_info_logcat_sub), Icons.Filled.ListAlt),
+        HubEntry(Routes.INFO_DOZE, stringResource(R.string.bench_info_doze_title), stringResource(R.string.bench_info_doze_sub), Icons.Filled.BatteryAlert),
+        HubEntry(Routes.OEM_SETUP, stringResource(R.string.bench_info_oem_title), stringResource(R.string.bench_info_oem_sub), Icons.Filled.Tune),
+        HubEntry("info/network-usage", stringResource(R.string.bench_info_net_usage_title), stringResource(R.string.bench_info_net_usage_sub), Icons.Filled.NetworkCheck,
+            activityClass = NetworkUsageStandaloneActivity::class.java, badge = new),
+        HubEntry("info/wakelocks", stringResource(R.string.bench_info_wakelocks_title), stringResource(R.string.bench_info_wakelocks_sub), Icons.Filled.Lock,
+            activityClass = WakelockStandaloneActivity::class.java, badge = new),
+        HubEntry("info/notif-log", stringResource(R.string.bench_info_notif_title), stringResource(R.string.bench_info_notif_sub), Icons.Filled.Notifications,
+            activityClass = NotificationLogStandaloneActivity::class.java, badge = new),
+        HubEntry("info/perm-audit", stringResource(R.string.bench_info_perm_audit_title), stringResource(R.string.bench_info_perm_audit_sub), Icons.Filled.Security,
+            activityClass = PermissionAuditStandaloneActivity::class.java, badge = new),
+        HubEntry("info/shell", stringResource(R.string.bench_info_shell_title), stringResource(R.string.bench_info_shell_sub), Icons.Filled.Terminal,
+            activityClass = ShellTerminalStandaloneActivity::class.java, badge = new),
+        HubEntry("info/discharge", stringResource(R.string.bench_info_discharge_title), stringResource(R.string.bench_info_discharge_sub), Icons.Filled.ShowChart,
+            activityClass = DischargeCurveStandaloneActivity::class.java, badge = new),
+        HubEntry("info/charging-limit", "Charging-Limit", stringResource(R.string.bench_info_charging_limit_sub), Icons.Filled.BatteryChargingFull,
+            activityClass = ChargingLimitStandaloneActivity::class.java, badge = new),
+        HubEntry("info/battery-doctor", stringResource(R.string.bench_info_battery_doctor_title), stringResource(R.string.bench_info_battery_doctor_sub), Icons.Filled.HealthAndSafety,
+            activityClass = BatteryDoctorStandaloneActivity::class.java, badge = new),
+        HubEntry("info/storage", stringResource(R.string.bench_info_storage_title), stringResource(R.string.bench_info_storage_sub), Icons.Filled.FolderOpen,
+            activityClass = StorageAnalyzerStandaloneActivity::class.java, badge = new),
+        HubEntry("info/apk-extract", stringResource(R.string.bench_info_apk_title), stringResource(R.string.bench_info_apk_sub), Icons.Filled.GetApp,
+            activityClass = ApkExtractorStandaloneActivity::class.java, badge = new),
+        HubEntry("info/crash-logs", stringResource(R.string.bench_info_crash_title), stringResource(R.string.bench_info_crash_sub), Icons.Filled.BugReport,
+            activityClass = CrashLogStandaloneActivity::class.java, badge = new),
+        HubEntry("info/speed-test", stringResource(R.string.bench_info_speedtest_title), stringResource(R.string.bench_info_speedtest_sub), Icons.Filled.Speed,
+            activityClass = SpeedTestStandaloneActivity::class.java, badge = new),
+        HubEntry("info/ping", stringResource(R.string.bench_info_ping_title), stringResource(R.string.bench_info_ping_sub), Icons.Filled.NetworkPing,
+            activityClass = PingMonitorStandaloneActivity::class.java, badge = new),
+        HubEntry("info/gnss", stringResource(R.string.bench_info_gnss_title), stringResource(R.string.bench_info_gnss_sub), Icons.Filled.Satellite,
+            activityClass = GnssLiveStandaloneActivity::class.java, badge = new),
+        HubEntry("info/perfetto", stringResource(R.string.bench_info_perfetto_title), stringResource(R.string.bench_info_perfetto_sub), Icons.Filled.Timeline,
+            activityClass = PerfettoTraceStandaloneActivity::class.java, badge = new),
+        HubEntry("info/dpi-anim", stringResource(R.string.bench_info_dpi_title), stringResource(R.string.bench_info_dpi_sub), Icons.Filled.AspectRatio,
+            activityClass = DpiAnimStandaloneActivity::class.java, badge = new),
+        HubEntry("info/bg-restrict", stringResource(R.string.bench_info_bg_restrict_title), stringResource(R.string.bench_info_bg_restrict_sub), Icons.Filled.Block,
+            activityClass = BackgroundRestrictStandaloneActivity::class.java, badge = new),
+        HubEntry("info/privacy-dashboard", stringResource(R.string.bench_info_privacy_title), stringResource(R.string.bench_info_privacy_sub), Icons.Filled.PrivacyTip,
+            activityClass = PrivacyDashboardStandaloneActivity::class.java, badge = new)
+    )
+    HubGrid(entries = entries, onClick = { onNavigate(it.route) })
 }

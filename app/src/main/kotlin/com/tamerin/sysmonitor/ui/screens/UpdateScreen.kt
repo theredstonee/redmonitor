@@ -16,10 +16,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.update.UpdateChecker
 import com.tamerin.sysmonitor.update.UpdateInstaller
@@ -75,27 +77,27 @@ fun UpdateScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Aktuelle Version") {
-            KeyValueRow("Installiert", state?.current ?: "?")
-            KeyValueRow("Letzter Check", if (lastCheck > 0) df.format(Date(lastCheck)) else "—")
+        StatCard(stringResource(R.string.scr2_upd_current_version)) {
+            KeyValueRow(stringResource(R.string.scr2_upd_installed), state?.current ?: "?")
+            KeyValueRow(stringResource(R.string.scr2_upd_last_check), if (lastCheck > 0) df.format(Date(lastCheck)) else "—")
         }
 
         if (checking) {
-            StatCard("Prüfe…") {
+            StatCard(stringResource(R.string.scr2_upd_checking_title)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                     Spacer(Modifier.width(8.dp))
-                    Text("Verbinde mit GitHub…", color = OnSurfaceMuted, fontSize = 13.sp)
+                    Text(stringResource(R.string.scr2_upd_connecting), color = OnSurfaceMuted, fontSize = 13.sp)
                 }
             }
         } else {
             val s = state
             when {
                 s == null -> Unit
-                s.error != null -> StatCard("Fehler") {
+                s.error != null -> StatCard(stringResource(R.string.scr2_upd_error_title)) {
                     Text(s.error, color = GaugeRed, fontSize = 13.sp)
                 }
-                s.hasUpdate && s.latest != null -> StatCard("🎉 Update verfügbar") {
+                s.hasUpdate && s.latest != null -> StatCard(stringResource(R.string.scr2_upd_available_title)) {
                     Text(
                         "${s.latest.name}",
                         color = MaterialTheme.colorScheme.onSurface,
@@ -124,7 +126,7 @@ fun UpdateScreen() {
 
                     if (downloading) {
                         Text(
-                            "Lade… ${"%.1f".format(progress.first)} / ${"%.1f".format(progress.second)} MB",
+                            stringResource(R.string.scr2_upd_downloading, "%.1f".format(progress.first), "%.1f".format(progress.second)),
                             color = OnSurfaceMuted, fontSize = 12.sp
                         )
                         Spacer(Modifier.height(4.dp))
@@ -133,7 +135,7 @@ fun UpdateScreen() {
                             modifier = Modifier.fillMaxWidth()
                         )
                     } else if (installing) {
-                        Text("Installiere via Shizuku…", color = OnSurfaceMuted, fontSize = 12.sp)
+                        Text(stringResource(R.string.scr2_upd_installing), color = OnSurfaceMuted, fontSize = 12.sp)
                     } else {
                         if (s.latest.apkUrl != null) {
                             if (shizukuReady) {
@@ -152,7 +154,7 @@ fun UpdateScreen() {
                                                     val (ok, msg) = UpdateInstaller.installViaShizuku(context, dl.file)
                                                     installing = false
                                                     if (ok) {
-                                                        statusMessage = "✓ Installation OK — App startet neu …"
+                                                        statusMessage = context.getString(R.string.scr2_upd_install_ok)
                                                         installSuccess = true
                                                         kotlinx.coroutines.delay(800)
                                                         UpdateInstaller.restartApp(context)
@@ -188,7 +190,7 @@ fun UpdateScreen() {
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
-                            ) { Text("APK laden + manuell installieren") }
+                            ) { Text(stringResource(R.string.scr2_upd_download_manual)) }
                             Spacer(Modifier.height(6.dp))
                         }
                         OutlinedButton(
@@ -197,16 +199,16 @@ fun UpdateScreen() {
                                 UpdateInstaller.openGithubRelease(context, s.latest.htmlUrl)
                             },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text("Release-Seite öffnen") }
+                        ) { Text(stringResource(R.string.scr2_upd_open_release)) }
                         Spacer(Modifier.height(6.dp))
                         OutlinedButton(
                             onClick = {
                                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                                 UpdatePrefs.dismissVersion(context, s.latest.versionName)
-                                statusMessage = "Diese Version wird nicht mehr beworben"
+                                statusMessage = context.getString(R.string.scr2_upd_dismissed)
                             },
                             modifier = Modifier.fillMaxWidth()
-                        ) { Text("Update ignorieren", fontSize = 12.sp) }
+                        ) { Text(stringResource(R.string.scr2_upd_ignore), fontSize = 12.sp) }
                     }
                     statusMessage?.let {
                         Spacer(Modifier.height(8.dp))
@@ -225,24 +227,24 @@ fun UpdateScreen() {
                             },
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(containerColor = Accent)
-                        ) { Text("App jetzt neu starten") }
+                        ) { Text(stringResource(R.string.scr2_upd_restart_now)) }
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            "Wichtig: ohne Neustart zeigt der Update-Checker noch die alte Version, weil der laufende Prozess die alte VERSION_NAME im Speicher hat. Nach Neustart greift die neue APK.",
+                            stringResource(R.string.scr2_upd_restart_note),
                             color = OnSurfaceMuted, fontSize = 11.sp
                         )
                     }
                 }
-                else -> StatCard("Aktuell") {
+                else -> StatCard(stringResource(R.string.scr2_upd_uptodate_title)) {
                     Text(
-                        "✓ Du nutzt die neueste Version (${s.current}).",
+                        stringResource(R.string.scr2_upd_latest, s.current),
                         color = GaugeGreen, fontSize = 13.sp, fontWeight = FontWeight.Medium
                     )
                 }
             }
         }
 
-        StatCard("Steuerung") {
+        StatCard(stringResource(R.string.scr2_upd_control_title)) {
             Button(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
@@ -250,19 +252,19 @@ fun UpdateScreen() {
                 },
                 enabled = !checking && !downloading && !installing,
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Jetzt auf Update prüfen") }
+            ) { Text(stringResource(R.string.scr2_upd_check_now)) }
         }
 
-        StatCard("Einstellungen") {
+        StatCard(stringResource(R.string.scr2_upd_settings_title)) {
             ToggleRowSimple(
-                label = "Pre-Releases (Beta/RC) einschließen",
+                label = stringResource(R.string.scr2_upd_include_pre),
                 checked = includePre
             ) {
                 includePre = it
                 UpdatePrefs.setIncludePrerelease(context, it)
             }
             ToggleRowSimple(
-                label = "Benachrichtigungen bei neuen Versionen",
+                label = stringResource(R.string.scr2_upd_notify),
                 checked = notify
             ) {
                 notify = it

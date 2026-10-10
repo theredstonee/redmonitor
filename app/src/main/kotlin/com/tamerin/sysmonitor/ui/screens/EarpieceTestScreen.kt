@@ -16,8 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -137,26 +139,24 @@ fun EarpieceTestScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Earpiece (Hörmuschel)") {
+        StatCard(stringResource(R.string.hw_ear_title)) {
             Text(
-                "Spielt einen Ton mit USAGE_VOICE_COMMUNICATION + Mode IN_COMMUNICATION " +
-                    "und SpeakerphoneOff — damit routet Android den Stream auf die kleine " +
-                    "Hörmuschel oben am Telefon, nicht auf den Loudspeaker.",
+                stringResource(R.string.hw_ear_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Aktuelles Routing", route)
+            KeyValueRow(stringResource(R.string.hw_ear_current_routing), route)
         }
 
-        StatCard("Tonparameter") {
-            KeyValueRow("Frequenz", "${freq.toInt()} Hz")
+        StatCard(stringResource(R.string.hw_ear_tone_params)) {
+            KeyValueRow(stringResource(R.string.hw_ear_frequency), "${freq.toInt()} Hz")
             Slider(
                 value = freq,
                 onValueChange = { freq = it; if (playing) start() },
                 valueRange = 100f..3000f
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Lautstärke", "${(volume * 100).toInt()} %")
+            KeyValueRow(stringResource(R.string.hw_ear_volume), "${(volume * 100).toInt()} %")
             Slider(
                 value = volume,
                 onValueChange = { volume = it; track?.setVolume(it) },
@@ -164,14 +164,14 @@ fun EarpieceTestScreen() {
             )
         }
 
-        StatCard("Steuerung") {
+        StatCard(stringResource(R.string.hw_ear_control)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { start() }, enabled = !playing) { Text("Earpiece-Ton an") }
+                Button(onClick = { start() }, enabled = !playing) { Text(stringResource(R.string.hw_ear_tone_on)) }
                 OutlinedButton(onClick = { stop() }, enabled = playing) { Text("Stop") }
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                "Halte das Telefon ans Ohr wie bei einem Anruf, um den Ton aus der Hörmuschel zu hören.",
+                stringResource(R.string.hw_ear_hint),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }

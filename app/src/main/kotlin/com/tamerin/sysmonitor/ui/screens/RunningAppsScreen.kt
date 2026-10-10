@@ -16,8 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -69,16 +71,16 @@ fun RunningAppsScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            StatCard("Eigener Prozess") {
+            StatCard(stringResource(R.string.sys_ra_own_process)) {
                 KeyValueRow("PID", ownPid.toString())
                 KeyValueRow("RAM (PSS)", "$ownMemMb MB")
             }
         }
         if (!hasUsageAccess) {
             item {
-                StatCard("Berechtigung benötigt") {
+                StatCard(stringResource(R.string.sys_ra_perm_needed)) {
                     Text(
-                        "Seit Android 7 darf eine App nur den eigenen Prozess sehen. Für eine Übersicht aller aktiven Apps brauchen wir „Nutzungsdaten“-Zugriff (PACKAGE_USAGE_STATS).",
+                        stringResource(R.string.sys_ra_perm_desc),
                         color = OnSurfaceMuted,
                         fontSize = 12.sp
                     )
@@ -90,16 +92,16 @@ fun RunningAppsScreen() {
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         context.startActivity(intent)
                     }) {
-                        Text("Berechtigung erteilen")
+                        Text(stringResource(R.string.sys_ra_grant_perm))
                     }
                 }
             }
         } else {
             item {
-                StatCard("Aktive Apps (letzte Stunde)") {
-                    KeyValueRow("Anzahl", apps.size.toString())
+                StatCard(stringResource(R.string.sys_ra_active_apps)) {
+                    KeyValueRow(stringResource(R.string.sys_ra_count), apps.size.toString())
                     Text(
-                        "Aus Datenschutzgründen liefert Android keine Live-PIDs anderer Apps mehr — wir zeigen alle Apps, die kürzlich im Vordergrund waren.",
+                        stringResource(R.string.sys_ra_privacy_note),
                         color = OnSurfaceMuted,
                         fontSize = 11.sp
                     )
@@ -107,8 +109,8 @@ fun RunningAppsScreen() {
             }
             items(apps, key = { it.pkg }) { app ->
                 StatCard(app.pkg) {
-                    KeyValueRow("Vordergrundzeit", "${app.totalForeground / 1000} s")
-                    KeyValueRow("Zuletzt aktiv", relativeTime(app.lastUsed))
+                    KeyValueRow(stringResource(R.string.sys_ra_foreground_time), "${app.totalForeground / 1000} s")
+                    KeyValueRow(stringResource(R.string.sys_ra_last_active), relativeTime(context, app.lastUsed))
                 }
             }
         }
@@ -146,13 +148,13 @@ private fun readUsage(context: Context): List<RunningApp> {
         .take(50)
 }
 
-private fun relativeTime(timestamp: Long): String {
+private fun relativeTime(context: Context, timestamp: Long): String {
     if (timestamp <= 0) return "—"
     val diff = System.currentTimeMillis() - timestamp
     return when {
-        diff < 60_000 -> "vor ${diff / 1000} s"
-        diff < 3_600_000 -> "vor ${diff / 60_000} min"
-        diff < 86_400_000 -> "vor ${diff / 3_600_000} h"
-        else -> "vor ${diff / 86_400_000} d"
+        diff < 60_000 -> context.getString(R.string.sys_ra_ago_sec, (diff / 1000).toInt())
+        diff < 3_600_000 -> context.getString(R.string.sys_ra_ago_min, (diff / 60_000).toInt())
+        diff < 86_400_000 -> context.getString(R.string.sys_ra_ago_hour, (diff / 3_600_000).toInt())
+        else -> context.getString(R.string.sys_ra_ago_day, (diff / 86_400_000).toInt())
     }
 }

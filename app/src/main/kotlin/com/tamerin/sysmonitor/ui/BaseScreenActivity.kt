@@ -29,6 +29,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.tamerin.sysmonitor.LocalImmersive
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.theme.BgDark
 import com.tamerin.sysmonitor.ui.theme.SysMonitorTheme
 
@@ -44,6 +45,10 @@ import com.tamerin.sysmonitor.ui.theme.SysMonitorTheme
  * user pin them as separate home-screen shortcuts.
  */
 abstract class BaseScreenActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.tamerin.sysmonitor.settings.LocaleHelper.wrap(newBase))
+    }
 
     abstract val screenTitle: String
 
@@ -81,7 +86,7 @@ abstract class BaseScreenActivity : ComponentActivity() {
                                     IconButton(onClick = { finish() }) {
                                         Icon(
                                             Icons.AutoMirrored.Filled.ArrowBack,
-                                            contentDescription = "Zurück"
+                                            contentDescription = getString(R.string.scr2_back)
                                         )
                                     }
                                 },

@@ -13,6 +13,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
@@ -41,7 +43,7 @@ fun TelephonyScreen() {
     var snap by remember { mutableStateOf<TelephonySnapshot?>(null) }
     LaunchedEffect(Unit) {
         snap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            readTelephony(tm, sm, hasReadPhone)
+            readTelephony(context, tm, sm, hasReadPhone)
         }
     }
 
@@ -51,27 +53,27 @@ fun TelephonyScreen() {
     ) {
         val s = snap
         if (s == null) {
-            StatCard("Telefonie") {
-                Text("Lade Mobilfunk-Status…", color = OnSurfaceMuted, fontSize = 13.sp)
+            StatCard(stringResource(R.string.bench_tel_title)) {
+                Text(stringResource(R.string.bench_tel_loading), color = OnSurfaceMuted, fontSize = 13.sp)
             }
             return@Column
         }
-        StatCard("Netzwerk-Betreiber") {
+        StatCard(stringResource(R.string.bench_tel_operator_card)) {
             KeyValueRow("Operator", s.operator)
             KeyValueRow("MCC+MNC", s.mccMnc)
-            KeyValueRow("Land", s.country)
-            KeyValueRow("SIM-Operator", s.simOperator)
-            KeyValueRow("SIM-Status", s.simState)
-            KeyValueRow("Phone-Typ", s.phoneType)
-            KeyValueRow("Datennetz-Typ", s.dataNetwork)
+            KeyValueRow(stringResource(R.string.bench_country), s.country)
+            KeyValueRow(stringResource(R.string.bench_tel_sim_operator), s.simOperator)
+            KeyValueRow(stringResource(R.string.bench_tel_sim_status), s.simState)
+            KeyValueRow(stringResource(R.string.bench_tel_phone_type), s.phoneType)
+            KeyValueRow(stringResource(R.string.bench_tel_data_network_type), s.dataNetwork)
             KeyValueRow("Roaming", s.roaming)
         }
 
-        StatCard("SIM-Karten") {
-            KeyValueRow("Modems aktiv", s.modemCount)
+        StatCard(stringResource(R.string.bench_tel_sim_cards)) {
+            KeyValueRow(stringResource(R.string.bench_tel_modems_active), s.modemCount)
             if (s.subs == null) {
                 Text(
-                    "SIM-Liste benötigt READ_PHONE_STATE (in den App-Einstellungen erteilen).",
+                    stringResource(R.string.bench_tel_sim_list_perm),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -80,22 +82,23 @@ fun TelephonyScreen() {
                     Spacer(Modifier.height(8.dp))
                     Text("SIM ${idx + 1}: ${sub.name}", fontSize = 13.sp)
                     KeyValueRow("Carrier", sub.carrier)
-                    KeyValueRow("Land", sub.country)
+                    KeyValueRow(stringResource(R.string.bench_country), sub.country)
                     KeyValueRow("Slot-Index", sub.slot.toString())
                 }
             }
         }
 
-        StatCard("Mehr") {
-            KeyValueRow("VoLTE-fähig", s.volte)
-            KeyValueRow("SMS-fähig", s.sms)
-            KeyValueRow("Hat ICC-Karte", s.hasIcc)
+        StatCard(stringResource(R.string.bench_tel_more)) {
+            KeyValueRow(stringResource(R.string.bench_tel_volte_capable), s.volte)
+            KeyValueRow(stringResource(R.string.bench_tel_sms_capable), s.sms)
+            KeyValueRow(stringResource(R.string.bench_tel_has_icc), s.hasIcc)
         }
     }
 }
 
 @Suppress("MissingPermission")
 private fun readTelephony(
+    context: Context,
     tm: TelephonyManager,
     sm: SubscriptionManager,
     hasReadPhone: Boolean
@@ -116,10 +119,10 @@ private fun readTelephony(
         mccMnc = tm.networkOperator?.ifBlank { "—" } ?: "—",
         country = tm.networkCountryIso?.uppercase() ?: "—",
         simOperator = tm.simOperatorName ?: "—",
-        simState = simStateLabel(tm.simState),
-        phoneType = phoneTypeLabel(tm.phoneType),
-        dataNetwork = if (hasReadPhone) dataNetworkLabel(safeNetworkType(tm)) else "Berechtigung fehlt",
-        roaming = if (tm.isNetworkRoaming) "Ja" else "Nein",
+        simState = simStateLabel(context, tm.simState),
+        phoneType = phoneTypeLabel(context, tm.phoneType),
+        dataNetwork = if (hasReadPhone) dataNetworkLabel(context, safeNetworkType(tm)) else context.getString(R.string.bench_tel_perm_missing),
+        roaming = if (tm.isNetworkRoaming) context.getString(R.string.bench_yes) else context.getString(R.string.bench_no),
         modemCount = modemCount.toString(),
         subs = subs,
         volte = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
@@ -136,28 +139,28 @@ private fun safeNetworkType(tm: TelephonyManager): Int = runCatching {
     else tm.networkType
 }.getOrDefault(0)
 
-private fun simStateLabel(state: Int): String = when (state) {
-    TelephonyManager.SIM_STATE_ABSENT -> "Keine SIM"
-    TelephonyManager.SIM_STATE_PIN_REQUIRED -> "PIN erforderlich"
-    TelephonyManager.SIM_STATE_PUK_REQUIRED -> "PUK erforderlich"
-    TelephonyManager.SIM_STATE_NETWORK_LOCKED -> "Netz gesperrt"
-    TelephonyManager.SIM_STATE_READY -> "Bereit"
-    TelephonyManager.SIM_STATE_NOT_READY -> "Nicht bereit"
-    TelephonyManager.SIM_STATE_PERM_DISABLED -> "Deaktiviert"
-    TelephonyManager.SIM_STATE_CARD_IO_ERROR -> "I/O-Fehler"
-    TelephonyManager.SIM_STATE_CARD_RESTRICTED -> "Eingeschränkt"
-    else -> "Unbekannt"
+private fun simStateLabel(context: Context, state: Int): String = when (state) {
+    TelephonyManager.SIM_STATE_ABSENT -> context.getString(R.string.bench_tel_sim_absent)
+    TelephonyManager.SIM_STATE_PIN_REQUIRED -> context.getString(R.string.bench_tel_sim_pin)
+    TelephonyManager.SIM_STATE_PUK_REQUIRED -> context.getString(R.string.bench_tel_sim_puk)
+    TelephonyManager.SIM_STATE_NETWORK_LOCKED -> context.getString(R.string.bench_tel_sim_netlock)
+    TelephonyManager.SIM_STATE_READY -> context.getString(R.string.bench_ready)
+    TelephonyManager.SIM_STATE_NOT_READY -> context.getString(R.string.bench_tel_sim_not_ready)
+    TelephonyManager.SIM_STATE_PERM_DISABLED -> context.getString(R.string.bench_tel_sim_disabled)
+    TelephonyManager.SIM_STATE_CARD_IO_ERROR -> context.getString(R.string.bench_tel_sim_io_error)
+    TelephonyManager.SIM_STATE_CARD_RESTRICTED -> context.getString(R.string.bench_tel_sim_restricted)
+    else -> context.getString(R.string.bench_tel_unknown)
 }
 
-private fun phoneTypeLabel(type: Int): String = when (type) {
+private fun phoneTypeLabel(context: Context, type: Int): String = when (type) {
     TelephonyManager.PHONE_TYPE_GSM -> "GSM"
     TelephonyManager.PHONE_TYPE_CDMA -> "CDMA"
     TelephonyManager.PHONE_TYPE_SIP -> "SIP"
-    TelephonyManager.PHONE_TYPE_NONE -> "Keine"
+    TelephonyManager.PHONE_TYPE_NONE -> context.getString(R.string.bench_tel_phone_none)
     else -> "?"
 }
 
-private fun dataNetworkLabel(type: Int): String = when (type) {
+private fun dataNetworkLabel(context: Context, type: Int): String = when (type) {
     TelephonyManager.NETWORK_TYPE_GPRS -> "GPRS (2G)"
     TelephonyManager.NETWORK_TYPE_EDGE -> "EDGE (2G)"
     TelephonyManager.NETWORK_TYPE_UMTS -> "UMTS (3G)"
@@ -169,5 +172,5 @@ private fun dataNetworkLabel(type: Int): String = when (type) {
     TelephonyManager.NETWORK_TYPE_NR -> "NR (5G)"
     TelephonyManager.NETWORK_TYPE_IWLAN -> "IWLAN"
     0 -> "—"
-    else -> "Typ #$type"
+    else -> context.getString(R.string.bench_tel_net_type_num, type)
 }

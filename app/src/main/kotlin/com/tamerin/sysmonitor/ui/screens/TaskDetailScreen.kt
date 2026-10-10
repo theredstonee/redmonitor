@@ -19,10 +19,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.AppActions
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.SystemTweaks
@@ -76,7 +78,7 @@ fun TaskDetailScreen(pkg: String) {
 
     fun runMulti(label: String, results: List<Pair<String, ShizukuHelper.CmdResult>>) {
         val failed = results.filter { !it.second.ok }.map { it.first }
-        lastAction = if (failed.isEmpty()) "✓ $label" else "⚠ $label, fehlgeschlagen: ${failed.joinToString(", ")}"
+        lastAction = if (failed.isEmpty()) "✓ $label" else "⚠ $label, ${context.getString(R.string.sys_td_failed)}: ${failed.joinToString(", ")}"
         scope.launch {
             disabled = withContext(Dispatchers.IO) { AppActions.isAppDisabled(context, pkg) }
             suspended = withContext(Dispatchers.IO) { AppActions.isAppSuspended(context, pkg) }
@@ -89,14 +91,14 @@ fun TaskDetailScreen(pkg: String) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         StatCard(ai?.loadLabel(pm)?.toString() ?: pkg) {
-            KeyValueRow("Paket", pkg)
+            KeyValueRow(stringResource(R.string.sys_td_package), pkg)
             pkgInfo?.let {
-                KeyValueRow("Version", "${it.versionName} (${it.longVersionCode})")
+                KeyValueRow(stringResource(R.string.sys_td_version), "${it.versionName} (${it.longVersionCode})")
             }
             ai?.let {
                 KeyValueRow("UID", it.uid.toString())
-                KeyValueRow("Typ", if ((it.flags and ApplicationInfo.FLAG_SYSTEM) != 0) "System" else "User")
-                KeyValueRow("Status", if (disabled) "Deaktiviert" else "Aktiv")
+                KeyValueRow(stringResource(R.string.sys_td_type), if ((it.flags and ApplicationInfo.FLAG_SYSTEM) != 0) stringResource(R.string.sys_td_type_system) else stringResource(R.string.sys_td_type_user))
+                KeyValueRow(stringResource(R.string.sys_td_status), if (disabled) stringResource(R.string.sys_td_status_disabled) else stringResource(R.string.sys_td_status_active))
             }
             lastAction?.let {
                 Spacer(Modifier.height(8.dp))
@@ -111,22 +113,20 @@ fun TaskDetailScreen(pkg: String) {
 
         if (!shizukuReady) {
             com.tamerin.sysmonitor.ui.components.ShizukuCard(
-                title = "Shizuku für App-Aktionen",
-                description = "Force-Stop, Soft-Kill, Cache leeren, App-Daten zurücksetzen, " +
-                    "Deinstallieren, Deep-Freeze, Auto-Start-Receiver, Standby-Bucket, Background-AppOps — " +
-                    "alles braucht shell-Zugriff via Shizuku."
+                title = stringResource(R.string.sys_td_shizuku_title),
+                description = stringResource(R.string.sys_td_shizuku_desc)
             )
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
                 onClick = { AppActions.openAppInfo(context, pkg) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Bis dahin: App-Info im System öffnen")
+                Text(stringResource(R.string.sys_td_open_appinfo_fallback))
             }
             return@Column
         }
 
-        StatCard("Sofort-Aktionen") {
+        StatCard(stringResource(R.string.sys_td_instant_actions)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
@@ -154,27 +154,27 @@ fun TaskDetailScreen(pkg: String) {
             }
             Spacer(Modifier.height(6.dp))
             Text(
-                "Force-Stop beendet alle Prozesse. Crash löst absichtlich einen ANR/Crash aus (für Stabilitäts-Tests). Soft-Kill killt nur Cache/leere Prozesse.",
+                stringResource(R.string.sys_td_instant_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
 
-        StatCard("Cache leeren") {
+        StatCard(stringResource(R.string.sys_td_clear_cache)) {
             OutlinedButton(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     runAction("Cache geleert") { AppActions.clearCache(context, pkg) }
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Nur Cache leeren (safe)", fontSize = 13.sp) }
+            ) { Text(stringResource(R.string.sys_td_clear_cache_btn), fontSize = 13.sp) }
             Spacer(Modifier.height(4.dp))
             Text(
-                "Löscht nur temporäre Dateien — Einstellungen, Logins und Daten bleiben.",
+                stringResource(R.string.sys_td_clear_cache_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
 
-        StatCard("Deinstallieren") {
+        StatCard(stringResource(R.string.sys_td_uninstall)) {
             Button(
                 onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
@@ -184,30 +184,30 @@ fun TaskDetailScreen(pkg: String) {
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    if (isSystemApp) "System-App für mich verstecken" else "App deinstallieren",
+                    if (isSystemApp) stringResource(R.string.sys_td_hide_system_app) else stringResource(R.string.sys_td_uninstall_app),
                     fontSize = 13.sp
                 )
             }
             Spacer(Modifier.height(4.dp))
             Text(
                 if (isSystemApp)
-                    "System-Apps können nicht komplett gelöscht werden ohne Root. Aber: 'pm uninstall --user 0' versteckt sie für dich — Speicher wird frei, beim Werksreset kommt sie wieder."
-                else "Vollständig deinstalliert. Wie aus dem Play Store entfernen.",
+                    stringResource(R.string.sys_td_uninstall_system_desc)
+                else stringResource(R.string.sys_td_uninstall_user_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
 
-        StatCard("App-Status") {
+        StatCard(stringResource(R.string.sys_td_app_status)) {
             // SUSPEND toggle (zuverlässiger als disable auf Samsung)
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Aktiv", fontSize = 14.sp)
+                    Text(stringResource(R.string.sys_td_active), fontSize = 14.sp)
                     Text(
-                        if (suspended) "Suspendiert — kann nicht starten, Daten erhalten"
-                        else "Läuft normal",
+                        if (suspended) stringResource(R.string.sys_td_suspended_desc)
+                        else stringResource(R.string.sys_td_running_normal),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
@@ -232,9 +232,9 @@ fun TaskDetailScreen(pkg: String) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Disable (alt)", fontSize = 14.sp)
+                    Text(stringResource(R.string.sys_td_disable_legacy), fontSize = 14.sp)
                     Text(
-                        if (disabled) "Disabled" else "Enabled  ·  oft gesperrt auf Samsung",
+                        if (disabled) stringResource(R.string.sys_td_disabled) else stringResource(R.string.sys_td_enabled_samsung),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
@@ -250,10 +250,9 @@ fun TaskDetailScreen(pkg: String) {
             }
         }
 
-        StatCard("Deep-Freeze (stärkster Stop)") {
+        StatCard(stringResource(R.string.sys_td_deepfreeze)) {
             Text(
-                "Force-Stop + Standby-Bucket 'never' + UID-Idle + Suspend in einem Klick. " +
-                    "Stärkste Methode ohne Root — App kann faktisch nicht mehr laufen, bis du sie aufweckst.",
+                stringResource(R.string.sys_td_deepfreeze_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -268,7 +267,7 @@ fun TaskDetailScreen(pkg: String) {
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                     modifier = Modifier.weight(1f)
-                ) { Text("🥶 Einfrieren", fontSize = 13.sp) }
+                ) { Text(stringResource(R.string.sys_td_freeze_btn), fontSize = 13.sp) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
@@ -278,20 +277,20 @@ fun TaskDetailScreen(pkg: String) {
                         }
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("☀ Auftauen", fontSize = 13.sp) }
+                ) { Text(stringResource(R.string.sys_td_unfreeze_btn), fontSize = 13.sp) }
             }
         }
 
-        StatCard("Akku-Optimierung (Doze-Whitelist)") {
+        StatCard(stringResource(R.string.sys_td_doze)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Auf Whitelist", fontSize = 14.sp)
+                    Text(stringResource(R.string.sys_td_on_whitelist), fontSize = 14.sp)
                     Text(
-                        if (dozeWhitelisted) "Darf in Doze laufen — frisst mehr Akku"
-                        else "Wird in Doze gedrosselt — spart Akku",
+                        if (dozeWhitelisted) stringResource(R.string.sys_td_doze_on_desc)
+                        else stringResource(R.string.sys_td_doze_off_desc),
                         color = OnSurfaceMuted, fontSize = 11.sp
                     )
                 }
@@ -316,10 +315,9 @@ fun TaskDetailScreen(pkg: String) {
             }
         }
 
-        StatCard("Standby-Bucket") {
+        StatCard(stringResource(R.string.sys_td_standby)) {
             Text(
-                "Android-System teilt Apps in Buckets ein: active/working_set/frequent/rare/never. " +
-                    "Je seltener, desto weniger Background-CPU/Netz/Wakeups bekommt die App.",
+                stringResource(R.string.sys_td_standby_desc),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(8.dp))
@@ -338,10 +336,10 @@ fun TaskDetailScreen(pkg: String) {
             }
         }
 
-        StatCard("Hintergrund-Verhalten (AppOps)") {
+        StatCard(stringResource(R.string.sys_td_bg)) {
             val bg = bgState
             if (bg == null) {
-                Text("Lade…", color = OnSurfaceMuted, fontSize = 12.sp)
+                Text(stringResource(R.string.sys_td_loading), color = OnSurfaceMuted, fontSize = 12.sp)
             } else {
                 BgToggleRow(
                     label = "RUN_IN_BACKGROUND",
@@ -363,21 +361,21 @@ fun TaskDetailScreen(pkg: String) {
                 )
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Beide auf 'deny' = App bekommt keine Wake-Locks mehr im Hintergrund. Sehr aggressiv — manche Apps brechen dabei (Push fehlt, Sync stoppt).",
+                    stringResource(R.string.sys_td_bg_desc),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
         }
 
-        StatCard("Auto-Start (Boot-Receiver)") {
+        StatCard(stringResource(R.string.sys_td_autostart)) {
             if (receivers.isEmpty()) {
                 Text(
-                    "Diese App hat keine BOOT_COMPLETED-Receiver — startet also nicht automatisch nach Neustart.",
+                    stringResource(R.string.sys_td_no_boot_receivers),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             } else {
                 Text(
-                    "${receivers.size} Receiver hören auf Boot. Toggle deaktiviert sie individuell.",
+                    stringResource(R.string.sys_td_boot_receivers_count, receivers.size),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 Spacer(Modifier.height(8.dp))
@@ -411,21 +409,21 @@ fun TaskDetailScreen(pkg: String) {
             }
         }
 
-        StatCard("Sonstiges") {
+        StatCard(stringResource(R.string.sys_td_misc)) {
             OutlinedButton(
                 onClick = { AppActions.openAppInfo(context, pkg) },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Im System-App-Info öffnen")
+                Text(stringResource(R.string.sys_td_open_in_system))
             }
         }
 
         // Big gap so the destructive button is visually isolated
         Spacer(Modifier.height(48.dp))
 
-        StatCard("⚠ Gefährliche Zone") {
+        StatCard(stringResource(R.string.sys_td_danger_zone)) {
             Text(
-                "App-Reset löscht alle Einstellungen, Logins, Cloud-Tokens, lokale Datenbanken und Cache — die App wirkt wie frisch installiert. Nicht rückgängig zu machen.",
+                stringResource(R.string.sys_td_danger_desc),
                 color = GaugeRed,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
@@ -438,7 +436,7 @@ fun TaskDetailScreen(pkg: String) {
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = GaugeRed),
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("App-Daten komplett zurücksetzen", fontSize = 13.sp) }
+            ) { Text(stringResource(R.string.sys_td_reset_btn), fontSize = 13.sp) }
         }
 
         Spacer(Modifier.height(24.dp))
@@ -446,48 +444,55 @@ fun TaskDetailScreen(pkg: String) {
 
     // Confirmation dialog
     confirmDialog?.let { action ->
+        val dialogTitle = when (action) {
+            is ConfirmAction.ClearData -> stringResource(R.string.sys_td_cd_title)
+            is ConfirmAction.Uninstall ->
+                if (action.isSystem) stringResource(R.string.sys_td_un_title_sys)
+                else stringResource(R.string.sys_td_un_title)
+        }
+        val dialogBody = when (action) {
+            is ConfirmAction.ClearData -> stringResource(R.string.sys_td_cd_body, pkg)
+            is ConfirmAction.Uninstall ->
+                if (action.isSystem) stringResource(R.string.sys_td_un_body_sys, pkg)
+                else stringResource(R.string.sys_td_un_body, pkg)
+        }
+        val actionLabel = when (action) {
+            is ConfirmAction.ClearData -> stringResource(R.string.sys_td_cd_label)
+            is ConfirmAction.Uninstall ->
+                if (action.isSystem) stringResource(R.string.sys_td_un_label_sys)
+                else stringResource(R.string.sys_td_un_label)
+        }
         AlertDialog(
             onDismissRequest = { confirmDialog = null },
-            title = { Text(action.title) },
-            text = { Text(action.body(pkg)) },
+            title = { Text(dialogTitle) },
+            text = { Text(dialogBody) },
             confirmButton = {
                 TextButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.DESTRUCTIVE)
                         confirmDialog = null
-                        runAction(action.label) {
+                        runAction(actionLabel) {
                             when (action) {
                                 is ConfirmAction.ClearData -> AppActions.clearAllData(context, pkg)
                                 is ConfirmAction.Uninstall -> AppActions.uninstall(context, pkg, action.isSystem)
                             }
                         }
                     }
-                ) { Text("Bestätigen", color = GaugeRed) }
+                ) { Text(stringResource(R.string.sys_td_confirm), color = GaugeRed) }
             },
             dismissButton = {
                 TextButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     confirmDialog = null
-                }) { Text("Abbrechen") }
+                }) { Text(stringResource(R.string.sys_td_cancel)) }
             }
         )
     }
 }
 
-private sealed class ConfirmAction(val title: String, val label: String) {
-    abstract fun body(pkg: String): String
-    object ClearData : ConfirmAction("App-Daten löschen?", "Daten gelöscht") {
-        override fun body(pkg: String) =
-            "$pkg wird auf Werkszustand zurückgesetzt. Logins, Einstellungen und alles Lokale ist weg."
-    }
-    data class Uninstall(val isSystem: Boolean) : ConfirmAction(
-        if (isSystem) "System-App verstecken?" else "App deinstallieren?",
-        if (isSystem) "Versteckt" else "Deinstalliert"
-    ) {
-        override fun body(pkg: String) =
-            if (isSystem) "$pkg wird für dich versteckt. Beim Werksreset kommt sie wieder."
-            else "$pkg wird komplett entfernt."
-    }
+private sealed interface ConfirmAction {
+    object ClearData : ConfirmAction
+    data class Uninstall(val isSystem: Boolean) : ConfirmAction
 }
 
 @Composable

@@ -15,8 +15,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.overlay.OverlayService
 import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -43,18 +45,21 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
     ) {
         StatCard("Floating-HUD") {
             Text(
-                "Zeigt eine kleine Live-Anzeige (CPU, RAM, Akku, Temp, FPS, Netz und mehr) über allen anderen Apps. Drag = verschieben, Tap = App öffnen.",
+                stringResource(R.string.scr2_ovl_desc),
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
             Spacer(Modifier.height(12.dp))
-            KeyValueRow("Overlay-Berechtigung", if (hasPerm) "Erteilt" else "Fehlt")
+            KeyValueRow(
+                stringResource(R.string.scr2_ovl_perm_label),
+                if (hasPerm) stringResource(R.string.scr2_ovl_granted) else stringResource(R.string.scr2_ovl_missing)
+            )
         }
 
         if (!hasPerm) {
-            StatCard("Berechtigung erteilen") {
+            StatCard(stringResource(R.string.scr2_ovl_grant_title)) {
                 Text(
-                    "Android verlangt für Overlays die spezielle Berechtigung „Über anderen Apps anzeigen“. Du musst sie in den Systemeinstellungen aktivieren.",
+                    stringResource(R.string.scr2_ovl_grant_desc),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
@@ -67,33 +72,33 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                     ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     context.startActivity(intent)
                 }) {
-                    Text("Berechtigung in Einstellungen erteilen")
+                    Text(stringResource(R.string.scr2_ovl_grant_btn))
                 }
                 Spacer(Modifier.height(6.dp))
                 OutlinedButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                     hasPerm = checkPerm(context)
                 }) {
-                    Text("Status neu prüfen")
+                    Text(stringResource(R.string.scr2_ovl_recheck))
                 }
             }
         } else {
-            StatCard("Steuerung") {
+            StatCard(stringResource(R.string.scr2_ovl_control_title)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         OverlayService.start(context)
                         running = true
-                    }, modifier = Modifier.weight(1f)) { Text("HUD starten") }
+                    }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.scr2_ovl_start)) }
                     OutlinedButton(onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
                         OverlayService.stop(context)
                         running = false
-                    }, modifier = Modifier.weight(1f)) { Text("Stopp") }
+                    }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.scr2_ovl_stop)) }
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "Das HUD läuft als Foreground-Service mit dauerhafter Benachrichtigung — Android verlangt das.",
+                    stringResource(R.string.scr2_ovl_fg_note),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -106,11 +111,10 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("HUD beim Boot starten", fontSize = 14.sp)
+                        Text(stringResource(R.string.scr2_ovl_autostart_label), fontSize = 14.sp)
                         Spacer(Modifier.height(2.dp))
                         Text(
-                            "OverlayService startet automatisch nach Reboot — bleibt als " +
-                                "Foreground-Service dauerhaft im Hintergrund (wie Automate).",
+                            stringResource(R.string.scr2_ovl_autostart_desc),
                             color = OnSurfaceMuted, fontSize = 11.sp
                         )
                     }
@@ -126,16 +130,14 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                 }
                 Spacer(Modifier.height(8.dp))
                 Text(
-                    "⚠ MIUI/HyperOS, OneUI, OPPO und Honor blocken BOOT_COMPLETED standardmäßig. " +
-                        "Im 'Geräte-Setup' (Info-Hub) findest du die Direktlinks zu den jeweiligen " +
-                        "Autostart-Listen — dort 'RedMonitor' aktivieren.",
+                    stringResource(R.string.scr2_ovl_autostart_warn),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
 
-            StatCard("Anpassen") {
+            StatCard(stringResource(R.string.scr2_ovl_customize_title)) {
                 Text(
-                    "Welche Werte angezeigt werden, Größe, Farbe, Transparenz und Edge-Snapping.",
+                    stringResource(R.string.scr2_ovl_customize_desc),
                     color = OnSurfaceMuted,
                     fontSize = 12.sp
                 )
@@ -146,7 +148,7 @@ fun OverlayHudScreen(onCustomize: () -> Unit = {}) {
                         onCustomize()
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("HUD anpassen") }
+                ) { Text(stringResource(R.string.scr2_ovl_customize_btn)) }
             }
         }
     }

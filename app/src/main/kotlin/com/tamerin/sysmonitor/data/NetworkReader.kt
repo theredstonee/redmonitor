@@ -6,6 +6,7 @@ import android.net.NetworkCapabilities
 import android.net.TrafficStats
 import android.net.wifi.WifiManager
 import android.os.Build
+import com.tamerin.sysmonitor.R
 import java.net.NetworkInterface
 
 @androidx.compose.runtime.Immutable
@@ -30,12 +31,12 @@ object NetworkReader {
         val caps = network?.let { cm.getNetworkCapabilities(it) }
 
         val transport = when {
-            caps == null -> "Offline"
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> "WLAN"
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> "Mobilfunk"
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> "Ethernet"
-            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> "VPN"
-            else -> "Unbekannt"
+            caps == null -> context.getString(R.string.data_net_offline)
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> context.getString(R.string.data_net_wifi)
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> context.getString(R.string.data_net_cellular)
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> context.getString(R.string.data_net_ethernet)
+            caps.hasTransport(NetworkCapabilities.TRANSPORT_VPN) -> context.getString(R.string.data_net_vpn)
+            else -> context.getString(R.string.data_net_unknown)
         }
 
         val down = caps?.linkDownstreamBandwidthKbps ?: 0

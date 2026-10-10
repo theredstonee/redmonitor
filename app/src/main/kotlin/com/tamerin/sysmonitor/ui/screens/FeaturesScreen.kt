@@ -8,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,10 +33,10 @@ fun FeaturesScreen() {
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         item {
-            StatCard("Hardware-Features") {
-                KeyValueRow("Anzahl", if (features == null) "lade…" else list.size.toString())
+            StatCard(stringResource(R.string.bench_features_title)) {
+                KeyValueRow(stringResource(R.string.bench_features_count), if (features == null) stringResource(R.string.bench_features_loading) else list.size.toString())
                 Text(
-                    "Vom System gemeldete Features (PackageManager.systemAvailableFeatures).",
+                    stringResource(R.string.bench_features_desc),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )

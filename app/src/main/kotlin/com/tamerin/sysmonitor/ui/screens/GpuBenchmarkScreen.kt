@@ -16,6 +16,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -97,7 +99,7 @@ fun GpuBenchmarkScreen() {
             ) {
                 Column {
                     Text(
-                        currentPhase?.label ?: "Starte…",
+                        currentPhase?.label ?: stringResource(R.string.bench_gpu_starting),
                         color = AccentSoft, fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -133,7 +135,7 @@ fun GpuBenchmarkScreen() {
                     currentPhase = null
                 },
                 modifier = Modifier.align(Alignment.BottomCenter).padding(24.dp)
-            ) { Text("Abbrechen", color = Color.White) }
+            ) { Text(stringResource(R.string.bench_cancel), color = Color.White) }
         }
         return
     }
@@ -142,10 +144,9 @@ fun GpuBenchmarkScreen() {
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("GPU-Benchmark (echte GLES2-Shader)") {
+        StatCard(stringResource(R.string.bench_gpu_title)) {
             Text(
-                "3 Sub-Tests à 15 s mit echten OpenGL-ES-2-Shadern (Vertex- und Fragment-Shader, VBOs). " +
-                    "Im Gegensatz zum alten Scissor-Trick wird hier wirklich gerendert.",
+                stringResource(R.string.bench_gpu_desc),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
@@ -162,9 +163,7 @@ fun GpuBenchmarkScreen() {
             }
             Spacer(Modifier.height(8.dp))
             Text(
-                "VERTEX: 50.000 rotierende Dreiecke pro Frame · " +
-                    "FILL-RATE: 30× Vollbild-Quad mit Alpha-Blending (Overdraw) · " +
-                    "SHADER: 32-Iter Fraktal-Fragment-Shader.",
+                stringResource(R.string.bench_gpu_detail),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
             Spacer(Modifier.height(12.dp))
@@ -177,7 +176,7 @@ fun GpuBenchmarkScreen() {
                         running = true
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Vollbild-Test starten", fontWeight = FontWeight.Bold) }
+                ) { Text(stringResource(R.string.bench_gpu_start), fontWeight = FontWeight.Bold) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -185,12 +184,12 @@ fun GpuBenchmarkScreen() {
                             Intent(context, com.tamerin.sysmonitor.ui.BenchHistoryStandaloneActivity::class.java)
                         )
                     }
-                ) { Text("Verlauf") }
+                ) { Text(stringResource(R.string.bench_history)) }
             }
         }
 
         result?.let { r ->
-            StatCard("Gesamt-Score") {
+            StatCard(stringResource(R.string.bench_gpu_total_score)) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()) {
                     val color = when {
@@ -203,7 +202,7 @@ fun GpuBenchmarkScreen() {
                         color = color, fontSize = 48.sp, fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily.Monospace
                     )
-                    Text("Mittelwert aus 3 Sub-Tests", color = OnSurfaceMuted, fontSize = 11.sp)
+                    Text(stringResource(R.string.bench_gpu_avg_of_3), color = OnSurfaceMuted, fontSize = 11.sp)
                 }
             }
             r.subScores.forEach { sub ->

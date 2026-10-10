@@ -18,10 +18,12 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -79,19 +81,19 @@ fun CompassScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Kompass") {
+        StatCard(stringResource(R.string.hw_comp_title)) {
             if (rotation == null) {
-                Text("ROTATION_VECTOR-Sensor fehlt. Versuche Magnetfeld pur.",
+                Text(stringResource(R.string.hw_comp_no_rotvec),
                     color = OnSurfaceMuted, fontSize = 12.sp)
             }
-            KeyValueRow("Heading", "${azimuth.roundToInt()}° (${headingName(azimuth)})")
+            KeyValueRow("Heading", "${azimuth.roundToInt()}° (${stringResource(headingName(azimuth))})")
             KeyValueRow("Pitch", "${pitch.roundToInt()}°")
             KeyValueRow("Roll", "${roll.roundToInt()}°")
-            KeyValueRow("Magnetfeld", "%.1f µT".format(fieldStrength))
-            KeyValueRow("Accuracy", accuracyLabel(fieldAccuracy))
+            KeyValueRow(stringResource(R.string.hw_comp_magfield), "%.1f µT".format(fieldStrength))
+            KeyValueRow("Accuracy", stringResource(accuracyLabel(fieldAccuracy)))
             if (fieldAccuracy < SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM) {
                 Spacer(Modifier.height(6.dp))
-                Text("Kalibrieren: Telefon in einer ∞-Bewegung schwenken (alle Achsen).",
+                Text(stringResource(R.string.hw_comp_calibrate),
                     color = GaugeOrange, fontSize = 11.sp)
             }
         }
@@ -140,15 +142,18 @@ fun CompassScreen() {
     }
 }
 
-private fun headingName(deg: Float): String {
-    val names = listOf("N", "NO", "O", "SO", "S", "SW", "W", "NW")
+private fun headingName(deg: Float): Int {
+    val names = listOf(
+        R.string.hw_dir_n, R.string.hw_dir_ne, R.string.hw_dir_e, R.string.hw_dir_se,
+        R.string.hw_dir_s, R.string.hw_dir_sw, R.string.hw_dir_w, R.string.hw_dir_nw
+    )
     return names[((deg + 22.5f) / 45f).toInt() % 8]
 }
 
-private fun accuracyLabel(a: Int) = when (a) {
-    SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> "hoch ✓"
-    SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> "mittel"
-    SensorManager.SENSOR_STATUS_ACCURACY_LOW -> "niedrig"
-    SensorManager.SENSOR_STATUS_UNRELIABLE -> "unzuverlässig"
-    else -> "unbekannt"
+private fun accuracyLabel(a: Int): Int = when (a) {
+    SensorManager.SENSOR_STATUS_ACCURACY_HIGH -> R.string.hw_acc_high
+    SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM -> R.string.hw_acc_medium
+    SensorManager.SENSOR_STATUS_ACCURACY_LOW -> R.string.hw_acc_low
+    SensorManager.SENSOR_STATUS_UNRELIABLE -> R.string.hw_acc_unreliable
+    else -> R.string.hw_acc_unknown
 }

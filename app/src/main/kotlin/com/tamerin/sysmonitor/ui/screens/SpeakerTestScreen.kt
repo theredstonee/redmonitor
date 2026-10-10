@@ -13,8 +13,10 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -25,7 +27,7 @@ import kotlinx.coroutines.launch
 import kotlin.math.PI
 import kotlin.math.sin
 
-private enum class Channel(val label: String) { LEFT("Nur Links"), RIGHT("Nur Rechts"), BOTH("Beide") }
+private enum class Channel(val labelRes: Int) { LEFT(R.string.hw_spk_left), RIGHT(R.string.hw_spk_right), BOTH(R.string.hw_spk_both) }
 
 @Composable
 fun SpeakerTestScreen() {
@@ -111,14 +113,14 @@ fun SpeakerTestScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Speaker-Tongenerator") {
+        StatCard(stringResource(R.string.hw_spk_title)) {
             Text(
-                "Spielt einen Sinuston über den ausgewählten Kanal. Lass den Ton kurz laufen und prüfe, ob beide Lautsprecher tatsächlich klingen.",
+                stringResource(R.string.hw_spk_desc),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
             Spacer(Modifier.height(12.dp))
-            KeyValueRow("Frequenz", "${freq.toInt()} Hz")
+            KeyValueRow(stringResource(R.string.hw_spk_frequency), "${freq.toInt()} Hz")
             Slider(
                 value = freq,
                 onValueChange = {
@@ -128,7 +130,7 @@ fun SpeakerTestScreen() {
                 valueRange = 50f..15_000f
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Lautstärke", "${(volume * 100).toInt()} %")
+            KeyValueRow(stringResource(R.string.hw_spk_volume), "${(volume * 100).toInt()} %")
             Slider(
                 value = volume,
                 onValueChange = {
@@ -139,7 +141,7 @@ fun SpeakerTestScreen() {
             )
         }
 
-        StatCard("Kanal") {
+        StatCard(stringResource(R.string.hw_spk_channel)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Channel.values().forEach { c ->
                     val sel = channel == c
@@ -149,12 +151,12 @@ fun SpeakerTestScreen() {
                             if (playing) start()
                         },
                         modifier = Modifier.weight(1f)
-                    ) { Text(c.label, fontSize = 12.sp) }
+                    ) { Text(stringResource(c.labelRes), fontSize = 12.sp) }
                 }
             }
         }
 
-        StatCard("Steuerung") {
+        StatCard(stringResource(R.string.hw_spk_control)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Button(
                     onClick = {
@@ -162,7 +164,7 @@ fun SpeakerTestScreen() {
                         start()
                     },
                     enabled = !playing
-                ) { Text("Ton starten") }
+                ) { Text(stringResource(R.string.hw_spk_start_tone)) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -172,10 +174,10 @@ fun SpeakerTestScreen() {
                 ) { Text("Stop") }
             }
             Spacer(Modifier.height(8.dp))
-            QuickFreq("440 Hz (A4)") { freq = 440f; if (playing) start() }
-            QuickFreq("1 kHz Referenz") { freq = 1000f; if (playing) start() }
-            QuickFreq("10 kHz (Höhen)") { freq = 10_000f; if (playing) start() }
-            QuickFreq("100 Hz (Bass)") { freq = 100f; if (playing) start() }
+            QuickFreq(stringResource(R.string.hw_spk_440)) { freq = 440f; if (playing) start() }
+            QuickFreq(stringResource(R.string.hw_spk_1khz)) { freq = 1000f; if (playing) start() }
+            QuickFreq(stringResource(R.string.hw_spk_10khz)) { freq = 10_000f; if (playing) start() }
+            QuickFreq(stringResource(R.string.hw_spk_100hz)) { freq = 100f; if (playing) start() }
         }
     }
 }

@@ -12,6 +12,7 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import com.tamerin.sysmonitor.BuildConfig
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.benchmark.db.BenchmarkDatabase
 import com.tamerin.sysmonitor.benchmark.db.BenchmarkRun
 import com.tamerin.sysmonitor.benchmark.db.BenchmarkSubScore
@@ -65,17 +66,17 @@ class BenchmarkService : Service() {
         val phaseSeconds = intent.getIntExtra(EXTRA_PHASE_SECONDS, 30).coerceAtLeast(5)
 
         ensureChannel()
-        startForegroundNotification(type, "Vorbereiten...", 0, 1)
+        startForegroundNotification(type, getString(R.string.bg_bench_preparing), 0, 1)
 
         runJob?.cancel()
         runJob = scope.launch {
             BenchmarkRepository.publish(
-                BenchmarkState.Running(type, "Vorbereiten...", 0, 1)
+                BenchmarkState.Running(type, getString(R.string.bg_bench_preparing), 0, 1)
             )
             runCatching { runBenchmark(type, phaseSeconds) }
                 .onFailure { e ->
                     BenchmarkRepository.publish(
-                        BenchmarkState.Error(type, e.message ?: "unbekannter Fehler")
+                        BenchmarkState.Error(type, e.message ?: getString(R.string.bg_bench_unknown_error))
                     )
                 }
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -127,7 +128,7 @@ class BenchmarkService : Service() {
             BenchmarkType.GPU, BenchmarkType.IMAGE -> {
                 // These run interactively in their Activity for now.
                 BenchmarkRepository.publish(
-                    BenchmarkState.Error(type, "Dieser Bench läuft (noch) in der Activity, nicht im Service.")
+                    BenchmarkState.Error(type, getString(R.string.bg_bench_runs_in_activity))
                 )
             }
         }
@@ -228,10 +229,10 @@ class BenchmarkService : Service() {
         if (nm.getNotificationChannel(CHANNEL_ID) != null) return
         val channel = NotificationChannel(
             CHANNEL_ID,
-            "Benchmark läuft",
+            getString(R.string.bg_bench_channel_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
-            description = "Fortschritt eines laufenden Benchmarks"
+            description = getString(R.string.bg_bench_channel_desc)
             setShowBadge(false)
         }
         nm.createNotificationChannel(channel)
@@ -264,8 +265,8 @@ class BenchmarkService : Service() {
     private fun buildNotification(type: BenchmarkType, phase: String, done: Int, total: Int) =
         NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.stat_sys_download)
-            .setContentTitle("${type.displayName}-Benchmark läuft")
-            .setContentText("$phase  ·  $done / $total s")
+            .setContentTitle(getString(R.string.bg_bench_notif_title, type.displayName))
+            .setContentText(getString(R.string.bg_bench_notif_text, phase, done, total))
             .setProgress(total.coerceAtLeast(1), done, false)
             .setOngoing(true)
             .setOnlyAlertOnce(true)

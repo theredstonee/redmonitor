@@ -11,9 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.GaugeOrange
@@ -40,23 +42,22 @@ fun IrBlasterScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("IR-Blaster (ConsumerIrManager)") {
-            KeyValueRow("Hardware", if (ir != null) "Service vorhanden" else "Service fehlt")
-            KeyValueRow("IR-Emitter", if (hasEmitter) "ja" else "nein")
+        StatCard(stringResource(R.string.hw_ir_title)) {
+            KeyValueRow("Hardware", if (ir != null) stringResource(R.string.hw_ir_service_present) else stringResource(R.string.hw_ir_service_missing))
+            KeyValueRow("IR-Emitter", if (hasEmitter) stringResource(R.string.hw_yes_lc) else stringResource(R.string.hw_no_lc))
             if (!hasEmitter) {
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Kein IR-Blaster verbaut. Standardmäßig haben nur Xiaomi (bis Mi 11/12), " +
-                        "Huawei (Mate-Serie) und ältere LG/HTC IR-LEDs.",
+                    stringResource(R.string.hw_ir_no_blaster),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
         }
 
         if (hasEmitter) {
-            StatCard("Carrier-Frequenzen") {
+            StatCard(stringResource(R.string.hw_ir_carrier_freqs)) {
                 if (ranges.isEmpty()) {
-                    Text("Hardware meldet keine Ranges.", color = OnSurfaceMuted, fontSize = 12.sp)
+                    Text(stringResource(R.string.hw_ir_no_ranges), color = OnSurfaceMuted, fontSize = 12.sp)
                 } else {
                     ranges.forEach { r ->
                         KeyValueRow("${r.minFrequency} - ${r.maxFrequency} Hz", "—")
@@ -64,34 +65,33 @@ fun IrBlasterScreen() {
                 }
             }
 
-            StatCard("Test-Bursts senden") {
+            StatCard(stringResource(R.string.hw_ir_send_bursts)) {
                 Text(
-                    "Sendet 5×40 kHz Pulse à 1 ms ein/aus — am Handy-Selfie-Cam ist die IR-LED " +
-                        "als helles weiß-blaues Leuchten sichtbar.",
+                    stringResource(R.string.hw_ir_bursts_desc),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Button(
                         onClick = {
-                            lastResult = sendBurst(ir, 38_000, false)
+                            lastResult = sendBurst(context, ir, 38_000, false)
                         },
                         modifier = Modifier.weight(1f)
                     ) { Text("38 kHz", fontSize = 11.sp) }
                     Button(
-                        onClick = { lastResult = sendBurst(ir, 40_000, false) },
+                        onClick = { lastResult = sendBurst(context, ir, 40_000, false) },
                         modifier = Modifier.weight(1f)
                     ) { Text("40 kHz", fontSize = 11.sp) }
                     Button(
-                        onClick = { lastResult = sendBurst(ir, 56_000, false) },
+                        onClick = { lastResult = sendBurst(context, ir, 56_000, false) },
                         modifier = Modifier.weight(1f)
                     ) { Text("56 kHz", fontSize = 11.sp) }
                 }
                 Spacer(Modifier.height(6.dp))
                 OutlinedButton(
-                    onClick = { lastResult = sendBurst(ir, 38_000, true) },
+                    onClick = { lastResult = sendBurst(context, ir, 38_000, true) },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("Power-Off Sony-Standard (12 Bits)") }
+                ) { Text(stringResource(R.string.hw_ir_poweroff_sony)) }
                 Spacer(Modifier.height(6.dp))
                 Text(lastResult, color = OnSurfaceMuted, fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace)
@@ -100,8 +100,8 @@ fun IrBlasterScreen() {
     }
 }
 
-private fun sendBurst(ir: ConsumerIrManager?, freq: Int, long: Boolean): String {
-    if (ir == null) return "ConsumerIrManager fehlt"
+private fun sendBurst(context: Context, ir: ConsumerIrManager?, freq: Int, long: Boolean): String {
+    if (ir == null) return context.getString(R.string.hw_ir_manager_missing)
     val pattern = if (long) {
         // Sony SIRC standard: 2.4ms header + 0.6ms gap, 12 bits each 0.6ms gap with 0.6/1.2ms mark
         intArrayOf(2400, 600,
@@ -113,6 +113,6 @@ private fun sendBurst(ir: ConsumerIrManager?, freq: Int, long: Boolean): String 
     }
     return runCatching {
         ir.transmit(freq, pattern)
-        "OK · ${freq / 1000} kHz · ${pattern.size} Slots"
-    }.getOrElse { "Fehler: ${it.message}" }
+        context.getString(R.string.hw_ir_ok, freq / 1000, pattern.size)
+    }.getOrElse { context.getString(R.string.hw_ir_error, it.message ?: "") }
 }

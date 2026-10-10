@@ -5,7 +5,9 @@ import android.content.pm.ApplicationInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -26,19 +28,19 @@ data class CategoryGroup(
     val apps: List<AppPermissions>
 )
 
-enum class PermCategory(val label: String, val description: String) {
-    Location("Standort", "ACCESS_FINE/COARSE/BACKGROUND_LOCATION"),
-    Camera("Kamera", "CAMERA"),
-    Microphone("Mikrofon", "RECORD_AUDIO"),
-    Contacts("Kontakte", "READ/WRITE_CONTACTS, GET_ACCOUNTS"),
-    Calendar("Kalender", "READ/WRITE_CALENDAR"),
-    Sms("SMS", "READ/SEND/RECEIVE_SMS, READ_CELL_BROADCASTS"),
-    Phone("Telefon/Anrufe", "READ_PHONE_STATE, CALL_PHONE, CALL_LOG"),
-    Storage("Speicher/Medien", "READ/WRITE_EXTERNAL_STORAGE, READ_MEDIA_*"),
-    Body("Körper/Aktivität", "BODY_SENSORS, ACTIVITY_RECOGNITION"),
-    Notifications("Benachrichtigungen", "POST_NOTIFICATIONS"),
-    NearbyDevices("Geräte in der Nähe", "BLUETOOTH_SCAN/CONNECT, NEARBY_WIFI_DEVICES"),
-    Special("Spezielle Rechte", "SYSTEM_ALERT_WINDOW, PACKAGE_USAGE_STATS, BIND_ACCESSIBILITY/DEVICE_ADMIN");
+enum class PermCategory(@StringRes val labelRes: Int, val description: String) {
+    Location(R.string.misc_perm_cat_location, "ACCESS_FINE/COARSE/BACKGROUND_LOCATION"),
+    Camera(R.string.misc_perm_cat_camera, "CAMERA"),
+    Microphone(R.string.misc_perm_cat_microphone, "RECORD_AUDIO"),
+    Contacts(R.string.misc_perm_cat_contacts, "READ/WRITE_CONTACTS, GET_ACCOUNTS"),
+    Calendar(R.string.misc_perm_cat_calendar, "READ/WRITE_CALENDAR"),
+    Sms(R.string.misc_perm_cat_sms, "READ/SEND/RECEIVE_SMS, READ_CELL_BROADCASTS"),
+    Phone(R.string.misc_perm_cat_phone, "READ_PHONE_STATE, CALL_PHONE, CALL_LOG"),
+    Storage(R.string.misc_perm_cat_storage, "READ/WRITE_EXTERNAL_STORAGE, READ_MEDIA_*"),
+    Body(R.string.misc_perm_cat_body, "BODY_SENSORS, ACTIVITY_RECOGNITION"),
+    Notifications(R.string.misc_perm_cat_notifications, "POST_NOTIFICATIONS"),
+    NearbyDevices(R.string.misc_perm_cat_nearby, "BLUETOOTH_SCAN/CONNECT, NEARBY_WIFI_DEVICES"),
+    Special(R.string.misc_perm_cat_special, "SYSTEM_ALERT_WINDOW, PACKAGE_USAGE_STATS, BIND_ACCESSIBILITY/DEVICE_ADMIN");
 
     companion object {
         fun fromPermission(name: String): PermCategory? = when (name) {

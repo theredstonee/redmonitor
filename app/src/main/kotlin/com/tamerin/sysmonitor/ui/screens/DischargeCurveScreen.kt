@@ -13,10 +13,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.battery.BatteryHistoryDatabase
 import com.tamerin.sysmonitor.data.battery.BatterySample
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -40,6 +42,16 @@ private enum class Range(val label: String, val ms: Long) {
 }
 
 @Composable
+private fun rangeLabel(r: Range): String = stringResource(
+    when (r) {
+        Range.H6 -> R.string.pwr_dc_range_6h
+        Range.H24 -> R.string.pwr_dc_range_24h
+        Range.D3 -> R.string.pwr_dc_range_3d
+        Range.D7 -> R.string.pwr_dc_range_7d
+    }
+)
+
+@Composable
 fun DischargeCurveScreen() {
     val context = LocalContext.current
     var range by remember { mutableStateOf(Range.H24) }
@@ -61,23 +73,22 @@ fun DischargeCurveScreen() {
                 FilterChip(
                     selected = range == r,
                     onClick = { range = r },
-                    label = { Text(r.label, fontSize = 11.sp) }
+                    label = { Text(rangeLabel(r), fontSize = 11.sp) }
                 )
             }
             Spacer(Modifier.weight(1f))
             Text(
-                if (loading) "lädt…" else "${samples.size} Samples",
+                if (loading) stringResource(R.string.pwr_dc_loading)
+                else stringResource(R.string.pwr_dc_samples, samples.size),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }
         Spacer(Modifier.height(8.dp))
 
         if (samples.size < 2) {
-            StatCard("Noch keine Daten") {
+            StatCard(stringResource(R.string.pwr_dc_no_data_title)) {
                 Text(
-                    "Im gewählten Zeitraum gibt es weniger als 2 Samples. Der BatterySamplerWorker " +
-                        "läuft alle 15 min und sammelt mit der Zeit. Lass die App ein paar Stunden offen " +
-                        "und schau dann nochmal rein.",
+                    stringResource(R.string.pwr_dc_no_data_body),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
@@ -92,7 +103,7 @@ fun DischargeCurveScreen() {
 
 @Composable
 private fun ChartCard(samples: List<BatterySample>, range: Range) {
-    StatCard("Verlauf · ${range.label}") {
+    StatCard(stringResource(R.string.pwr_dc_history_title, rangeLabel(range))) {
         val t0 = samples.first().timestampMs
         val t1 = samples.last().timestampMs
         val durMs = (t1 - t0).coerceAtLeast(1L)
@@ -180,10 +191,10 @@ private fun ChartCard(samples: List<BatterySample>, range: Range) {
         }
         Spacer(Modifier.height(8.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Legend(GaugeGreen, "lädt")
-            Legend(AccentSoft, "normal")
-            Legend(GaugeOrange, "< 30 %")
-            Legend(GaugeRed, "< 15 %")
+            Legend(GaugeGreen, stringResource(R.string.pwr_dc_legend_charging))
+            Legend(AccentSoft, stringResource(R.string.pwr_dc_legend_normal))
+            Legend(GaugeOrange, stringResource(R.string.pwr_dc_legend_30))
+            Legend(GaugeRed, stringResource(R.string.pwr_dc_legend_15))
         }
     }
 }
@@ -218,15 +229,15 @@ private fun StatsCard(samples: List<BatterySample>) {
     }
     val ratePctPerH = if (dischargeMin > 0) netDrop / (dischargeMin / 60f) else 0f
 
-    StatCard("Statistik im Zeitraum") {
-        KeyValueRow("Start → Ende", "${pctStart.toInt()} % → ${pctEnd.toInt()} %")
-        KeyValueRow("Spanne", "min ${minPct.toInt()} % · max ${maxPct.toInt()} %")
-        KeyValueRow("Beobachtungszeit", "${durMin / 60} h ${durMin % 60} min")
-        KeyValueRow("Davon Entlade-Zeit", "${dischargeMin / 60} h ${dischargeMin % 60} min")
-        KeyValueRow("Drain-Rate (netto)", "%.2f %% / h".format(ratePctPerH))
+    StatCard(stringResource(R.string.pwr_dc_stats_title)) {
+        KeyValueRow(stringResource(R.string.pwr_dc_stats_start_end), "${pctStart.toInt()} % → ${pctEnd.toInt()} %")
+        KeyValueRow(stringResource(R.string.pwr_dc_stats_span), "min ${minPct.toInt()} % · max ${maxPct.toInt()} %")
+        KeyValueRow(stringResource(R.string.pwr_dc_stats_observed), "${durMin / 60} h ${durMin % 60} min")
+        KeyValueRow(stringResource(R.string.pwr_dc_stats_discharge_time), "${dischargeMin / 60} h ${dischargeMin % 60} min")
+        KeyValueRow(stringResource(R.string.pwr_dc_stats_drain_rate), "%.2f %% / h".format(ratePctPerH))
         if (ratePctPerH > 0) {
             val toEmptyH = 100f / ratePctPerH
-            KeyValueRow("Geschätzte Volllaufzeit (100 %)", "%.1f h".format(toEmptyH))
+            KeyValueRow(stringResource(R.string.pwr_dc_stats_full_runtime), "%.1f h".format(toEmptyH))
         }
     }
 }

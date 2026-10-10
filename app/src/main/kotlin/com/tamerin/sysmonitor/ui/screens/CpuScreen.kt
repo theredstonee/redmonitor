@@ -8,6 +8,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -34,7 +36,7 @@ import kotlinx.coroutines.withContext
 @Composable
 fun CpuScreen() {
     val context = LocalContext.current
-    val soc = remember { SocIdentifier.identify() }
+    val soc = remember { SocIdentifier.identify(context) }
     var snap by remember {
         mutableStateOf(
             CpuSnapshot(0f, emptyList(), emptyList(), emptyList(), emptyList(), "?", 0, "", emptyList(), "", "—")
@@ -67,7 +69,7 @@ fun CpuScreen() {
     ) {
         ProcessorHeader(soc)
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = androidx.compose.ui.Alignment.Center) {
-            CircularGauge(percent = snap.totalPercent, label = "Gesamt-Last", size = 180.dp)
+            CircularGauge(percent = snap.totalPercent, label = stringResource(R.string.bench_cpu_total_load), size = 180.dp)
         }
         SourceLine(snap.source)
         PerCoreCard(snap.perCorePercent, snap.coreFrequenciesKHz, snap.coreMaxFreqKHz)
@@ -81,7 +83,7 @@ fun CpuScreen() {
 
 @Composable
 private fun ProcessorHeader(soc: SocInfo) {
-    StatCard("Prozessor") {
+    StatCard(stringResource(R.string.bench_cpu_processor)) {
         Text(
             soc.fullLabel,
             color = MaterialTheme.colorScheme.onSurface,
@@ -96,7 +98,7 @@ private fun ProcessorHeader(soc: SocInfo) {
 @Composable
 private fun SourceLine(source: String) {
     Text(
-        "Datenquelle: $source",
+        stringResource(R.string.bench_cpu_data_source, source),
         color = OnSurfaceMuted, fontSize = 11.sp,
         fontFamily = FontFamily.Monospace,
         modifier = Modifier.fillMaxWidth()
@@ -109,10 +111,10 @@ private fun PerCoreCard(
     coreFrequenciesKHz: List<Long>,
     coreMaxFreqKHz: List<Long>
 ) {
-    StatCard("Pro Kern") {
+    StatCard(stringResource(R.string.bench_cpu_per_core)) {
         if (perCorePercent.isEmpty()) {
             Text(
-                "Keine Per-Core-Daten verfügbar. Auf neueren Android-Versionen ist /proc/stat ohne shell-Zugriff blockiert — aktiviere Shizuku für echte Werte.",
+                stringResource(R.string.bench_cpu_no_per_core),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         } else {
@@ -134,12 +136,12 @@ private fun PerCoreCard(
 
 @Composable
 private fun TopProcessesCard(topProcs: List<TopProc>, source: String) {
-    StatCard("Top-CPU-Prozesse") {
+    StatCard(stringResource(R.string.bench_cpu_top_processes)) {
         if (topProcs.isEmpty()) {
             Text(
                 if (source == "shizuku" || source == "system")
-                    "Lade via dumpsys cpuinfo…"
-                else "Top-Prozesse brauchen Shizuku (dumpsys cpuinfo).",
+                    stringResource(R.string.bench_cpu_loading_dumpsys)
+                else stringResource(R.string.bench_cpu_top_needs_shizuku),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         } else {
@@ -182,11 +184,11 @@ private fun ProcessorInfoCard(
     governor: String,
     hardware: String
 ) {
-    StatCard("Prozessor-Info") {
-        KeyValueRow("Kerne", coreCount.toString())
-        KeyValueRow("Architektur (primär)", abi)
+    StatCard(stringResource(R.string.bench_cpu_processor_info)) {
+        KeyValueRow(stringResource(R.string.bench_cpu_cores), coreCount.toString())
+        KeyValueRow(stringResource(R.string.bench_cpu_arch_primary), abi)
         if (supportedAbis.size > 1) {
-            KeyValueRow("Unterstützte ABIs", supportedAbis.joinToString(", "))
+            KeyValueRow(stringResource(R.string.bench_cpu_supported_abis), supportedAbis.joinToString(", "))
         }
         KeyValueRow("Governor", governor)
         KeyValueRow("Hardware", hardware)
@@ -195,7 +197,7 @@ private fun ProcessorInfoCard(
 
 @Composable
 private fun FreqRangeCard(coreCount: Int, coreMinFreqKHz: List<Long>, coreMaxFreqKHz: List<Long>) {
-    StatCard("Frequenz-Range pro Kern") {
+    StatCard(stringResource(R.string.bench_cpu_freq_range_per_core)) {
         repeat(coreCount) { idx ->
             val minF = coreMinFreqKHz.getOrNull(idx) ?: 0L
             val maxF = coreMaxFreqKHz.getOrNull(idx) ?: 0L

@@ -18,11 +18,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -74,18 +76,17 @@ fun GnssLiveScreen() {
 
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!hasPerm) {
-            StatCard("Location-Permission nötig") {
+            StatCard(stringResource(R.string.hw_gnss_perm_required)) {
                 Text(
-                    "GNSS-Sat-Status braucht ACCESS_FINE_LOCATION. " +
-                        "Erteile sie in den App-Settings oder via Shizuku-Auto-Grant.",
+                    stringResource(R.string.hw_gnss_perm_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp
                 )
             }
             return@Column
         }
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            StatCard("Zu altes Android") {
-                Text("Brauche Android 7+ (GnssStatus.Callback API).",
+            StatCard(stringResource(R.string.hw_gnss_android_old)) {
+                Text(stringResource(R.string.hw_gnss_android_old_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp)
             }
             return@Column
@@ -98,15 +99,15 @@ fun GnssLiveScreen() {
             .average().let { if (it.isNaN()) 0.0 else it }
 
         StatCard("GNSS Live") {
-            KeyValueRow("Sichtbar", "$total")
-            KeyValueRow("Im Fix", "$used")
+            KeyValueRow(stringResource(R.string.hw_gnss_visible), "$total")
+            KeyValueRow(stringResource(R.string.hw_gnss_in_fix), "$used")
             KeyValueRow("Ø C/N0", "%.1f dBHz".format(avgCno))
             byConst.forEach { (c, list) ->
-                KeyValueRow(c, "${list.size} (${list.count { it.used }} im Fix)")
+                KeyValueRow(c, stringResource(R.string.hw_gnss_const_count, list.size, list.count { it.used }))
             }
             if (sats.isEmpty()) {
                 Spacer(Modifier.height(6.dp))
-                Text("Warte auf GPS-Fix… (kann im Gebäude dauern)",
+                Text(stringResource(R.string.hw_gnss_waiting),
                     color = OnSurfaceMuted, fontSize = 12.sp)
             }
         }

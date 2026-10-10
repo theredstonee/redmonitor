@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- HapticIntensity -->
+    <string name="misc_haptic_weak">Schwach</string>
+    <string name="misc_haptic_medium">Mittel</string>
+    <string name="misc_haptic_strong">Stark</string>
+
+    <!-- HudMetric -->
+    <string name="misc_hud_metric_cpu_percent" formatted="false">CPU % gesamt</string>
+    <string name="misc_hud_metric_per_core">Pro-Core-Balken</string>
+    <string name="misc_hud_metric_per_core_detail" formatted="false">Pro-Core %·MHz (detailliert)</string>
+    <string name="misc_hud_metric_cpu_freq">CPU-Takt Ø (MHz)</string>
+    <string name="misc_hud_metric_cpu_temp">CPU/SoC-Temperatur</string>
+    <string name="misc_hud_metric_ram_percent" formatted="false">RAM %</string>
+    <string name="misc_hud_metric_battery" formatted="false">Akku % + Watt</string>
+    <string name="misc_hud_metric_network">Netz Down/Up</string>
+    <string name="misc_hud_metric_fps">FPS</string>
+    <string name="misc_hud_metric_clock">Uhrzeit + Uptime</string>
+
+    <!-- HudProfileMode -->
+    <string name="misc_hud_profile_always">Immer sichtbar</string>
+    <string name="misc_hud_profile_only_in">Nur in ausgewaehlten Apps</string>
+    <string name="misc_hud_profile_except_in">Ueberall ausser in ausgewaehlten Apps</string>
+
+    <!-- HudSize -->
+    <string name="misc_hud_size_small">Klein</string>
+    <string name="misc_hud_size_medium">Mittel</string>
+    <string name="misc_hud_size_large">Groß</string>
+
+    <!-- HudColor -->
+    <string name="misc_hud_color_brand_red">Brand-Rot</string>
+    <string name="misc_hud_color_white">Weiß</string>
+    <string name="misc_hud_color_green">Grün</string>
+    <string name="misc_hud_color_cyan">Cyan</string>
+    <string name="misc_hud_color_amber">Bernstein</string>
+
+    <!-- GlyphMetric -->
+    <string name="misc_glyph_metric_cpu">CPU-Auslastung</string>
+    <string name="misc_glyph_metric_ram">RAM-Belegung</string>
+    <string name="misc_glyph_metric_battery">Akkustand</string>
+    <string name="misc_glyph_metric_temp">CPU-Temperatur</string>
+
+    <!-- PermCategory -->
+    <string name="misc_perm_cat_location">Standort</string>
+    <string name="misc_perm_cat_camera">Kamera</string>
+    <string name="misc_perm_cat_microphone">Mikrofon</string>
+    <string name="misc_perm_cat_contacts">Kontakte</string>
+    <string name="misc_perm_cat_calendar">Kalender</string>
+    <string name="misc_perm_cat_sms">SMS</string>
+    <string name="misc_perm_cat_phone">Telefon/Anrufe</string>
+    <string name="misc_perm_cat_storage">Speicher/Medien</string>
+    <string name="misc_perm_cat_body">Körper/Aktivität</string>
+    <string name="misc_perm_cat_notifications">Benachrichtigungen</string>
+    <string name="misc_perm_cat_nearby">Geräte in der Nähe</string>
+    <string name="misc_perm_cat_special">Spezielle Rechte</string>
+
+    <!-- AgeFilter -->
+    <string name="misc_agefilter_all">Alle</string>
+    <string name="misc_agefilter_1h">1h</string>
+    <string name="misc_agefilter_24h">24h</string>
+    <string name="misc_agefilter_7d">7Tg</string>
+    <string name="misc_agefilter_30d">30Tg</string>
+
+    <!-- SortMode -->
+    <string name="misc_sortmode_ram_desc">RAM ↓</string>
+    <string name="misc_sortmode_name">Name</string>
+    <string name="misc_sortmode_pid">PID</string>
+    <string name="misc_sortmode_user_first">User zuerst</string>
+
+    <!-- Misc -->
+    <string name="misc_unknown_error">unbekannter Fehler</string>
+</resources>

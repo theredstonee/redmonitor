@@ -14,9 +14,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.SensorRegistry
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -58,11 +60,11 @@ fun SensorsScreen(onSelect: (Int) -> Unit = {}) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         item {
-            StatCard("Übersicht") {
-                KeyValueRow("Sensoren gesamt", allSensors.size.toString())
-                KeyValueRow("Aktive Live-Werte", live.size.toString())
+            StatCard(stringResource(R.string.hw_sens_overview)) {
+                KeyValueRow(stringResource(R.string.hw_sens_total), allSensors.size.toString())
+                KeyValueRow(stringResource(R.string.hw_sens_active_live), live.size.toString())
                 Text(
-                    "Tippe einen Sensor an, um Detail-Verlauf und alle Specs zu sehen.",
+                    stringResource(R.string.hw_sens_tap_hint),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
@@ -71,8 +73,8 @@ fun SensorsScreen(onSelect: (Int) -> Unit = {}) {
 
         items(allSensors, key = { it.type.toString() + it.name }) { sensor ->
             val values = live[sensor.type]
-            val label = SensorRegistry.typeLabel(sensor.type)
-            val unit = SensorRegistry.unit(sensor.type)
+            val label = SensorRegistry.typeLabel(context, sensor.type)
+            val unit = SensorRegistry.unit(context, sensor.type)
             Box(modifier = Modifier.clickable { onSelect(sensor.type) }) {
                 StatCard(label) {
                     Text(
@@ -89,7 +91,7 @@ fun SensorsScreen(onSelect: (Int) -> Unit = {}) {
                             fontSize = 12.sp
                         )
                     } else {
-                        Text("warte…", color = OnSurfaceMuted, fontSize = 11.sp)
+                        Text(stringResource(R.string.hw_sens_waiting), color = OnSurfaceMuted, fontSize = 11.sp)
                     }
                 }
             }

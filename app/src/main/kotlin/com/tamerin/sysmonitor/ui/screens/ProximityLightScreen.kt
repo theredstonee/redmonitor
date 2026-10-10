@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.PercentBar
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -78,13 +80,13 @@ fun ProximityLightScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Proximity (Annäherung)") {
+        StatCard(stringResource(R.string.hw_prox_title)) {
             if (proximity == null) {
-                Text("Kein Proximity-Sensor verbaut.", color = OnSurfaceMuted, fontSize = 13.sp)
+                Text(stringResource(R.string.hw_prox_no_sensor), color = OnSurfaceMuted, fontSize = 13.sp)
             } else {
                 KeyValueRow("Sensor", proximity.name)
-                KeyValueRow("Maximaler Wert", "${proximity.maximumRange} cm")
-                KeyValueRow("Aktueller Wert", if (proxValue.isNaN()) "—" else "${"%.2f".format(proxValue)} cm")
+                KeyValueRow(stringResource(R.string.hw_prox_max_value), "${proximity.maximumRange} cm")
+                KeyValueRow(stringResource(R.string.hw_prox_current_value), if (proxValue.isNaN()) "—" else "${"%.2f".format(proxValue)} cm")
                 Spacer(Modifier.height(12.dp))
                 Box(
                     modifier = Modifier
@@ -95,7 +97,7 @@ fun ProximityLightScreen() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        if (proxNear) "OBJEKT NAH" else "FREI",
+                        if (proxNear) stringResource(R.string.hw_prox_object_near) else stringResource(R.string.hw_prox_free),
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp
@@ -103,22 +105,22 @@ fun ProximityLightScreen() {
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Halte den Finger vorne übers Display (oberhalb des Earpiece). Bei Annäherung leuchtet das Feld grün.",
+                    stringResource(R.string.hw_prox_hint),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
         }
 
-        StatCard("Lichtsensor") {
+        StatCard(stringResource(R.string.hw_light_title)) {
             if (light == null) {
-                Text("Kein Lichtsensor verbaut.", color = OnSurfaceMuted, fontSize = 13.sp)
+                Text(stringResource(R.string.hw_light_no_sensor), color = OnSurfaceMuted, fontSize = 13.sp)
             } else {
                 KeyValueRow("Sensor", light.name)
-                KeyValueRow("Aktuell", "${"%.1f".format(lightLx)} lx")
-                KeyValueRow("Gesehenes Maximum", "${"%.0f".format(lightMax)} lx")
+                KeyValueRow(stringResource(R.string.hw_light_current), "${"%.1f".format(lightLx)} lx")
+                KeyValueRow(stringResource(R.string.hw_light_max_seen), "${"%.0f".format(lightMax)} lx")
                 Spacer(Modifier.height(8.dp))
                 PercentBar(
-                    "Helligkeit",
+                    stringResource(R.string.hw_light_brightness),
                     (lightLx / lightMax * 100f).coerceIn(0f, 100f),
                     valueText = "${"%.0f".format(lightLx)} lx"
                 )
@@ -132,7 +134,7 @@ fun ProximityLightScreen() {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        bucket(lightLx),
+                        stringResource(bucket(lightLx)),
                         color = if ((lightLx / lightMax) > 0.5f) Color.Black else Color.White,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp
@@ -140,7 +142,7 @@ fun ProximityLightScreen() {
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(
-                    "Halte das Telefon ans Fenster und ins Dunkle — der Wert ändert sich live.",
+                    stringResource(R.string.hw_light_hint),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }
@@ -148,14 +150,14 @@ fun ProximityLightScreen() {
     }
 }
 
-private fun bucket(lx: Float): String = when {
-    lx < 1f -> "Stockfinster"
-    lx < 10f -> "Sehr dunkel"
-    lx < 50f -> "Dunkler Raum"
-    lx < 200f -> "Wohnraum"
-    lx < 500f -> "Helles Zimmer"
-    lx < 1000f -> "Büro"
-    lx < 5000f -> "Bewölkt draußen"
-    lx < 25_000f -> "Tageslicht"
-    else -> "Direktes Sonnenlicht"
+private fun bucket(lx: Float): Int = when {
+    lx < 1f -> R.string.hw_lux_pitchdark
+    lx < 10f -> R.string.hw_lux_verydark
+    lx < 50f -> R.string.hw_lux_darkroom
+    lx < 200f -> R.string.hw_lux_living
+    lx < 500f -> R.string.hw_lux_brightroom
+    lx < 1000f -> R.string.hw_lux_office
+    lx < 5000f -> R.string.hw_lux_overcast
+    lx < 25_000f -> R.string.hw_lux_daylight
+    else -> R.string.hw_lux_sunlight
 }

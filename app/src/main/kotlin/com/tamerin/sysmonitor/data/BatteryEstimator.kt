@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.BatteryManager
 import android.os.Build
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
@@ -17,16 +18,16 @@ data class BatteryTimeEstimate(
     enum class State { CHARGING, DISCHARGING, FULL, UNKNOWN }
     enum class Confidence { HIGH, MEDIUM, LOW, NONE }
 
-    fun formatRemaining(): String {
+    fun formatRemaining(context: Context): String {
         val ms = remainingMs ?: return "—"
         if (ms <= 0) return "—"
         val totalMin = (ms / 60_000).toInt()
         val h = totalMin / 60
         val m = totalMin % 60
         return when {
-            h <= 0 -> "$m min"
-            h < 24 -> "${h} h ${m.toString().padStart(2, '0')} min"
-            else -> "${h / 24} Tage ${h % 24} h"
+            h <= 0 -> context.getString(R.string.data_bte_remaining_min, m)
+            h < 24 -> context.getString(R.string.data_bte_remaining_hm, h, m.toString().padStart(2, '0'))
+            else -> context.getString(R.string.data_bte_remaining_days, h / 24, h % 24)
         }
     }
 }
@@ -57,7 +58,7 @@ object BatteryEstimator {
 
         if (pct >= 99 && charging) {
             return BatteryTimeEstimate(BatteryTimeEstimate.State.FULL, 0L,
-                BatteryTimeEstimate.Confidence.HIGH, "Voll")
+                BatteryTimeEstimate.Confidence.HIGH, context.getString(R.string.data_bte_full))
         }
 
         // Path 1: Android's own estimate (charging only, API 28+)
@@ -68,7 +69,7 @@ object BatteryEstimator {
                     state = BatteryTimeEstimate.State.CHARGING,
                     remainingMs = androidMs,
                     confidence = BatteryTimeEstimate.Confidence.HIGH,
-                    source = "Android-Lade-API"
+                    source = context.getString(R.string.data_bte_source_android)
                 )
             }
         }
@@ -90,7 +91,7 @@ object BatteryEstimator {
                     if (charging) BatteryTimeEstimate.State.CHARGING else BatteryTimeEstimate.State.DISCHARGING,
                     null,
                     BatteryTimeEstimate.Confidence.NONE,
-                    "kein Strom"
+                    context.getString(R.string.data_bte_no_current)
                 )
             }
             val chargeMah = chargeNowUah / 1000.0
@@ -104,7 +105,7 @@ object BatteryEstimator {
                     state = BatteryTimeEstimate.State.CHARGING,
                     remainingMs = (hours * 3600_000).toLong(),
                     confidence = BatteryTimeEstimate.Confidence.MEDIUM,
-                    source = "Strom × Kapazität"
+                    source = context.getString(R.string.data_bte_source_current_capacity)
                 )
             } else {
                 val hours = chargeMah / absCurrentMa
@@ -112,7 +113,7 @@ object BatteryEstimator {
                     state = BatteryTimeEstimate.State.DISCHARGING,
                     remainingMs = (hours * 3600_000).toLong(),
                     confidence = BatteryTimeEstimate.Confidence.MEDIUM,
-                    source = "Strom × Kapazität"
+                    source = context.getString(R.string.data_bte_source_current_capacity)
                 )
             }
         }

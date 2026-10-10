@@ -25,9 +25,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.Oem
 import com.tamerin.sysmonitor.data.OemDetect
 import com.tamerin.sysmonitor.data.OemRestrictionLevel
@@ -45,13 +47,14 @@ import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
  */
 @Composable
 fun OemHintBanner(onOpenSetup: () -> Unit, force: Boolean = false) {
-    val spec = remember { OemDetect.detect() }
+    val context = LocalContext.current
+    val spec = remember { OemDetect.detect(context) }
     if (!force && spec.restrictionLevel == OemRestrictionLevel.LOW) return
 
     val (bg, border, accent, label) = when (spec.restrictionLevel) {
-        OemRestrictionLevel.HIGH -> Quad(Color(0x1FDC2626), Color(0x66DC2626), GaugeRed, "Eingerichtet werden")
-        OemRestrictionLevel.MEDIUM -> Quad(Color(0x1FF97316), Color(0x66F97316), GaugeOrange, "Empfohlen anpassen")
-        OemRestrictionLevel.LOW -> Quad(Color(0x1F22C55E), Color(0x6622C55E), GaugeGreen, "Optional")
+        OemRestrictionLevel.HIGH -> Quad(Color(0x1FDC2626), Color(0x66DC2626), GaugeRed, stringResource(R.string.comp_oem_badge_setup))
+        OemRestrictionLevel.MEDIUM -> Quad(Color(0x1FF97316), Color(0x66F97316), GaugeOrange, stringResource(R.string.comp_oem_badge_recommended))
+        OemRestrictionLevel.LOW -> Quad(Color(0x1F22C55E), Color(0x6622C55E), GaugeGreen, stringResource(R.string.comp_oem_badge_optional))
     }
 
     Card(
@@ -68,21 +71,24 @@ fun OemHintBanner(onOpenSetup: () -> Unit, force: Boolean = false) {
             Icon(Icons.Filled.Warning, contentDescription = null, tint = accent, modifier = Modifier.size(20.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${spec.skinName}${spec.skinVersion?.let { " $it" } ?: ""} erkannt",
+                    stringResource(
+                        R.string.comp_oem_detected,
+                        "${spec.skinName}${spec.skinVersion?.let { " $it" } ?: ""}"
+                    ),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 13.sp
                 )
                 Text(
                     if (spec.restrictionLevel == OemRestrictionLevel.HIGH)
-                        "$label - sonst killt das System die App im Hintergrund."
+                        stringResource(R.string.comp_oem_hint_high, label)
                     else
-                        "$label - tippen für Setup-Anleitung.",
+                        stringResource(R.string.comp_oem_hint_tap, label),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
             }
-            Text("Setup >", color = accent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+            Text(stringResource(R.string.comp_oem_setup_arrow), color = accent, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         }
     }
 }
@@ -93,8 +99,9 @@ fun OemHintBanner(onOpenSetup: () -> Unit, force: Boolean = false) {
  * Use inside any screen that needs a complete permission audit.
  */
 @Composable
-fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
+fun OemSetupCard(specOverride: OemSpec? = null) {
     val context = LocalContext.current
+    val spec = specOverride ?: remember { OemDetect.detect(context) }
     val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
 
     var battOk by remember { mutableStateOf(OemDetect.isIgnoringBatteryOpt(context)) }
@@ -114,9 +121,9 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
 
     StatCard(spec.displayName) {
         val levelLabel = when (spec.restrictionLevel) {
-            OemRestrictionLevel.HIGH -> "Aggressive Limits"
-            OemRestrictionLevel.MEDIUM -> "Moderate Limits"
-            OemRestrictionLevel.LOW -> "Stock-nah"
+            OemRestrictionLevel.HIGH -> stringResource(R.string.comp_oem_level_high)
+            OemRestrictionLevel.MEDIUM -> stringResource(R.string.comp_oem_level_medium)
+            OemRestrictionLevel.LOW -> stringResource(R.string.comp_oem_level_low)
         }
         val levelColor = when (spec.restrictionLevel) {
             OemRestrictionLevel.HIGH -> GaugeRed
@@ -144,8 +151,8 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
         Spacer(Modifier.height(12.dp))
 
         PermissionRow(
-            label = "Akku-Optimierung aus",
-            help = "Sonst killt Doze die App im Tiefschlaf.",
+            label = stringResource(R.string.comp_oem_perm_battery),
+            help = stringResource(R.string.comp_oem_perm_battery_help),
             granted = battOk,
             onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -153,8 +160,8 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
             }
         )
         PermissionRow(
-            label = "Nutzungsstatistiken (Top-App)",
-            help = "Für 'aktive App'-Anzeige und faire Drain-Messung.",
+            label = stringResource(R.string.comp_oem_perm_usage),
+            help = stringResource(R.string.comp_oem_perm_usage_help),
             granted = usageOk,
             onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -162,8 +169,8 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
             }
         )
         PermissionRow(
-            label = "Benachrichtigungen",
-            help = "Update-Hinweise & Foreground-Service-Status.",
+            label = stringResource(R.string.comp_oem_perm_notif),
+            help = stringResource(R.string.comp_oem_perm_notif_help),
             granted = notifOk,
             onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -171,8 +178,8 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
             }
         )
         PermissionRow(
-            label = "Über anderen Apps anzeigen",
-            help = "Für das Floating-HUD Overlay nötig.",
+            label = stringResource(R.string.comp_oem_perm_overlay),
+            help = stringResource(R.string.comp_oem_perm_overlay_help),
             granted = overlayOk,
             onClick = {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -190,7 +197,7 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
                     OemDetect.safeStart(context, autostart)
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text(if (spec.oem == Oem.SAMSUNG) "Schlafende Apps öffnen" else "Autostart-Manager öffnen") }
+            ) { Text(if (spec.oem == Oem.SAMSUNG) stringResource(R.string.comp_oem_btn_samsung_sleep) else stringResource(R.string.comp_oem_btn_autostart)) }
             Spacer(Modifier.height(6.dp))
         }
 
@@ -203,7 +210,7 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
                         OemDetect.safeStart(context, miuiPerm)
                     },
                     modifier = Modifier.fillMaxWidth()
-                ) { Text("MIUI: Andere Berechtigungen (Pop-ups)") }
+                ) { Text(stringResource(R.string.comp_oem_btn_miui_perms)) }
                 Spacer(Modifier.height(6.dp))
             }
             OutlinedButton(
@@ -212,7 +219,7 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
                     OemDetect.safeStart(context, OemDetect.developerSettingsIntent())
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Entwickleroptionen (MIUI-Optimierung)") }
+            ) { Text(stringResource(R.string.comp_oem_btn_developer)) }
             Spacer(Modifier.height(6.dp))
         }
 
@@ -222,7 +229,7 @@ fun OemSetupCard(spec: OemSpec = remember { OemDetect.detect() }) {
                 OemDetect.safeStart(context, OemDetect.appDetailsIntent(context))
             },
             modifier = Modifier.fillMaxWidth()
-        ) { Text("App-Details (alle Berechtigungen)") }
+        ) { Text(stringResource(R.string.comp_oem_btn_app_details)) }
     }
 }
 
@@ -252,7 +259,7 @@ private fun PermissionRow(
             Text(help, color = OnSurfaceMuted, fontSize = 11.sp)
         }
         Text(
-            if (granted) "OK" else "Öffnen >",
+            if (granted) stringResource(R.string.comp_oem_status_ok) else stringResource(R.string.comp_oem_status_open),
             color = if (granted) GaugeGreen else Accent,
             fontWeight = FontWeight.Bold,
             fontSize = 12.sp

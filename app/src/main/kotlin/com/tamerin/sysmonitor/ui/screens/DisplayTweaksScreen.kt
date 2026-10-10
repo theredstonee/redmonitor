@@ -15,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.data.SystemTweaks
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -77,16 +79,16 @@ fun DisplayTweaksScreen() {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         if (!shizukuReady) {
-            StatCard("Shizuku benötigt") {
-                Text("Display-Tweaks brauchen shell-Zugriff via Shizuku.",
+            StatCard(stringResource(R.string.scr2_disp_shizuku_title)) {
+                Text(stringResource(R.string.scr2_disp_shizuku_desc),
                     color = OnSurfaceMuted, fontSize = 12.sp)
             }
             return@Column
         }
 
-        StatCard("⚠ Warnung") {
+        StatCard(stringResource(R.string.scr2_disp_warn_title)) {
             Text(
-                "Falsche DPI/Auflösung kann UI bricken. Wenn du dich aussperrst: Smartphone neu starten — Werte gelten nur bis Reboot wenn du sie nicht über 'reset' zurücksetzt.",
+                stringResource(R.string.scr2_disp_warn_desc),
                 color = GaugeOrange, fontSize = 12.sp, fontWeight = FontWeight.Medium
             )
             lastAction?.let {
@@ -96,10 +98,10 @@ fun DisplayTweaksScreen() {
         }
 
         // --- DPI ---
-        StatCard("Display-Dichte (DPI)") {
+        StatCard(stringResource(R.string.scr2_disp_dpi_title)) {
             displayState?.let {
-                KeyValueRow("Aktuell", "${it.currentDpi} dpi")
-                KeyValueRow("Physisch (Werks)", "${it.physicalDpi} dpi")
+                KeyValueRow(stringResource(R.string.scr2_disp_current), "${it.currentDpi} dpi")
+                KeyValueRow(stringResource(R.string.scr2_disp_physical), "${it.physicalDpi} dpi")
             }
             Spacer(Modifier.height(8.dp))
             Text("Quick-Sets:", color = OnSurfaceMuted, fontSize = 11.sp)
@@ -133,22 +135,22 @@ fun DisplayTweaksScreen() {
                         }
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Setzen") }
+                ) { Text(stringResource(R.string.scr2_disp_set)) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         act("DPI reset") { SystemTweaks.resetDpi(context) }
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Zurücksetzen") }
+                ) { Text(stringResource(R.string.scr2_disp_reset)) }
             }
         }
 
         // --- Resolution ---
-        StatCard("Auflösung") {
+        StatCard(stringResource(R.string.scr2_disp_resolution_title)) {
             displayState?.let {
-                KeyValueRow("Aktuell", it.currentSize)
-                KeyValueRow("Physisch (Werks)", it.physicalSize)
+                KeyValueRow(stringResource(R.string.scr2_disp_current), it.currentSize)
+                KeyValueRow(stringResource(R.string.scr2_disp_physical), it.physicalSize)
             }
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
@@ -168,26 +170,26 @@ fun DisplayTweaksScreen() {
                         }
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Setzen") }
+                ) { Text(stringResource(R.string.scr2_disp_set)) }
                 OutlinedButton(
                     onClick = {
                         haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                         act("Size reset") { SystemTweaks.resetSize(context) }
                     },
                     modifier = Modifier.weight(1f)
-                ) { Text("Zurücksetzen") }
+                ) { Text(stringResource(R.string.scr2_disp_reset)) }
             }
         }
 
         // --- Animationen ---
-        StatCard("Animations-Geschwindigkeit") {
+        StatCard(stringResource(R.string.scr2_disp_anim_title)) {
             anim?.let {
-                KeyValueRow("Fenster", "${it.window}×")
+                KeyValueRow(stringResource(R.string.scr2_disp_window), "${it.window}×")
                 KeyValueRow("Transition", "${it.transition}×")
                 KeyValueRow("Animator", "${it.animator}×")
             }
             Spacer(Modifier.height(8.dp))
-            Text("Alle drei gleichzeitig: ${"%.1f".format(animScale)}×",
+            Text(stringResource(R.string.scr2_disp_all_three, "%.1f".format(animScale)),
                 color = Accent, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             Slider(
                 value = animScale,
@@ -203,7 +205,7 @@ fun DisplayTweaksScreen() {
                         val r = withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, animScale) }
                         val ok = r.all { it.ok }
                         lastAction = if (ok) "✓ Anim → ${"%.1f".format(animScale)}×"
-                            else "✗ Anim teilweise fehlgeschlagen"
+                            else context.getString(R.string.scr2_disp_anim_partial_fail)
                         refresh()
                     }
                 },
@@ -217,11 +219,11 @@ fun DisplayTweaksScreen() {
                     scope.launch {
                         withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, 0f) }
                         refresh()
-                        lastAction = "✓ Animationen aus — UI maximal schnell"
+                        lastAction = context.getString(R.string.scr2_disp_anim_off_msg)
                     }
                 }, modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = Accent)) {
-                    Text("Aus (0×)", fontSize = 12.sp)
+                    Text(stringResource(R.string.scr2_disp_anim_off), fontSize = 12.sp)
                 }
                 OutlinedButton(onClick = {
                     haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
@@ -229,7 +231,7 @@ fun DisplayTweaksScreen() {
                     scope.launch {
                         withContext(Dispatchers.IO) { SystemTweaks.setAllAnimScales(context, 1f) }
                         refresh()
-                        lastAction = "✓ Animationen normal (1×)"
+                        lastAction = context.getString(R.string.scr2_disp_anim_normal_msg)
                     }
                 }, modifier = Modifier.weight(1f)) {
                     Text("Normal (1×)", fontSize = 12.sp)
@@ -240,7 +242,7 @@ fun DisplayTweaksScreen() {
         // --- System-Toggles ---
         StatCard("Entwickler-Toggles") {
             ToggleRow(
-                label = "Touches anzeigen",
+                label = stringResource(R.string.scr2_disp_touches),
                 checked = showTouches
             ) { wantOn ->
                 act(if (wantOn) "Touches an" else "Touches aus") {
@@ -248,7 +250,7 @@ fun DisplayTweaksScreen() {
                 }
             }
             ToggleRow(
-                label = "Pointer-Location (Koordinaten oben)",
+                label = stringResource(R.string.scr2_disp_pointer),
                 checked = pointerLoc
             ) { wantOn ->
                 act(if (wantOn) "Pointer an" else "Pointer aus") {

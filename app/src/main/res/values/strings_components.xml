@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OnboardingDialog -->
+    <string name="comp_onb_step1_title">Willkommen bei RedMonitor</string>
+    <string name="comp_onb_step1_body">Eine lokale, ad-freie Sysinfo-App. Zeigt Live-CPU, RAM, Akku, Sensoren, Benchmarks, Hardware-Tests und vieles mehr. Alles bleibt auf dem Gerät — keine Cloud, keine Telemetry.</string>
+    <string name="comp_onb_step1_cta">Weiter</string>
+    <string name="comp_onb_step2_title">Was du machen kannst</string>
+    <string name="comp_onb_step2_body">• Live-Stats im \'Live\'-Tab\n• Benchmark-Suite: CPU, RAM, Storage, GPU, Stresstest\n• Hardware-Tests: Touch, Display, Speaker, Mic, NFC, IR, Kompass…\n• Pro-App-Traffic, Wake-Locks, Notification-Log, Permission-Audit\n• Floating HUD über allen Apps + Quick-Settings-Tile</string>
+    <string name="comp_onb_step2_cta">Weiter</string>
+    <string name="comp_onb_step3_title">Shizuku = mehr Tiefe</string>
+    <string name="comp_onb_step3_body">Viele Power-Features (Logcat, Wake-Locks, Shell-Terminal, Force-Stop, automatische Permission-Unblocks) brauchen Shizuku — eine kleine App, die der RedMonitor Shell-Privilegien gibt, ohne Root. Optional, aber empfohlen.</string>
+    <string name="comp_onb_step3_cta">Los geht\'s</string>
+    <string name="comp_onb_back">Zurück</string>
+    <string name="comp_onb_skip">Überspringen</string>
+
+    <!-- OemSetupCard / OemHintBanner -->
+    <string name="comp_oem_badge_setup">Eingerichtet werden</string>
+    <string name="comp_oem_badge_recommended">Empfohlen anpassen</string>
+    <string name="comp_oem_badge_optional">Optional</string>
+    <string name="comp_oem_detected">%1$s erkannt</string>
+    <string name="comp_oem_hint_high">%1$s - sonst killt das System die App im Hintergrund.</string>
+    <string name="comp_oem_hint_tap">%1$s - tippen für Setup-Anleitung.</string>
+    <string name="comp_oem_setup_arrow">Setup &gt;</string>
+    <string name="comp_oem_level_high">Aggressive Limits</string>
+    <string name="comp_oem_level_medium">Moderate Limits</string>
+    <string name="comp_oem_level_low">Stock-nah</string>
+    <string name="comp_oem_perm_battery">Akku-Optimierung aus</string>
+    <string name="comp_oem_perm_battery_help">Sonst killt Doze die App im Tiefschlaf.</string>
+    <string name="comp_oem_perm_usage">Nutzungsstatistiken (Top-App)</string>
+    <string name="comp_oem_perm_usage_help">Für \'aktive App\'-Anzeige und faire Drain-Messung.</string>
+    <string name="comp_oem_perm_notif">Benachrichtigungen</string>
+    <string name="comp_oem_perm_notif_help">Update-Hinweise &amp; Foreground-Service-Status.</string>
+    <string name="comp_oem_perm_overlay">Über anderen Apps anzeigen</string>
+    <string name="comp_oem_perm_overlay_help">Für das Floating-HUD Overlay nötig.</string>
+    <string name="comp_oem_btn_samsung_sleep">Schlafende Apps öffnen</string>
+    <string name="comp_oem_btn_autostart">Autostart-Manager öffnen</string>
+    <string name="comp_oem_btn_miui_perms">MIUI: Andere Berechtigungen (Pop-ups)</string>
+    <string name="comp_oem_btn_developer">Entwickleroptionen (MIUI-Optimierung)</string>
+    <string name="comp_oem_btn_app_details">App-Details (alle Berechtigungen)</string>
+    <string name="comp_oem_status_ok">OK</string>
+    <string name="comp_oem_status_open">Öffnen &gt;</string>
+
+    <!-- LegalAcceptanceDialog -->
+    <string name="comp_legal_welcome">Willkommen bei RedMonitor</string>
+    <string name="comp_legal_subtitle">Kurzer Hinweis zur Datenverarbeitung.</string>
+    <string name="comp_legal_cloud_title">Cloud-Sync aktivieren</string>
+    <string name="comp_legal_cloud_body">Anonymer Heartbeat + Ende-zu-Ende-verschlüsseltes Backup an %1$s. Default: an. Jederzeit in den Einstellungen umschaltbar.</string>
+    <string name="comp_legal_privacy">Datenschutzerklärung</string>
+    <string name="comp_legal_terms">Nutzungsbedingungen</string>
+    <string name="comp_legal_settings_hint">Auch jederzeit in den Einstellungen unter \'Rechtliches\' abrufbar.</string>
+    <string name="comp_legal_accept">Verstanden, los geht\'s</string>
+    <string name="comp_legal_version">Stand %1$s · Datenschutz v%2$s · AGB v%3$s</string>
+
+    <!-- RateDialog -->
+    <string name="comp_rate_title">Gefällt dir RedMonitor?</string>
+    <string name="comp_rate_body">Hilf uns mit einer kurzen Bewertung auf Trustpilot. Dauert 30 Sekunden und hilft enorm, die App bekannter zu machen.</string>
+    <string name="comp_rate_confirm">⭐ Jetzt bewerten</string>
+    <string name="comp_rate_later">Später</string>
+
+    <!-- UpdateBanner -->
+    <string name="comp_update_available">Update verfügbar</string>
+    <string name="comp_update_detail">%1$s  →  %2$s  ·  Tap für Details</string>
+</resources>

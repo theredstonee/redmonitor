@@ -24,33 +24,35 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import kotlinx.coroutines.delay
 
-private sealed class ColorStep(val title: String) {
-    data class Solid(val color: Color, val name: String) : ColorStep(name)
-    data class Gradient(val name: String, val from: Color, val to: Color) : ColorStep(name)
-    object Spectrum : ColorStep("HSV-Spektrum")
-    object Grayscale : ColorStep("Graustufen-Ramp")
+private sealed class ColorStep(val titleRes: Int) {
+    data class Solid(val color: Color, val nameRes: Int) : ColorStep(nameRes)
+    data class Gradient(val nameRes: Int, val from: Color, val to: Color) : ColorStep(nameRes)
+    object Spectrum : ColorStep(R.string.hw_cs_spectrum)
+    object Grayscale : ColorStep(R.string.hw_cs_grayscale)
 }
 
 private val DEMO = listOf<ColorStep>(
-    ColorStep.Solid(Color.Red, "Reines Rot"),
-    ColorStep.Solid(Color.Green, "Reines Grün"),
-    ColorStep.Solid(Color.Blue, "Reines Blau"),
-    ColorStep.Solid(Color.Cyan, "Cyan"),
-    ColorStep.Solid(Color.Magenta, "Magenta"),
-    ColorStep.Solid(Color.Yellow, "Gelb"),
-    ColorStep.Solid(Color.White, "Weiß"),
-    ColorStep.Solid(Color.Black, "Schwarz"),
-    ColorStep.Gradient("Rot-Verlauf 0 → 255", Color.Black, Color.Red),
-    ColorStep.Gradient("Grün-Verlauf 0 → 255", Color.Black, Color.Green),
-    ColorStep.Gradient("Blau-Verlauf 0 → 255", Color.Black, Color.Blue),
+    ColorStep.Solid(Color.Red, R.string.hw_cs_pure_red),
+    ColorStep.Solid(Color.Green, R.string.hw_cs_pure_green),
+    ColorStep.Solid(Color.Blue, R.string.hw_cs_pure_blue),
+    ColorStep.Solid(Color.Cyan, R.string.hw_color_cyan),
+    ColorStep.Solid(Color.Magenta, R.string.hw_color_magenta),
+    ColorStep.Solid(Color.Yellow, R.string.hw_color_yellow),
+    ColorStep.Solid(Color.White, R.string.hw_color_white),
+    ColorStep.Solid(Color.Black, R.string.hw_color_black),
+    ColorStep.Gradient(R.string.hw_cs_grad_red, Color.Black, Color.Red),
+    ColorStep.Gradient(R.string.hw_cs_grad_green, Color.Black, Color.Green),
+    ColorStep.Gradient(R.string.hw_cs_grad_blue, Color.Black, Color.Blue),
     ColorStep.Spectrum,
     ColorStep.Grayscale
 )
@@ -111,24 +113,23 @@ fun ColorSpaceScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        StatCard("Display & Farbraum") {
+        StatCard(stringResource(R.string.hw_cs_display_colorspace)) {
             val info = activity?.let { collectDisplayInfo(it) } ?: emptyList()
             if (info.isEmpty()) {
-                Text("Display-Infos nicht verfügbar.", color = OnSurfaceMuted, fontSize = 12.sp)
+                Text(stringResource(R.string.hw_cs_display_info_unavailable), color = OnSurfaceMuted, fontSize = 12.sp)
             } else {
                 info.forEach { (k, v) -> KeyValueRow(k, v) }
             }
         }
 
-        StatCard("Auto-Demo (Vollbild)") {
+        StatCard(stringResource(R.string.hw_cs_auto_demo)) {
             Text(
-                "Spielt ${DEMO.size} Farben, Verläufe und Test-Muster automatisch nacheinander ab. " +
-                    "Tap = Pause/Weiter, Buttons = manuell, ✕ = Ende.",
+                stringResource(R.string.hw_cs_auto_demo_desc, DEMO.size),
                 color = OnSurfaceMuted,
                 fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
-            Text("Dauer pro Schritt: ${"%.1f".format(secondsPerStep)} s", fontSize = 13.sp)
+            Text(stringResource(R.string.hw_cs_duration_per_step, "%.1f".format(secondsPerStep)), fontSize = 13.sp)
             Slider(
                 value = secondsPerStep,
                 onValueChange = { secondsPerStep = it },
@@ -141,10 +142,10 @@ fun ColorSpaceScreen() {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 paused = false
                 index = 0
-            }) { Text("Demo starten") }
+            }) { Text(stringResource(R.string.hw_cs_start_demo)) }
         }
 
-        StatCard("Reine Farben (sRGB)") {
+        StatCard(stringResource(R.string.hw_cs_pure_colors_srgb)) {
             Row(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 horizontalArrangement = Arrangement.spacedBy(6.dp)
@@ -158,28 +159,28 @@ fun ColorSpaceScreen() {
             }
         }
 
-        StatCard("Farbverläufe") {
-            GradientBar("Rot 0 → 255", Color.Black, Color.Red)
+        StatCard(stringResource(R.string.hw_cs_gradients)) {
+            GradientBar(stringResource(R.string.hw_cs_grad_red_short), Color.Black, Color.Red)
             Spacer(Modifier.height(8.dp))
-            GradientBar("Grün 0 → 255", Color.Black, Color.Green)
+            GradientBar(stringResource(R.string.hw_cs_grad_green_short), Color.Black, Color.Green)
             Spacer(Modifier.height(8.dp))
-            GradientBar("Blau 0 → 255", Color.Black, Color.Blue)
+            GradientBar(stringResource(R.string.hw_cs_grad_blue_short), Color.Black, Color.Blue)
             Spacer(Modifier.height(12.dp))
-            Text("Spektrum (HSV)", color = OnSurfaceMuted, fontSize = 12.sp)
+            Text(stringResource(R.string.hw_cs_spectrum_hsv), color = OnSurfaceMuted, fontSize = 12.sp)
             Spacer(Modifier.height(4.dp))
             SpectrumBar()
         }
 
-        StatCard("Graustufen-Ramp (Bit-Tiefe prüfen)") {
+        StatCard(stringResource(R.string.hw_cs_grayscale_ramp_depth)) {
             Text(
-                "Sauber abgestufte Streifen = mind. 8 Bit pro Kanal. Banding = nur 6 Bit + Dithering.",
+                stringResource(R.string.hw_cs_grayscale_desc),
                 color = OnSurfaceMuted,
                 fontSize = 11.sp
             )
             Spacer(Modifier.height(6.dp))
             GrayscaleRamp(steps = 16)
             Spacer(Modifier.height(8.dp))
-            Text("Stufenlos:", color = OnSurfaceMuted, fontSize = 11.sp)
+            Text(stringResource(R.string.hw_cs_stepless), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(2.dp))
             GradientBar("", Color.Black, Color.White)
         }
@@ -247,7 +248,7 @@ private fun DemoFullscreen(
             val textColor = if (step is ColorStep.Solid && step.color.luminance() > 0.6f)
                 Color.Black else Color.White
             Text(
-                "${step.title}  ·  ${position + 1}/$total${if (paused) "  ·  PAUSE" else ""}",
+                "${stringResource(step.titleRes)}  ·  ${position + 1}/$total${if (paused) "  ·  PAUSE" else ""}",
                 color = textColor,
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Medium
@@ -256,10 +257,10 @@ private fun DemoFullscreen(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onPrev) { Text("◀") }
                 OutlinedButton(onClick = onTapTogglePause) {
-                    Text(if (paused) "▶ Weiter" else "⏸ Pause")
+                    Text(if (paused) stringResource(R.string.hw_cs_continue) else stringResource(R.string.hw_cs_pause_btn))
                 }
                 OutlinedButton(onClick = onNext) { Text("▶") }
-                OutlinedButton(onClick = onExit) { Text("✕ Ende") }
+                OutlinedButton(onClick = onExit) { Text(stringResource(R.string.hw_cs_end)) }
             }
         }
     }
@@ -343,9 +344,9 @@ private fun collectDisplayInfo(activity: Activity): List<Pair<String, String>> {
     val display = dm.getDisplay(Display.DEFAULT_DISPLAY) ?: return list
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        list += "Wide Color Gamut" to if (activity.windowManager.defaultDisplay.isWideColorGamut) "Ja" else "Nein"
+        list += "Wide Color Gamut" to if (activity.windowManager.defaultDisplay.isWideColorGamut) activity.getString(R.string.hw_yes) else activity.getString(R.string.hw_no)
         val pref = activity.window.colorMode
-        list += "Aktueller Color-Mode" to when (pref) {
+        list += activity.getString(R.string.hw_cs_current_color_mode) to when (pref) {
             android.content.pm.ActivityInfo.COLOR_MODE_DEFAULT -> "Default (sRGB)"
             android.content.pm.ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT -> "Wide Color Gamut"
             android.content.pm.ActivityInfo.COLOR_MODE_HDR -> "HDR"
@@ -369,18 +370,18 @@ private fun collectDisplayInfo(activity: Activity): List<Pair<String, String>> {
             }
             out
         }
-        val hdrLabel = if (hdrTypes.isEmpty()) "Keine" else hdrTypes.joinToString(", ")
-        list += "HDR-Unterstützung" to hdrLabel
+        val hdrLabel = if (hdrTypes.isEmpty()) activity.getString(R.string.hw_cs_none) else hdrTypes.joinToString(", ")
+        list += activity.getString(R.string.hw_cs_hdr_support) to hdrLabel
         if (caps != null && caps.desiredMaxLuminance > 0) {
-            list += "Max Luminanz" to "${caps.desiredMaxLuminance.toInt()} nits"
-            list += "Min Luminanz" to "${"%.3f".format(caps.desiredMinLuminance)} nits"
+            list += activity.getString(R.string.hw_cs_max_luminance) to "${caps.desiredMaxLuminance.toInt()} nits"
+            list += activity.getString(R.string.hw_cs_min_luminance) to "${"%.3f".format(caps.desiredMinLuminance)} nits"
         }
     }
     list += "Refresh-Rate" to "${"%.1f".format(display.refreshRate)} Hz"
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         val modes = display.supportedModes
         if (modes.size > 1) {
-            list += "Modi" to modes.joinToString(", ") {
+            list += activity.getString(R.string.hw_cs_modes) to modes.joinToString(", ") {
                 "${it.physicalWidth}×${it.physicalHeight} @ ${"%.0f".format(it.refreshRate)}Hz"
             }
         }

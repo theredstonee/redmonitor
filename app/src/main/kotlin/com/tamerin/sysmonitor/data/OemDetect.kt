@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
+import com.tamerin.sysmonitor.R
 
 enum class Oem {
     XIAOMI, SAMSUNG, ONEPLUS, OPPO, VIVO, HUAWEI, HONOR,
@@ -39,7 +40,14 @@ data class OemSpec(
 
 object OemDetect {
 
-    fun detect(): OemSpec {
+    /**
+     * [context] ist optional, damit bestehende Aufrufer ohne Context weiter kompilieren.
+     * Ist er gesetzt, werden die [OemSpec.notes] aus den String-Ressourcen lokalisiert;
+     * ohne Context dienen die deutschen Literale als Fallback (bisheriges Verhalten).
+     * Callers, die die Notes dem User zeigen (z. B. OemSetupCard), sollten den Context durchreichen.
+     */
+    fun detect(context: Context? = null): OemSpec {
+        fun note(resId: Int, fallback: String): String = context?.getString(resId) ?: fallback
         val mfg = (Build.MANUFACTURER ?: "").lowercase()
         val brand = (Build.BRAND ?: "").lowercase()
 
@@ -101,26 +109,26 @@ object OemDetect {
 
         val notes = buildList {
             if (isMiui || isHyperOs) {
-                add("Aggressive Hintergrund-Limits - Autostart explizit erlauben.")
-                add("'MIUI-Optimierung' in Entwickleroptionen kann Shizuku/ADB stören - bei Problemen aus.")
-                add("'Pop-ups im Hintergrund anzeigen' für Live-Updates nötig.")
-                add("Speicher-Bereinigung kann die App im Hintergrund killen - 'Sperren' im Recents-Bildschirm.")
+                add(note(R.string.oem_note_miui_bg_limits, "Aggressive Hintergrund-Limits - Autostart explizit erlauben."))
+                add(note(R.string.oem_note_miui_optimization, "'MIUI-Optimierung' in Entwickleroptionen kann Shizuku/ADB stören - bei Problemen aus."))
+                add(note(R.string.oem_note_miui_popups, "'Pop-ups im Hintergrund anzeigen' für Live-Updates nötig."))
+                add(note(R.string.oem_note_miui_memory, "Speicher-Bereinigung kann die App im Hintergrund killen - 'Sperren' im Recents-Bildschirm."))
             }
             if (oem == Oem.SAMSUNG) {
-                add("Akku-Optimierung & 'Schlafende Apps' sperrt sonst Updates.")
-                add("Game Booster / Edge-Panel kann Overlay blockieren.")
+                add(note(R.string.oem_note_samsung_battery, "Akku-Optimierung & 'Schlafende Apps' sperrt sonst Updates."))
+                add(note(R.string.oem_note_samsung_booster, "Game Booster / Edge-Panel kann Overlay blockieren."))
             }
             if (oem == Oem.OPPO || oem == Oem.REALME || (oem == Oem.ONEPLUS && isColorOs)) {
-                add("ColorOS Autostart + 'Im Hintergrund laufen lassen' aktivieren.")
+                add(note(R.string.oem_note_coloros_autostart, "ColorOS Autostart + 'Im Hintergrund laufen lassen' aktivieren."))
             }
             if (oem == Oem.VIVO) {
-                add("Hintergrund-Energieverbrauch hochsetzen + 'Hintergrund-Aufrufe' erlauben.")
+                add(note(R.string.oem_note_vivo, "Hintergrund-Energieverbrauch hochsetzen + 'Hintergrund-Aufrufe' erlauben."))
             }
             if (oem == Oem.HUAWEI || oem == Oem.HONOR) {
-                add("App-Start manuell verwalten - alle drei Toggles AN.")
+                add(note(R.string.oem_note_huawei, "App-Start manuell verwalten - alle drei Toggles AN."))
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                add("Eingeschränkter App-Standby-Bucket kann die App ausbremsen.")
+                add(note(R.string.oem_note_standby_bucket, "Eingeschränkter App-Standby-Bucket kann die App ausbremsen."))
             }
         }
 

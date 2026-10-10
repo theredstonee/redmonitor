@@ -7,6 +7,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.unit.dp
 import com.tamerin.sysmonitor.data.MemoryReader
 import com.tamerin.sysmonitor.data.RamSnapshot
@@ -59,30 +61,30 @@ fun RamScreen() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             CircularGauge(percent = ram.percent, label = "RAM", size = 160.dp)
-            CircularGauge(percent = storage.internalPercent, label = "Speicher", size = 160.dp)
+            CircularGauge(percent = storage.internalPercent, label = stringResource(R.string.bench_ram_storage), size = 160.dp)
         }
 
-        StatCard("Arbeitsspeicher") {
+        StatCard(stringResource(R.string.bench_ram_memory)) {
             PercentBar(
-                "Belegt",
+                stringResource(R.string.bench_used),
                 ram.percent,
                 valueText = "${ram.usedBytes.formatBytes()} / ${ram.totalBytes.formatBytes()}"
             )
             Spacer(Modifier.height(12.dp))
-            KeyValueRow("Verfügbar", ram.availableBytes.formatBytes())
-            KeyValueRow("Low-Memory-Schwelle", ram.threshold.formatBytes())
-            KeyValueRow("Low Memory?", if (ram.lowMemory) "Ja" else "Nein")
+            KeyValueRow(stringResource(R.string.bench_ram_available), ram.availableBytes.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_ram_low_mem_threshold), ram.threshold.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_ram_low_memory), if (ram.lowMemory) stringResource(R.string.bench_yes) else stringResource(R.string.bench_no))
         }
 
-        StatCard("Interner Speicher") {
+        StatCard(stringResource(R.string.bench_internal_storage)) {
             PercentBar(
-                "Belegt",
+                stringResource(R.string.bench_used),
                 storage.internalPercent,
                 valueText = "${(storage.internalTotal - storage.internalAvailable).formatBytes()} / ${storage.internalTotal.formatBytes()}"
             )
             Spacer(Modifier.height(12.dp))
-            KeyValueRow("Frei", storage.internalAvailable.formatBytes())
-            KeyValueRow("Gesamt", storage.internalTotal.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_ram_free), storage.internalAvailable.formatBytes())
+            KeyValueRow(stringResource(R.string.bench_total), storage.internalTotal.formatBytes())
         }
     }
 }

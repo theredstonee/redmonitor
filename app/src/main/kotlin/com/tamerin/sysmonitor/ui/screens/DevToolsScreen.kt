@@ -17,10 +17,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.settings.AppPrefs
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
@@ -77,14 +79,13 @@ fun DevToolsScreen() {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Dev-Tools — versteckter Bereich") {
+        StatCard(stringResource(R.string.sys_dt_title)) {
             Text(
-                "Du hast das Easter Egg gefunden. Hier siehst du rohe System-Dumps die normalerweise nur via ADB-Shell sichtbar sind. " +
-                    "Manche Quellen brauchen Shizuku (geschützte /proc/-Bereiche, /proc/net/*).",
+                stringResource(R.string.sys_dt_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Shizuku-Status", if (shizukuReady) "Bereit ✓" else "Nicht bereit")
+            KeyValueRow(stringResource(R.string.sys_dt_shizuku_status), if (shizukuReady) stringResource(R.string.sys_dt_ready) else stringResource(R.string.sys_dt_not_ready))
             KeyValueRow("Snake-Highscore", AppPrefs.snakeHighScore(context).toString())
             Spacer(Modifier.height(8.dp))
             OutlinedButton(
@@ -94,10 +95,10 @@ fun DevToolsScreen() {
                     (context as? android.app.Activity)?.finish()
                 },
                 modifier = Modifier.fillMaxWidth()
-            ) { Text("Easter Egg sperren (Re-Lock)") }
+            ) { Text(stringResource(R.string.sys_dt_relock)) }
         }
 
-        StatCard("App-Prozess-Speicher") {
+        StatCard(stringResource(R.string.sys_dt_proc_mem)) {
             val memInfo = remember { Debug.MemoryInfo().also { Debug.getMemoryInfo(it) } }
             KeyValueRow("Total PSS", "${memInfo.totalPss} kB")
             KeyValueRow("Total Private Dirty", "${memInfo.totalPrivateDirty} kB")
@@ -111,11 +112,11 @@ fun DevToolsScreen() {
             KeyValueRow("Runtime Total", "${Runtime.getRuntime().totalMemory() / 1024} kB")
             KeyValueRow("Runtime Free", "${Runtime.getRuntime().freeMemory() / 1024} kB")
             KeyValueRow("Runtime Max", "${Runtime.getRuntime().maxMemory() / 1024} kB")
-            KeyValueRow("Aktive Threads", Thread.activeCount().toString())
+            KeyValueRow(stringResource(R.string.sys_dt_active_threads), Thread.activeCount().toString())
         }
 
-        StatCard("Roh-Datenquelle") {
-            Text("Wähle eine /proc-Datei:", color = OnSurfaceMuted, fontSize = 11.sp)
+        StatCard(stringResource(R.string.sys_dt_raw_source)) {
+            Text(stringResource(R.string.sys_dt_choose_proc), color = OnSurfaceMuted, fontSize = 11.sp)
             Spacer(Modifier.height(6.dp))
             ProcSourceChips(selected) { src ->
                 haptic(com.tamerin.sysmonitor.settings.HapticType.TAP)
@@ -135,18 +136,18 @@ fun DevToolsScreen() {
         ) {
             when {
                 error != null -> Text(
-                    "Fehler: $error",
+                    stringResource(R.string.sys_dt_error, error!!),
                     color = GaugeRed,
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace
                 )
                 content == null -> Text(
-                    "Lese ${selected.path}…",
+                    stringResource(R.string.sys_dt_reading, selected.path),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp
                 )
                 content!!.isBlank() -> Text(
-                    "(Datei leer oder kein Zugriff)",
+                    stringResource(R.string.sys_dt_empty_or_noaccess),
                     color = OnSurfaceMuted,
                     fontSize = 11.sp,
                     fontFamily = FontFamily.Monospace
@@ -203,8 +204,8 @@ private suspend fun readProcSource(
                 val truncated = res.stdout.lines().take(src.truncateLines).joinToString("\n")
                 return@runCatching truncated to null
             }
-            return@runCatching null to "Shizuku-Read fehlgeschlagen: exit ${res.exitCode}"
+            return@runCatching null to context.getString(R.string.sys_dt_shizuku_read_fail, res.exitCode)
         }
-        null to "Kein Direkt-Zugriff. Shizuku starten für ${src.path}."
-    }.getOrElse { null to (it.message ?: "Unbekannter Fehler") }
+        null to context.getString(R.string.sys_dt_no_direct, src.path)
+    }.getOrElse { null to (it.message ?: context.getString(R.string.sys_dt_unknown_error)) }
 }

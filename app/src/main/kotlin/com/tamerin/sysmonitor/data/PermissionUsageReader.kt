@@ -3,6 +3,7 @@ package com.tamerin.sysmonitor.data
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import androidx.compose.runtime.Immutable
+import com.tamerin.sysmonitor.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -185,14 +186,14 @@ object PermissionUsageReader {
         return ms
     }
 
-    fun formatAgo(ageMs: Long): String {
-        if (ageMs <= 0L) return "nie"
+    fun formatAgo(context: Context, ageMs: Long): String {
+        if (ageMs <= 0L) return context.getString(R.string.data_pua_never)
         val s = ageMs / 1000
         return when {
-            s < 60 -> "vor ${s}s"
-            s < 3600 -> "vor ${s / 60}m"
-            s < 86400 -> "vor ${s / 3600}h"
-            else -> "vor ${s / 86400}d"
+            s < 60 -> context.getString(R.string.data_pua_ago_s, s.toInt())
+            s < 3600 -> context.getString(R.string.data_pua_ago_m, (s / 60).toInt())
+            s < 86400 -> context.getString(R.string.data_pua_ago_h, (s / 3600).toInt())
+            else -> context.getString(R.string.data_pua_ago_d, (s / 86400).toInt())
         }
     }
 }

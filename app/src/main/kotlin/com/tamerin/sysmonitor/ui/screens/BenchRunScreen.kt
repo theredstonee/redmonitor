@@ -22,6 +22,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -110,12 +112,12 @@ fun BenchRunScreen(onExit: () -> Unit) {
         when (val s = state) {
             is BenchmarkState.Idle -> {
                 Text(
-                    "Kein Benchmark aktiv",
+                    stringResource(R.string.bench_run_none_active),
                     color = OnSurfaceMuted,
                     fontSize = 16.sp,
                     modifier = Modifier.align(Alignment.Center)
                 )
-                ExitButton(onExit, "Zurück")
+                ExitButton(onExit, stringResource(R.string.bench_run_back))
             }
 
             is BenchmarkState.Running -> RunningContent(
@@ -136,11 +138,11 @@ fun BenchRunScreen(onExit: () -> Unit) {
                     modifier = Modifier.align(Alignment.Center).padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("Fehler", color = GaugeRed, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.bench_error), color = GaugeRed, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Spacer(Modifier.height(8.dp))
                     Text(s.message, color = OnSurfaceMuted, fontSize = 14.sp)
                 }
-                ExitButton(onExit, "Schließen")
+                ExitButton(onExit, stringResource(R.string.bench_run_close))
             }
         }
     }
@@ -154,6 +156,7 @@ private fun BoxScope.RunningContent(
     thermalC: Float,
     onStop: () -> Unit
 ) {
+    val context = LocalContext.current
     val displayedSec = maxOf(state.doneSeconds, liveElapsedSec)
     val total = state.totalSeconds.coerceAtLeast(1)
     val progress = (displayedSec.toFloat() / total).coerceIn(0f, 1f)
@@ -218,7 +221,7 @@ private fun BoxScope.RunningContent(
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
-                    "${displayedSec}s · ${formatRemaining(remainingSec)}",
+                    "${displayedSec}s · ${formatRemaining(context, remainingSec)}",
                     color = OnSurfaceMuted,
                     fontSize = 12.sp,
                     fontFamily = FontFamily.Monospace
@@ -244,7 +247,7 @@ private fun BoxScope.RunningContent(
 
         if (state.partialSubScores.isNotEmpty()) {
             Text(
-                "ABGESCHLOSSENE SUB-TESTS",
+                stringResource(R.string.bench_run_completed_subtests),
                 color = OnSurfaceMuted,
                 fontSize = 11.sp,
                 letterSpacing = 2.sp
@@ -286,7 +289,7 @@ private fun BoxScope.RunningContent(
             onClick = onStop,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Abbrechen", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.bench_cancel), color = Color.White, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -339,11 +342,11 @@ private fun thermalColor(c: Float): Color = when {
     else -> GaugeRed
 }
 
-private fun formatRemaining(remainingSec: Int): String {
+private fun formatRemaining(context: android.content.Context, remainingSec: Int): String {
     return when {
-        remainingSec <= 0 -> "fast fertig"
-        remainingSec < 60 -> "~${remainingSec}s übrig"
-        else -> "~${remainingSec / 60}m ${remainingSec % 60}s übrig"
+        remainingSec <= 0 -> context.getString(R.string.bench_run_almost_done)
+        remainingSec < 60 -> context.getString(R.string.bench_run_remaining_sec, remainingSec)
+        else -> context.getString(R.string.bench_run_remaining_min, remainingSec / 60, remainingSec % 60)
     }
 }
 
@@ -375,12 +378,12 @@ private fun BoxScope.DoneContent(state: BenchmarkState.Done, onExit: () -> Unit)
             fontFamily = FontFamily.Monospace
         )
         Spacer(Modifier.height(24.dp))
-        Text("Gespeichert in Verlauf", color = OnSurfaceMuted, fontSize = 12.sp)
+        Text(stringResource(R.string.bench_run_saved), color = OnSurfaceMuted, fontSize = 12.sp)
     }
     OutlinedButton(
         onClick = onExit,
         modifier = Modifier.align(Alignment.BottomCenter).padding(32.dp)
-    ) { Text("Fertig", color = Color.White) }
+    ) { Text(stringResource(R.string.bench_done), color = Color.White) }
 }
 
 @Composable

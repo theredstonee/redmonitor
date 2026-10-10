@@ -11,10 +11,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.Accent
@@ -55,35 +57,34 @@ fun BarometerScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Barometer (TYPE_PRESSURE)") {
+        StatCard(stringResource(R.string.hw_baro_title)) {
             if (sensor == null) {
-                Text("Kein Drucksensor verbaut. Standardmäßig haben das nur Premium-Phones " +
-                    "(Pixel, Samsung S/Note/Fold, iPhone-Gegenstücke).",
+                Text(stringResource(R.string.hw_baro_no_sensor),
                     color = OnSurfaceMuted, fontSize = 12.sp)
                 return@StatCard
             }
-            KeyValueRow("Druck", if (hpa.isNaN()) "—" else "%.2f hPa".format(hpa))
-            KeyValueRow("Min seit Start", if (min.isInfinite()) "—" else "%.2f hPa".format(min))
-            KeyValueRow("Max seit Start", if (max.isInfinite()) "—" else "%.2f hPa".format(max))
+            KeyValueRow(stringResource(R.string.hw_baro_pressure), if (hpa.isNaN()) "—" else "%.2f hPa".format(hpa))
+            KeyValueRow(stringResource(R.string.hw_baro_min_since_start), if (min.isInfinite()) "—" else "%.2f hPa".format(min))
+            KeyValueRow(stringResource(R.string.hw_baro_max_since_start), if (max.isInfinite()) "—" else "%.2f hPa".format(max))
             KeyValueRow("Sensor", sensor.name)
             KeyValueRow("Vendor", sensor.vendor)
             KeyValueRow("Max-Range", "%.1f hPa".format(sensor.maximumRange))
-            KeyValueRow("Auflösung", "%.4f hPa".format(sensor.resolution))
+            KeyValueRow(stringResource(R.string.hw_baro_resolution), "%.4f hPa".format(sensor.resolution))
         }
 
         if (sensor != null) {
-            StatCard("Höhe (NN-Druck einstellbar)") {
+            StatCard(stringResource(R.string.hw_baro_altitude_title)) {
                 OutlinedTextField(
                     value = seaLevel,
                     onValueChange = { seaLevel = it },
-                    label = { Text("Reduzierter Luftdruck auf NN (hPa)") },
+                    label = { Text(stringResource(R.string.hw_baro_sealevel_label)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(Modifier.height(8.dp))
                 Text(
                     if (altitude.isNaN()) "—"
-                    else "%.1f m über NN".format(altitude),
+                    else stringResource(R.string.hw_baro_altitude_value, "%.1f".format(altitude)),
                     color = Accent,
                     fontSize = 32.sp,
                     fontFamily = FontFamily.Monospace,
@@ -91,8 +92,7 @@ fun BarometerScreen() {
                 )
                 Spacer(Modifier.height(4.dp))
                 Text(
-                    "Tipp: Aktuellen NN-Druck (QNH) für deinen Ort z.B. via dwd.de oder " +
-                        "Aviation-Wetter (METAR) prüfen — Standard 1013.25 hPa ist die ICAO-Atmosphäre.",
+                    stringResource(R.string.hw_baro_tip),
                     color = OnSurfaceMuted, fontSize = 11.sp
                 )
             }

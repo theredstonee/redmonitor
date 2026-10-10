@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_updates_title">Updates</string>
+    <string name="settings_prerelease_label">Pre-Releases (Beta/RC) einschließen</string>
+    <string name="settings_prerelease_desc">Auch Vorab-Versionen werden gefunden</string>
+    <string name="settings_notify_label">Benachrichtigungen bei neuen Versionen</string>
+    <string name="settings_notify_desc">Push-Notification, auch wenn App geschlossen</string>
+    <string name="settings_check_update">Auf Update prüfen</string>
+
+    <string name="settings_haptics_title">Haptisches Feedback</string>
+    <string name="settings_haptics_label">Haptik bei Aktionen</string>
+    <string name="settings_haptics_desc">Leichte Vibration bei Tap, kräftigere bei destruktiven Aktionen (Force-Stop, Delete, Drain)</string>
+    <string name="settings_intensity">Intensität</string>
+    <string name="settings_tester">Tester:</string>
+    <string name="settings_haptic_test_tap">Tap</string>
+    <string name="settings_haptic_test_toggle">Toggle</string>
+    <string name="settings_haptic_test_destructive">Destruktiv</string>
+    <string name="settings_haptic_test_confirm">Confirm</string>
+    <string name="settings_haptic_test_error">Error</string>
+    <string name="settings_haptic_test_slider">Slider</string>
+
+    <string name="settings_design_title">Design</string>
+    <string name="settings_materialyou_label">Material-You Dynamic-Theming</string>
+    <string name="settings_materialyou_desc">Übernimmt die Akzent-Farbe aus deinem Wallpaper (Android 12+). Sonst bleibt das Default-Rot.</string>
+    <string name="settings_materialyou_restart">Wirksam nach App-Neustart.</string>
+    <string name="settings_materialyou_unavailable">Material-You Dynamic-Theming braucht Android 12+ — dein Gerät läuft auf älterer Version.</string>
+
+    <string name="settings_cloud_title">Cloud-Backup</string>
+    <string name="settings_cloud_label">Cloud-Sync aktiv</string>
+    <string name="settings_cloud_desc">Sendet anonymen Heartbeat + verschlüsseltes Backup (App-Settings + Akku-Verlauf) an redmonitor.redst.de. Schlüssel wird aus Hardware abgeleitet — Server kann NICHTS lesen. Nach Reinstall wird Backup automatisch zurückgespielt.</string>
+    <string name="settings_cloud_last_heartbeat">Letzter Heartbeat: %1$s</string>
+    <string name="settings_cloud_last_backup">Letztes Backup: %1$s</string>
+    <string name="settings_cloud_heartbeat_now">Heartbeat jetzt</string>
+    <string name="settings_cloud_backup_now">Backup jetzt</string>
+    <string name="settings_cloud_device_id">Device-ID (Hardware-Hash, opak): %1$s…</string>
+
+    <string name="settings_bug_title">Bug melden / Feedback</string>
+    <string name="settings_bug_desc">Wenn was nicht funktioniert oder du Wünsche hast — schreib ein Issue auf GitHub. Open Source, jeder kann mitlesen und mitschreiben.</string>
+    <string name="settings_bug_report_button">🐛 Bug melden / Feature anfragen</string>
+    <string name="settings_open_github">GitHub-Repository öffnen</string>
+
+    <string name="settings_rate_title">App bewerten</string>
+    <string name="settings_rate_desc">Wenn dir RedMonitor gefällt — lass eine Bewertung auf Trustpilot da. Hilft anderen, die App zu finden, und mir, sie besser zu machen.</string>
+    <string name="settings_rate_button">⭐ Auf Trustpilot bewerten</string>
+    <string name="settings_rate_view">Bewertungen ansehen</string>
+
+    <string name="settings_legal_title">Rechtliches</string>
+    <string name="settings_legal_versions">Datenschutzerklärung v%1$s · AGB v%2$s · Stand %3$s</string>
+    <string name="settings_legal_privacy">Datenschutz</string>
+    <string name="settings_legal_terms">AGB</string>
+    <string name="settings_legal_imprint">Volles Impressum (theredstonee.de)</string>
+
+    <string name="settings_about_title">Über</string>
+    <string name="settings_about_build">Build</string>
+    <string name="settings_about_appid">Anwendungs-ID</string>
+    <string name="settings_about_license">Lizenz</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_manufacturer">Hersteller</string>
+    <string name="settings_components">Komponenten</string>
+    <string name="settings_components_count">%1$d interne %2$s.* Klassen</string>
+    <string name="settings_running">• läuft</string>
+
+    <string name="settings_secret_title">🐍 Geheimer Bereich</string>
+    <string name="settings_secret_desc">Du hast das Easter Egg entdeckt. Diese Sektion bleibt freigeschaltet.</string>
+    <string name="settings_secret_snake">CPU-Snake spielen</string>
+    <string name="settings_secret_roulette">☠ Russian Roulette</string>
+    <string name="settings_secret_devtools">Dev-Tools (Roh-Dumps)</string>
+</resources>

@@ -16,11 +16,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.cloud.CloudPrefs
 import com.tamerin.sysmonitor.legal.LegalConstants
 import com.tamerin.sysmonitor.legal.PrivacyText
@@ -78,14 +80,14 @@ fun LegalAcceptanceDialog(
             ) {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                     Text(
-                        "Willkommen bei RedMonitor",
+                        stringResource(R.string.comp_legal_welcome),
                         fontWeight = FontWeight.Bold,
                         fontSize = 20.sp,
                         color = Color.White
                     )
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Kurzer Hinweis zur Datenverarbeitung.",
+                        stringResource(R.string.comp_legal_subtitle),
                         color = OnSurfaceMuted,
                         fontSize = 12.sp
                     )
@@ -103,13 +105,11 @@ fun LegalAcceptanceDialog(
                         .padding(10.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("Cloud-Sync aktivieren",
+                                Text(stringResource(R.string.comp_legal_cloud_title),
                                     color = Color.White, fontSize = 13.sp,
                                     fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    "Anonymer Heartbeat + Ende-zu-Ende-verschlüsseltes Backup an " +
-                                        LegalConstants.BACKEND_HOST + ". " +
-                                        "Default: an. Jederzeit in den Einstellungen umschaltbar.",
+                                    stringResource(R.string.comp_legal_cloud_body, LegalConstants.BACKEND_HOST),
                                     color = OnSurfaceMuted, fontSize = 11.sp, lineHeight = 14.sp
                                 )
                             }
@@ -124,14 +124,14 @@ fun LegalAcceptanceDialog(
                     Row(modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
-                            "Datenschutzerklärung",
+                            stringResource(R.string.comp_legal_privacy),
                             color = Accent, fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable { onOpenPrivacy() }
                         )
                         Text("·", color = OnSurfaceMuted, fontSize = 12.sp)
                         Text(
-                            "Nutzungsbedingungen",
+                            stringResource(R.string.comp_legal_terms),
                             color = Accent, fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             modifier = Modifier.clickable { onOpenTerms() }
@@ -139,7 +139,7 @@ fun LegalAcceptanceDialog(
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Auch jederzeit in den Einstellungen unter 'Rechtliches' abrufbar.",
+                        stringResource(R.string.comp_legal_settings_hint),
                         color = OnSurfaceMuted, fontSize = 10.sp
                     )
                     Spacer(Modifier.height(16.dp))
@@ -147,12 +147,15 @@ fun LegalAcceptanceDialog(
                     Button(
                         onClick = onAccepted,
                         modifier = Modifier.fillMaxWidth()
-                    ) { Text("Verstanden, los geht's") }
+                    ) { Text(stringResource(R.string.comp_legal_accept)) }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        "Stand ${LegalConstants.LEGAL_LAST_UPDATED} · " +
-                            "Datenschutz v${LegalConstants.PRIVACY_VERSION} · " +
-                            "AGB v${LegalConstants.TERMS_VERSION}",
+                        stringResource(
+                            R.string.comp_legal_version,
+                            LegalConstants.LEGAL_LAST_UPDATED,
+                            LegalConstants.PRIVACY_VERSION,
+                            LegalConstants.TERMS_VERSION
+                        ),
                         color = OnSurfaceMuted, fontSize = 9.sp,
                         modifier = Modifier.fillMaxWidth()
                     )

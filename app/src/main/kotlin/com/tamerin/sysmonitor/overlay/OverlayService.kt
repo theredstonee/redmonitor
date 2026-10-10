@@ -166,7 +166,7 @@ class OverlayService : Service() {
             setTextColor(AndroidColor.parseColor("#F3F4F6"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f * config.size.scale)
             typeface = android.graphics.Typeface.MONOSPACE
-            text = "starte…"
+            text = getString(R.string.bg_overlay_starting)
             setLineSpacing(2f, 1f)
         }
         // Breite MUSS WRAP_CONTENT sein. Mit der LinearLayout-Default-Breite
@@ -387,7 +387,7 @@ class OverlayService : Service() {
                 }
                 appendLine("•", bars)
             } else {
-                appendLine("•", "— (gesperrt, Shizuku?)")
+                appendLine("•", getString(R.string.bg_overlay_core_locked_shizuku))
             }
         }
         if (HudMetric.PER_CORE_DETAIL in metrics) {
@@ -405,7 +405,7 @@ class OverlayService : Service() {
                     if (f > 0) appendLine("C$idx", "${f / 1000}MHz")
                 }
             } else {
-                appendLine("C", "— (gesperrt)")
+                appendLine("C", getString(R.string.bg_overlay_core_locked))
             }
         }
         if (HudMetric.CPU_FREQ_AVG in metrics) {
@@ -429,7 +429,7 @@ class OverlayService : Service() {
                 val arrow = if (batt.isCharging) "⚡" else "↓"
                 "  $arrow${"%.1f".format(batt.wattsNow)}W"
             } else ""
-            appendLine("Akku", "${batt.percent.toInt()}%$w")
+            appendLine(getString(R.string.bg_overlay_battery_label), "${batt.percent.toInt()}%$w")
         }
         if (HudMetric.NETWORK in metrics) {
             val downStr = if (downKbps >= 1024) "${"%.1f".format(downKbps / 1024f)}MB/s"
@@ -449,7 +449,7 @@ class OverlayService : Service() {
             appendLine("⌚", "$time  ${upH}h${upM}m")
         }
 
-        if (sb.isEmpty()) sb.append("(keine Metriken aktiv)")
+        if (sb.isEmpty()) sb.append(getString(R.string.bg_overlay_no_metrics))
         textView.text = sb
         applyWidthHysteresis(sb)
     }
@@ -498,10 +498,10 @@ class OverlayService : Service() {
             if (nm.getNotificationChannel(CHANNEL_ID) == null) {
                 val ch = NotificationChannel(
                     CHANNEL_ID,
-                    "System-Monitor-Overlay",
+                    getString(R.string.bg_overlay_channel_name),
                     NotificationManager.IMPORTANCE_LOW
                 )
-                ch.description = "Hält das Live-Overlay aktiv"
+                ch.description = getString(R.string.bg_overlay_channel_desc)
                 nm.createNotificationChannel(ch)
             }
         }
@@ -520,11 +520,11 @@ class OverlayService : Service() {
         )
         return Notification.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
-            .setContentTitle("RedMonitor-HUD aktiv")
-            .setContentText("Tippen zum Öffnen")
+            .setContentTitle(getString(R.string.bg_overlay_notif_title))
+            .setContentText(getString(R.string.bg_overlay_notif_text))
             .setContentIntent(openIntent)
             .setOngoing(true)
-            .addAction(Notification.Action.Builder(null, "HUD beenden", stopIntent).build())
+            .addAction(Notification.Action.Builder(null, getString(R.string.bg_overlay_notif_stop), stopIntent).build())
             .build()
     }
 

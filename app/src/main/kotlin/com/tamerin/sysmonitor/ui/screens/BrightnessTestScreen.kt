@@ -14,8 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.KeyValueRow
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
@@ -65,7 +67,7 @@ fun BrightnessTestScreen() {
             Button(
                 onClick = { fullscreenWhite = false },
                 modifier = Modifier.padding(24.dp)
-            ) { Text("Zurück") }
+            ) { Text(stringResource(R.string.hw_bt_back)) }
         }
         return
     }
@@ -74,18 +76,16 @@ fun BrightnessTestScreen() {
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Window-Brightness") {
+        StatCard(stringResource(R.string.hw_bt_window_brightness)) {
             Text(
-                "Überschreibt die System-Helligkeit nur für diese Activity. Schiebe den Regler " +
-                    "auf 5% / 10% / 20% — viele OLEDs zeigen dort sichtbares PWM-Flicker oder " +
-                    "Color-Banding. 100% deckt Max-Brightness ab.",
+                stringResource(R.string.hw_bt_window_desc),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
             Spacer(Modifier.height(8.dp))
-            KeyValueRow("Window-Wert", "${(brightness * 100).toInt()} %")
+            KeyValueRow(stringResource(R.string.hw_bt_window_value), "${(brightness * 100).toInt()} %")
             Slider(value = brightness, onValueChange = { brightness = it }, valueRange = 0.01f..1f)
             Spacer(Modifier.height(4.dp))
-            KeyValueRow("System-Wert", systemBrightness?.let { "$it / 255" } ?: "n/a")
+            KeyValueRow(stringResource(R.string.hw_bt_system_value), systemBrightness?.let { "$it / 255" } ?: "n/a")
         }
 
         StatCard("Quick-Steps") {
@@ -106,7 +106,7 @@ fun BrightnessTestScreen() {
                 Button(
                     onClick = { fullscreenWhite = true },
                     modifier = Modifier.weight(1f)
-                ) { Text("Weißbild", fontSize = 12.sp) }
+                ) { Text(stringResource(R.string.hw_bt_white_screen), fontSize = 12.sp) }
             }
         }
     }

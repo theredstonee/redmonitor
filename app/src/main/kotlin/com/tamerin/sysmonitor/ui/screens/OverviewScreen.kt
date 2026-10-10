@@ -21,6 +21,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.tamerin.sysmonitor.R
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
@@ -337,7 +339,7 @@ private fun TopGauges(cpuPct: Float, cpuSource: String, ramPct: Float) {
             label = "CPU",
             sublabel = when (cpuSource) {
                 "shizuku", "direct" -> "System"
-                "process" -> "nur App"
+                "process" -> stringResource(R.string.bench_ov_app_only)
                 else -> null
             }
         )
@@ -360,7 +362,7 @@ private fun BottomGauges(
     ) {
         CircularGauge(
             percent = batteryPct,
-            label = if (batteryCharging) "Lädt ${"%.1f".format(batteryWatts)} W" else "Akku",
+            label = if (batteryCharging) stringResource(R.string.bench_ov_charging, "%.1f".format(batteryWatts)) else stringResource(R.string.bench_ov_battery),
             sublabel = "${"%.1f".format(batteryTemp)} °C",
             colorOverride = com.tamerin.sysmonitor.ui.theme.batteryGaugeColor(batteryPct)
         )
@@ -374,15 +376,15 @@ private fun BottomGauges(
 
 @Composable
 private fun PerCoreCard(perCorePct: List<Float>) {
-    StatCard("CPU pro Kern") {
+    StatCard(stringResource(R.string.bench_ov_cpu_per_core)) {
         if (perCorePct.isEmpty()) {
-            Text("Sampler wärmt auf…", color = OnSurfaceMuted, fontSize = 12.sp)
+            Text(stringResource(R.string.bench_ov_sampler_warmup), color = OnSurfaceMuted, fontSize = 12.sp)
         } else {
             PerCoreBars(perCorePct)
             Spacer(Modifier.height(6.dp))
             val avg = remember(perCorePct) { perCorePct.average().toFloat() }
             Text(
-                "Ø ${"%.0f".format(avg)} %  ·  ${perCorePct.size} Kerne",
+                stringResource(R.string.bench_ov_cores_avg, "%.0f".format(avg), perCorePct.size),
                 color = OnSurfaceMuted, fontSize = 12.sp
             )
         }
@@ -391,7 +393,7 @@ private fun PerCoreCard(perCorePct: List<Float>) {
 
 @Composable
 private fun NetworkLiveCard(downKbs: Float, upKbs: Float, rxTotal: Long, txTotal: Long) {
-    StatCard("Netzwerk live") {
+    StatCard(stringResource(R.string.bench_ov_network_live)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -400,8 +402,8 @@ private fun NetworkLiveCard(downKbs: Float, upKbs: Float, rxTotal: Long, txTotal
             NetCol("↑ Upload", upKbs)
         }
         Spacer(Modifier.height(8.dp))
-        KeyValueRow("Empfangen gesamt", remember(rxTotal) { rxTotal.formatBytes() })
-        KeyValueRow("Gesendet gesamt", remember(txTotal) { txTotal.formatBytes() })
+        KeyValueRow(stringResource(R.string.bench_ov_received_total), remember(rxTotal) { rxTotal.formatBytes() })
+        KeyValueRow(stringResource(R.string.bench_ov_sent_total), remember(txTotal) { txTotal.formatBytes() })
     }
 }
 
@@ -434,9 +436,9 @@ private fun PerformanceCard(
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
-                Text("Top-CPU-App", color = OnSurfaceMuted, fontSize = 12.sp)
+                Text(stringResource(R.string.bench_ov_top_cpu_app), color = OnSurfaceMuted, fontSize = 12.sp)
                 val label = when {
-                    !topAppShizukuReady -> "Shizuku nötig"
+                    !topAppShizukuReady -> stringResource(R.string.bench_ov_shizuku_needed)
                     topAppName == null -> "—"
                     else -> shortenProcessName(topAppName)
                 }
@@ -461,11 +463,11 @@ private fun PerformanceCard(
 
 @Composable
 private fun StorageCompactCard(ramUsed: Long, ramTotal: Long, ramPct: Float, storagePct: Float) {
-    StatCard("Speicher kompakt") {
-        KeyValueRow("RAM verwendet", remember(ramUsed) { ramUsed.formatBytes() })
-        KeyValueRow("RAM gesamt", remember(ramTotal) { ramTotal.formatBytes() })
-        KeyValueRow("RAM-Auslastung", "${ramPct.toInt()} %")
-        KeyValueRow("Interner Speicher", "${storagePct.toInt()} %")
+    StatCard(stringResource(R.string.bench_ov_storage_compact)) {
+        KeyValueRow(stringResource(R.string.bench_ov_ram_used), remember(ramUsed) { ramUsed.formatBytes() })
+        KeyValueRow(stringResource(R.string.bench_ov_ram_total), remember(ramTotal) { ramTotal.formatBytes() })
+        KeyValueRow(stringResource(R.string.bench_ov_ram_load), "${ramPct.toInt()} %")
+        KeyValueRow(stringResource(R.string.bench_internal_storage), "${storagePct.toInt()} %")
     }
 }
 

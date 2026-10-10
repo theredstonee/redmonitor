@@ -19,29 +19,31 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
 import kotlinx.coroutines.delay
 
-private sealed class Pattern(val title: String) {
-    data class Solid(val color: Color, val name: String) : Pattern(name)
-    object Checkerboard : Pattern("Schachbrett (fein)")
-    object Gradient : Pattern("RGB-Spektrum")
-    object Grayscale : Pattern("Graustufen-Ramp")
-    object ColorBars : Pattern("Farbbalken (SMPTE-Style)")
-    object Crosshatch : Pattern("Gitter (Geometrie)")
+private sealed class Pattern(val titleRes: Int) {
+    data class Solid(val color: Color, val nameRes: Int) : Pattern(nameRes)
+    object Checkerboard : Pattern(R.string.hw_fs_checkerboard)
+    object Gradient : Pattern(R.string.hw_fs_rgb_spectrum)
+    object Grayscale : Pattern(R.string.hw_fs_grayscale_ramp)
+    object ColorBars : Pattern(R.string.hw_fs_colorbars)
+    object Crosshatch : Pattern(R.string.hw_fs_crosshatch)
 }
 
 private val PATTERNS = listOf<Pattern>(
-    Pattern.Solid(Color.Red, "Rot vollflächig"),
-    Pattern.Solid(Color.Green, "Grün vollflächig"),
-    Pattern.Solid(Color.Blue, "Blau vollflächig"),
-    Pattern.Solid(Color.White, "Weiß vollflächig"),
-    Pattern.Solid(Color.Black, "Schwarz vollflächig"),
-    Pattern.Solid(Color(0xFF808080), "50 % Grau"),
+    Pattern.Solid(Color.Red, R.string.hw_fs_red_full),
+    Pattern.Solid(Color.Green, R.string.hw_fs_green_full),
+    Pattern.Solid(Color.Blue, R.string.hw_fs_blue_full),
+    Pattern.Solid(Color.White, R.string.hw_fs_white_full),
+    Pattern.Solid(Color.Black, R.string.hw_fs_black_full),
+    Pattern.Solid(Color(0xFF808080), R.string.hw_fs_gray50),
     Pattern.Checkerboard,
     Pattern.Gradient,
     Pattern.Grayscale,
@@ -148,16 +150,15 @@ fun FullscreenDisplayTestScreen() {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        StatCard("Display-Test") {
+        StatCard(stringResource(R.string.hw_fs_display_test)) {
             Text(
-                "Spielt automatisch ${PATTERNS.size} Vollbild-Muster nacheinander ab. " +
-                    "Tap auf den Bildschirm = Pause / Weiter, Buttons unten = manuell.",
+                stringResource(R.string.hw_fs_auto_desc, PATTERNS.size),
                 color = OnSurfaceMuted,
                 fontSize = 13.sp
             )
             Spacer(Modifier.height(12.dp))
             Text(
-                "Dauer pro Muster: ${"%.1f".format(secondsPerPattern)} s",
+                stringResource(R.string.hw_fs_duration_per_pattern, "%.1f".format(secondsPerPattern)),
                 fontSize = 13.sp
             )
             Slider(
@@ -172,10 +173,10 @@ fun FullscreenDisplayTestScreen() {
                 haptic(com.tamerin.sysmonitor.settings.HapticType.CONFIRM)
                 paused = false
                 index = 0
-            }) { Text("Auto-Sequenz starten") }
+            }) { Text(stringResource(R.string.hw_fs_start_auto)) }
         }
 
-        StatCard("Einzeln testen") {
+        StatCard(stringResource(R.string.hw_fs_test_single)) {
             val haptic = com.tamerin.sysmonitor.settings.rememberHaptic()
             PATTERNS.forEachIndexed { i, p ->
                 OutlinedButton(
@@ -186,7 +187,7 @@ fun FullscreenDisplayTestScreen() {
                     },
                     modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp)
                 ) {
-                    Text("${i + 1}. ${p.title}")
+                    Text("${i + 1}. ${stringResource(p.titleRes)}")
                 }
             }
         }

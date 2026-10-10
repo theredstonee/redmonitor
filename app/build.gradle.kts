@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    // Parcelize kommt (ohne Version) über das Kotlin-Plugin im Classpath — daher by id, ohne Version.
+    id("org.jetbrains.kotlin.plugin.parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.baselineprofile)
 }
@@ -78,6 +80,7 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+        aidl = true
     }
 
     // Genau eine der beiden Glyph-Varianten kommt in den Build.
@@ -122,6 +125,12 @@ dependencies {
 
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+
+    // Eigener eingebetteter ADB-Zugang (Wireless Debugging): TLS 1.3 via Conscrypt,
+    // EC/RSA-Keys + selbstsignierte Certs via Bouncy Castle. Beide kein Copyleft.
+    implementation(libs.conscrypt.android)
+    implementation(libs.bouncycastle.prov)
+    implementation(libs.bouncycastle.pkix)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

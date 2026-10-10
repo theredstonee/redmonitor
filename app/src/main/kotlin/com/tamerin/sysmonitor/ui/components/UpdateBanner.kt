@@ -15,9 +15,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.ui.theme.Accent
 import com.tamerin.sysmonitor.ui.theme.AccentBubble
 import com.tamerin.sysmonitor.ui.theme.AccentSoft
@@ -48,13 +50,13 @@ fun UpdateBanner(
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Update verfügbar",
+                stringResource(R.string.comp_update_available),
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 14.sp
             )
             Text(
-                "$fromVersion  →  $toVersion  ·  Tap für Details",
+                stringResource(R.string.comp_update_detail, fromVersion, toVersion),
                 color = OnSurfaceMuted, fontSize = 11.sp
             )
         }

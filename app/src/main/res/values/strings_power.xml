@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- ===== BatteryScreen ===== -->
+    <string name="pwr_bat_charging_source">Lädt (%1$s)</string>
+    <string name="pwr_bat_drain_active_title">🔥 DRAIN MODE AKTIV</string>
+    <string name="pwr_bat_drainer_title">Akku-Drainer</string>
+    <string name="pwr_bat_drain_desc">Lädt CPU, Bildschirm, Taschenlampe, Vibration, Lautsprecher und GPS gleichzeitig voll aus, um den Akku schnellstmöglich zu leeren. Stoppt automatisch bei 10 % Akkustand.</string>
+    <string name="pwr_bat_drain_warn">⚠ Gerät wird sehr heiß und sehr laut. Lege es auf eine harte Oberfläche, nicht in die Tasche. Lange Drain-Zyklen können dem Akku schaden.</string>
+    <string name="pwr_bat_drain_stop">Drain Mode STOPPEN</string>
+    <string name="pwr_bat_drain_rate">Drain-Rate</string>
+    <string name="pwr_bat_measuring">messe…</string>
+    <string name="pwr_bat_consumed_since_start">Akku verbraucht seit Start</string>
+    <string name="pwr_bat_runtime">Laufzeit</string>
+    <string name="pwr_bat_active_channels">Aktive Kanäle:</string>
+    <string name="pwr_bat_gpu_burner">GPU-Burner (rendert dauerhaft):</string>
+    <string name="pwr_bat_drain_activate">Drain Mode AKTIVIEREN</string>
+    <string name="pwr_bat_auto_stop">⛔ Auto-Stop bei %1$d %% Akku</string>
+    <string name="pwr_bat_too_low">Akku schon zu niedrig — erst laden.</string>
+    <string name="pwr_bat_shizuku_title">Shizuku — echte PD-Watt freischalten</string>
+    <string name="pwr_bat_shizuku_desc">Samsung &amp; manche OEMs sperren die USB-Sysfs-Pfade per SELinux. Mit Shizuku (offizielle quelloffene App von Rikka) liest diese App im shell-User-Kontext — dann sehen wir die echten Watt vom Charger (5/9/15/20 V × USB-Strom).</string>
+    <string name="pwr_bat_diag_title">Diagnose (Mess-Methoden)</string>
+    <string name="pwr_bat_diag_desc">Falls die angezeigte Watt-Zahl nicht zu deinem Ladegerät passt — hier siehst du was jede einzelne Sensor-Quelle liefert. Auf manchen OEMs (Samsung, Xiaomi) liefert nur eine davon zuverlässige Werte.</string>
+    <string name="pwr_bat_charging">Lädt</string>
+    <string name="pwr_bat_discharging">Entlädt</string>
+    <string name="pwr_bat_best_source">Beste Quelle</string>
+    <string name="pwr_bat_best_current">Bester Strom (verwendet)</string>
+    <string name="pwr_bat_waiting_sampling">wartet (~2 s Sampling)</string>
+    <string name="pwr_bat_usb_pd_source">USB / PD (sysfs oder dumpsys)</string>
+    <string name="pwr_bat_usb_pd_disconnected">—  (nicht angeschlossen)</string>
+    <string name="pwr_bat_usb_pd_locked_noshizuku">gesperrt (Shizuku nicht aktiv)</string>
+    <string name="pwr_bat_usb_pd_samsung_locked">Samsung sperrt auch via Shizuku (SELinux) — Δ-Methode greift stattdessen</string>
+    <string name="pwr_bat_diag_hint">💡 Hinweis: Ohne Root kann KEINE App die echte Wand-Watt-Zahl messen, wenn der OEM die USB-Pfade sperrt. Die Δ-Charge-Counter-Methode misst was wirklich im Akku ankommt — auf S22+ typisch 18–22 W bei dem 25-W-Charger (Konversionsverluste).</string>
+    <string name="pwr_bat_scenario_title">Akku bei %1$d %% hält etwa</string>
+    <string name="pwr_bat_scenario_basis">Basis: %1$d mAh Rest (von %2$d mAh)</string>
+    <string name="pwr_bat_scenario_live">Aktuell (live)</string>
+    <string name="pwr_bat_scenario_screen_on">Bildschirm an</string>
+    <string name="pwr_bat_scenario_standby">Standby</string>
+    <string name="pwr_bat_scenario_video_ref">Video (Ref.)</string>
+    <string name="pwr_bat_scenario_screen_on_ref">Bildschirm an (Ref.)</string>
+    <string name="pwr_bat_scenario_browser_ref">Browser (Ref.)</string>
+    <string name="pwr_bat_scenario_standby_ref">Standby (Ref.)</string>
+    <string name="pwr_bat_measured">gemessen</string>
+    <string name="pwr_bat_dur_days">%1$d Tg %2$d h</string>
+    <string name="pwr_bat_dur_hours">%1$d h %2$s min</string>
+    <string name="pwr_bat_dur_mins">%1$d min</string>
+    <string name="pwr_bat_scenario_measured_from">Gemessen aus %1$d Samples / %2$s h Daten.</string>
+    <string name="pwr_bat_scenario_collecting">Sammle noch Daten (%1$d Samples) — gemessene Raten erscheinen nach 1–2 Tagen.</string>
+    <string name="pwr_bat_scenario_insufficient">Noch keine ausreichenden Drain-Daten — meist mehr Standby-Zeit nötig.</string>
+    <string name="pwr_bat_scenario_live_suffix"> Aktuell = Live-Messung.</string>
+    <string name="pwr_bat_power_now_title">Leistung jetzt</string>
+    <string name="pwr_bat_w_input">W Eingang</string>
+    <string name="pwr_bat_w_consumption">W Verbrauch</string>
+    <string name="pwr_bat_ma_current">mA Strom</string>
+    <string name="pwr_bat_v_voltage">V Spannung</string>
+    <string name="pwr_bat_direction">Richtung</string>
+    <string name="pwr_bat_direction_in">→ Eingang (Akku wird geladen)</string>
+    <string name="pwr_bat_direction_out">← Ausgang (System nutzt Akku)</string>
+    <string name="pwr_bat_average">Durchschnitt</string>
+    <string name="pwr_bat_measure_source">Mess-Quelle</string>
+    <string name="pwr_bat_usb_input">USB-Eingang (PD)</string>
+    <string name="pwr_bat_no_sensor">⚠ Auf diesem Gerät liefert weder BatteryManager noch sysfs sinnvolle Strom-Messwerte. Typisch für Emulatoren und manche OEM-Sperren.</string>
+    <string name="pwr_bat_charge_status_title">Lade-Status</string>
+    <string name="pwr_bat_status">Status</string>
+    <string name="pwr_bat_power_source">Stromquelle</string>
+    <string name="pwr_bat_wireless">Wireless?</string>
+    <string name="pwr_bat_wireless_yes">Ja (Qi/induktiv)</string>
+    <string name="pwr_bat_no">Nein</string>
+    <string name="pwr_bat_charge_speed">Lade-Geschwindigkeit</string>
+    <string name="pwr_bat_fast_charging">⚡ Schnellladen aktiv</string>
+    <string name="pwr_bat_health_title">Akku-Zustand</string>
+    <string name="pwr_bat_charge_level">Ladezustand</string>
+    <string name="pwr_bat_health_system">Gesundheit (System)</string>
+    <string name="pwr_bat_wear">Akku-Verschleiß (berechnet)</string>
+    <string name="pwr_bat_wear_value">%1$s %% der Werks-Kapazität</string>
+    <string name="pwr_bat_temperature">Temperatur</string>
+    <string name="pwr_bat_overheated">⚠ Akku überhitzt</string>
+    <string name="pwr_bat_tech_title">Technik</string>
+    <string name="pwr_bat_technology">Technologie</string>
+    <string name="pwr_bat_voltage">Spannung</string>
+    <string name="pwr_bat_capacity_now">Aktuelle Kapazität</string>
+    <string name="pwr_bat_capacity_full">Voll-Kapazität</string>
+    <string name="pwr_bat_capacity_design">Werks-Kapazität (design)</string>
+    <string name="pwr_bat_energy_remaining">Energie verbleibend</string>
+    <string name="pwr_bat_te_charging">⚡ Voll in</string>
+    <string name="pwr_bat_te_full">✓ Akku voll</string>
+    <string name="pwr_bat_te_discharging">🔋 Hält noch</string>
+    <string name="pwr_bat_te_unknown">Akku-Zeit</string>
+    <string name="pwr_bat_te_conf_high">verlässlich (%1$s)</string>
+    <string name="pwr_bat_te_conf_medium">Schätzung (%1$s)</string>
+    <string name="pwr_bat_te_conf_low">grobe Schätzung</string>
+    <string name="pwr_bat_te_conf_none">nicht berechenbar</string>
+    <string name="pwr_bat_te_charge_power">Lade-Leistung</string>
+    <string name="pwr_bat_te_discharge_power">Entlade-Leistung</string>
+    <string name="pwr_bat_te_current_now">Strom aktuell</string>
+    <string name="pwr_bat_te_need_shizuku">Genaue Strom-Werte brauchen Shizuku — sonst nur API-Schätzung.</string>
+    <string name="pwr_bat_top_title">Top Akku-Verbrauch</string>
+    <string name="pwr_bat_top_loading">Lädt … (braucht Shizuku für genaue Werte, sonst Schätzung über Nutzungszeit)</string>
+    <string name="pwr_bat_top_estimated">Schätzung anhand Nutzungszeit (Shizuku für echte Werte)</string>
+    <string name="pwr_bat_top_real">Echte mAh aus dumpsys batterystats (seit letztem Reset)</string>
+    <string name="pwr_bat_system_tag">(System)</string>
+
+    <!-- ===== BatteryDoctorScreen ===== -->
+    <string name="pwr_bd_shizuku_title">Shizuku für Akku-Doktor</string>
+    <string name="pwr_bd_shizuku_desc">Korreliert Wake-Locks (dumpsys power) mit dumpsys batterystats — beides braucht shell-Privileg.</string>
+    <string name="pwr_bd_title">Was killt meinen Akku?</string>
+    <string name="pwr_bd_explain">Analysiert die letzten Stunden: wer hält Wake-Locks, wer wacht am häufigsten auf, wer hat die meisten Foreground-Service-Wechsel. Score hoch = verdächtig.</string>
+    <string name="pwr_bd_analyzing">Analysiere…</string>
+    <string name="pwr_bd_start">Analyse starten</string>
+    <string name="pwr_bd_system_obs">System-Beobachtungen</string>
+    <string name="pwr_bd_no_analysis_title">Noch keine Analyse</string>
+    <string name="pwr_bd_no_analysis_body">Tap auf \'Analyse starten\'. Dauert 1-3 s.</string>
+    <string name="pwr_bd_score">Score %1$d</string>
+    <string name="pwr_bd_reason_wakelock">Hält Wake-Lock \'%1$s\' (%2$s)</string>
+    <string name="pwr_bd_reason_wakeups">%1$d× Wakeup-Alarme (dumpsys batterystats)</string>
+    <string name="pwr_bd_note_modem">Mobilfunk-Modem war aktiv — Roaming oder schlechtes Signal?</string>
+    <string name="pwr_bd_note_wifi_scans">%1$d WLAN-Scans — viele Apps suchen Netze</string>
+    <string name="pwr_bd_reason_fgservice">Hält Foreground-Service</string>
+    <string name="pwr_bd_note_clean">Keine verdächtigen User-Apps gefunden — System läuft sauber.</string>
+
+    <!-- ===== ChargingLimitScreen ===== -->
+    <string name="pwr_chg_shizuku_title">Shizuku für Charging-Stop</string>
+    <string name="pwr_chg_shizuku_desc">Charge-Toggle schreibt direkt in den Kernel-Sysfs (/sys/class/power_supply/battery/...). Das erlaubt nur der shell-User — Shizuku gibt uns den Zugriff.</string>
+    <string name="pwr_chg_title">Smart Charging Limit</string>
+    <string name="pwr_chg_battery_now">Akku jetzt</string>
+    <string name="pwr_chg_charging_paren">(lädt)</string>
+    <string name="pwr_chg_not_plugged">(nicht am Strom)</string>
+    <string name="pwr_chg_method">Methode</string>
+    <string name="pwr_chg_method_sysfs">Hardware-Stop (Sysfs)</string>
+    <string name="pwr_chg_method_dumpsys">Soft-Stop (dumpsys)</string>
+    <string name="pwr_chg_path">Pfad</string>
+    <string name="pwr_chg_no_method">Konnte weder Sysfs noch dumpsys-Fallback einrichten. Shizuku-shell down?</string>
+    <string name="pwr_chg_softstop_note">ℹ Auf modernem MIUI/HyperOS und Samsung Knox sind die Kernel-Pfade gelocked — selbst mit root nicht aushebelbar ohne Kernel-Patch. Wir nehmen daher den OS-Level-Soft-Stop: `dumpsys battery set ac/usb/wireless 0`. Android stoppt seine Charging-Top-Up-Loop. Status-Icon zeigt entladen, der PMIC bekommt kein \'weiter laden\'-Kommando. Wirksamkeit variiert je nach Vendor — manche PMICs fahren trotzdem mit minimaler Erhaltungsladung weiter.</string>
+    <string name="pwr_chg_last_action">Letzte Aktion</string>
+    <string name="pwr_chg_auto_stop">Auto-Stop bei %1$d %%</string>
+    <string name="pwr_chg_auto_resume">Auto-Resume bei %1$d %%</string>
+    <string name="pwr_chg_manual_stopped">Manuell gestoppt</string>
+    <string name="pwr_chg_manual_resumed">Manuell fortgesetzt</string>
+    <string name="pwr_chg_set_limit">Limit einstellen</string>
+    <string name="pwr_chg_limit_value">Limit: %1$d %%</string>
+    <string name="pwr_chg_auto_stop_label">Auto-Stop wenn Akku Limit erreicht</string>
+    <string name="pwr_chg_polling_note">Polling alle 15 s. Resume automatisch wenn Akku 5 %% unter Limit fällt. Damit kann der Akku zwischen %1$d–%2$d %% schweben, statt 24/7 auf 100 %% gequetscht zu werden.</string>
+    <string name="pwr_chg_manual_actions">Manuelle Aktionen</string>
+
+    <!-- ===== DischargeCurveScreen ===== -->
+    <string name="pwr_dc_range_6h">6 h</string>
+    <string name="pwr_dc_range_24h">24 h</string>
+    <string name="pwr_dc_range_3d">3 Tg</string>
+    <string name="pwr_dc_range_7d">7 Tg</string>
+    <string name="pwr_dc_loading">lädt…</string>
+    <string name="pwr_dc_samples">%1$d Samples</string>
+    <string name="pwr_dc_no_data_title">Noch keine Daten</string>
+    <string name="pwr_dc_no_data_body">Im gewählten Zeitraum gibt es weniger als 2 Samples. Der BatterySamplerWorker läuft alle 15 min und sammelt mit der Zeit. Lass die App ein paar Stunden offen und schau dann nochmal rein.</string>
+    <string name="pwr_dc_history_title">Verlauf · %1$s</string>
+    <string name="pwr_dc_legend_charging">lädt</string>
+    <string name="pwr_dc_legend_normal">normal</string>
+    <string name="pwr_dc_legend_30">&lt; 30 %</string>
+    <string name="pwr_dc_legend_15">&lt; 15 %</string>
+    <string name="pwr_dc_stats_title">Statistik im Zeitraum</string>
+    <string name="pwr_dc_stats_start_end">Start → Ende</string>
+    <string name="pwr_dc_stats_span">Spanne</string>
+    <string name="pwr_dc_stats_observed">Beobachtungszeit</string>
+    <string name="pwr_dc_stats_discharge_time">Davon Entlade-Zeit</string>
+    <string name="pwr_dc_stats_drain_rate">Drain-Rate (netto)</string>
+    <string name="pwr_dc_stats_full_runtime">Geschätzte Volllaufzeit (100 %)</string>
+
+    <!-- ===== WakelockScreen ===== -->
+    <string name="pwr_wl_shizuku_title">Shizuku für Wake-Lock-Viewer</string>
+    <string name="pwr_wl_shizuku_desc">dumpsys power liefert alle aktiven Wake-Locks (Owner-UID, Package, Flags). Ohne Shizuku wäre dafür DUMP-Permission nötig — die hat nur das System.</string>
+    <string name="pwr_wl_refresh">Aktualisieren</string>
+    <string name="pwr_wl_live_on">Live ein (3s)</string>
+    <string name="pwr_wl_live_off">Live aus</string>
+    <string name="pwr_wl_system_uids">System-UIDs</string>
+    <string name="pwr_wl_loading">Lädt…</string>
+    <string name="pwr_wl_running">dumpsys power läuft…</string>
+    <string name="pwr_wl_error">Fehler</string>
+    <string name="pwr_wl_no_entries">Keine Einträge</string>
+    <string name="pwr_wl_none_held">Aktuell hält keine App ein Wake-Lock — Gerät kann sauber schlafen.</string>
+    <string name="pwr_wl_only_system">Nur System-UIDs halten Wake-Locks. \'System-UIDs\' aktivieren zum Anzeigen.</string>
+    <string name="pwr_wl_overview">Übersicht</string>
+
+    <!-- ===== DozeWhitelistScreen ===== -->
+    <string name="pwr_doze_shizuku_title">Shizuku für Doze-Whitelist</string>
+    <string name="pwr_doze_shizuku_desc">Apps auf der Doze-Whitelist hinzufügen/entfernen geht nur via shell-User-Kontext. Shizuku gibt uns den.</string>
+    <string name="pwr_doze_title">Doze-Whitelist</string>
+    <string name="pwr_doze_explain">Apps auf der Whitelist dürfen während Doze (Tiefschlaf) Netzwerk nutzen und Wakelocks halten. Push-Notifications + Sync. Je weniger Apps drauf, desto bessere Akku-Laufzeit.</string>
+    <string name="pwr_doze_count">Anzahl Apps</string>
+    <string name="pwr_doze_system_count">Davon System-Apps</string>
+    <string name="pwr_doze_filter">Filter</string>
+    <string name="pwr_doze_remove">Entfernen</string>
+    <string name="pwr_doze_removed">Entfernt: %1$s</string>
+
+    <!-- ===== BackgroundRestrictScreen ===== -->
+    <string name="pwr_bgr_shizuku_title">Shizuku für Background-Restrictions</string>
+    <string name="pwr_bgr_shizuku_desc">`cmd appops set &lt;pkg> RUN_ANY_IN_BACKGROUND ignore` — killt Background-Wakeups gezielt pro App ohne durch lange System-Menüs zu klicken.</string>
+    <string name="pwr_bgr_title">Background-Restrictions</string>
+    <string name="pwr_bgr_explain">Roter Status = App darf nichts mehr im Hintergrund (kein Wakeup, kein Job). Grüner Status = Stock-Verhalten. Tap auf eine Reihe togglet.</string>
+    <string name="pwr_bgr_filter">Filter</string>
+    <string name="pwr_bgr_system_apps">System-Apps</string>
+    <string name="pwr_bgr_restricted_count">%1$d restricted von %2$d sichtbar</string>
+
+    <!-- ===== ThermalScreen ===== -->
+    <string name="pwr_thermal_zones_title">Thermalzonen</string>
+    <string name="pwr_thermal_none">Auf diesem Gerät sind keine Thermalzonen lesbar (Kernel-Restriktionen oder Hersteller hat Zugriff gesperrt).</string>
+    <string name="pwr_thermal_overview">Übersicht</string>
+    <string name="pwr_thermal_zones_total">Zonen gesamt</string>
+    <string name="pwr_thermal_hottest">Heißeste Zone</string>
+    <string name="pwr_thermal_zone_title">Zone %1$d: %2$s</string>
+    <string name="pwr_thermal_temperature">Temperatur</string>
+</resources>

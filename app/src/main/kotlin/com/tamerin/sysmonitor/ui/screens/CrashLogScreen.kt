@@ -17,9 +17,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.ShizukuHelper
 import com.tamerin.sysmonitor.ui.components.ShizukuCard
 import com.tamerin.sysmonitor.ui.components.StatCard
@@ -64,9 +66,8 @@ fun CrashLogScreen() {
     Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
         if (!shizukuReady) {
             ShizukuCard(
-                title = "Shizuku für Crash-Logs",
-                description = "/data/tombstones/ (Native-Crashes) und dumpsys dropbox (Java-Crashes/ANRs) " +
-                    "sind nur als root oder shell zugänglich. Shizuku liefert den shell-Zugriff."
+                title = stringResource(R.string.sys_cl_shizuku_title),
+                description = stringResource(R.string.sys_cl_shizuku_desc)
             )
             return@Column
         }
@@ -79,12 +80,12 @@ fun CrashLogScreen() {
                 )
             }
             Spacer(Modifier.weight(1f))
-            Text(if (loading) "lädt…" else "${entries.size} Einträge",
+            Text(if (loading) stringResource(R.string.sys_cl_loading) else stringResource(R.string.sys_cl_entries, entries.size),
                 color = OnSurfaceMuted, fontSize = 11.sp)
         }
         Spacer(Modifier.height(6.dp))
         OutlinedTextField(value = filter, onValueChange = { filter = it },
-            label = { Text("Filter (Paket, Tag)") }, singleLine = true,
+            label = { Text(stringResource(R.string.sys_cl_filter)) }, singleLine = true,
             modifier = Modifier.fillMaxWidth())
         Spacer(Modifier.height(8.dp))
 
@@ -99,7 +100,7 @@ fun CrashLogScreen() {
                         modifier = Modifier.verticalScroll(rememberScrollState()))
                 }
                 Spacer(Modifier.height(6.dp))
-                Text("× Schließen", color = Accent, fontSize = 12.sp,
+                Text(stringResource(R.string.sys_cl_close), color = Accent, fontSize = 12.sp,
                     modifier = Modifier.clickable { selected = null })
             }
             return@Column

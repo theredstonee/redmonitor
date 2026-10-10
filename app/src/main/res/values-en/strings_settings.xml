@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_updates_title">Updates</string>
+    <string name="settings_prerelease_label">Include pre-releases (beta/RC)</string>
+    <string name="settings_prerelease_desc">Pre-release versions are also found</string>
+    <string name="settings_notify_label">Notifications for new versions</string>
+    <string name="settings_notify_desc">Push notification, even when app is closed</string>
+    <string name="settings_check_update">Check for update</string>
+
+    <string name="settings_haptics_title">Haptic Feedback</string>
+    <string name="settings_haptics_label">Haptics on actions</string>
+    <string name="settings_haptics_desc">Light vibration on tap, stronger on destructive actions (force-stop, delete, drain)</string>
+    <string name="settings_intensity">Intensity</string>
+    <string name="settings_tester">Tester:</string>
+    <string name="settings_haptic_test_tap">Tap</string>
+    <string name="settings_haptic_test_toggle">Toggle</string>
+    <string name="settings_haptic_test_destructive">Destructive</string>
+    <string name="settings_haptic_test_confirm">Confirm</string>
+    <string name="settings_haptic_test_error">Error</string>
+    <string name="settings_haptic_test_slider">Slider</string>
+
+    <string name="settings_design_title">Design</string>
+    <string name="settings_materialyou_label">Material-You Dynamic Theming</string>
+    <string name="settings_materialyou_desc">Takes the accent color from your wallpaper (Android 12+). Otherwise the default red stays.</string>
+    <string name="settings_materialyou_restart">Takes effect after app restart.</string>
+    <string name="settings_materialyou_unavailable">Material-You Dynamic Theming requires Android 12+ — your device runs an older version.</string>
+
+    <string name="settings_cloud_title">Cloud Backup</string>
+    <string name="settings_cloud_label">Cloud sync active</string>
+    <string name="settings_cloud_desc">Sends an anonymous heartbeat + encrypted backup (app settings + battery history) to redmonitor.redst.de. The key is derived from hardware — the server can read NOTHING. After reinstall the backup is restored automatically.</string>
+    <string name="settings_cloud_last_heartbeat">Last heartbeat: %1$s</string>
+    <string name="settings_cloud_last_backup">Last backup: %1$s</string>
+    <string name="settings_cloud_heartbeat_now">Heartbeat now</string>
+    <string name="settings_cloud_backup_now">Backup now</string>
+    <string name="settings_cloud_device_id">Device ID (hardware hash, opaque): %1$s…</string>
+
+    <string name="settings_bug_title">Report Bug / Feedback</string>
+    <string name="settings_bug_desc">If something doesn\'t work or you have requests — open an issue on GitHub. Open source, everyone can read and contribute.</string>
+    <string name="settings_bug_report_button">🐛 Report bug / request feature</string>
+    <string name="settings_open_github">Open GitHub repository</string>
+
+    <string name="settings_rate_title">Rate App</string>
+    <string name="settings_rate_desc">If you like RedMonitor — leave a review on Trustpilot. It helps others find the app and me make it better.</string>
+    <string name="settings_rate_button">⭐ Rate on Trustpilot</string>
+    <string name="settings_rate_view">View reviews</string>
+
+    <string name="settings_legal_title">Legal</string>
+    <string name="settings_legal_versions">Privacy Policy v%1$s · Terms v%2$s · Updated %3$s</string>
+    <string name="settings_legal_privacy">Privacy</string>
+    <string name="settings_legal_terms">Terms</string>
+    <string name="settings_legal_imprint">Full imprint (theredstonee.de)</string>
+
+    <string name="settings_about_title">About</string>
+    <string name="settings_about_build">Build</string>
+    <string name="settings_about_appid">Application ID</string>
+    <string name="settings_about_license">License</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_manufacturer">Manufacturer</string>
+    <string name="settings_components">Components</string>
+    <string name="settings_components_count">%1$d internal %2$s.* classes</string>
+    <string name="settings_running">• running</string>
+
+    <string name="settings_secret_title">🐍 Secret Area</string>
+    <string name="settings_secret_desc">You\'ve discovered the Easter egg. This section stays unlocked.</string>
+    <string name="settings_secret_snake">Play CPU Snake</string>
+    <string name="settings_secret_roulette">☠ Russian Roulette</string>
+    <string name="settings_secret_devtools">Dev Tools (raw dumps)</string>
+</resources>

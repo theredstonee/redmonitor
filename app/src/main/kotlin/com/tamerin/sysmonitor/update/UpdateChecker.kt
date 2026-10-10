@@ -2,6 +2,7 @@ package com.tamerin.sysmonitor.update
 
 import android.content.Context
 import com.tamerin.sysmonitor.BuildConfig
+import com.tamerin.sysmonitor.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
@@ -34,11 +35,11 @@ object UpdateChecker {
         val current = BuildConfig.VERSION_NAME
         try {
             val release = fetchLatestRelease(includePrerelease)
-                ?: return@withContext UpdateState(current, null, false, "Keine Releases gefunden")
+                ?: return@withContext UpdateState(current, null, false, context.getString(R.string.bg_update_no_releases))
             val newer = compareVersions(release.versionName, current) > 0
             UpdateState(current, release, newer, null)
         } catch (e: Exception) {
-            UpdateState(current, null, false, e.message ?: "Unbekannter Fehler")
+            UpdateState(current, null, false, e.message ?: context.getString(R.string.bg_update_unknown_error))
         }
     }
 

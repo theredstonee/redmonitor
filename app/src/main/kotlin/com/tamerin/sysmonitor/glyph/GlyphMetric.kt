@@ -1,6 +1,8 @@
 package com.tamerin.sysmonitor.glyph
 
 import android.content.Context
+import androidx.annotation.StringRes
+import com.tamerin.sysmonitor.R
 import com.tamerin.sysmonitor.data.BatteryReader
 import com.tamerin.sysmonitor.data.CpuReader
 import com.tamerin.sysmonitor.data.MemoryReader
@@ -10,11 +12,11 @@ import com.tamerin.sysmonitor.data.ThermalReader
  * Was der Glyph-Toy auf der Rueckseite anzeigt. Langer Druck auf den
  * Glyph-Button schaltet zur naechsten Metrik weiter.
  */
-enum class GlyphMetric(val marker: Char, val label: String, val unit: String) {
-    CPU('C', "CPU-Auslastung", "%"),
-    RAM('R', "RAM-Belegung", "%"),
-    BATTERY('B', "Akkustand", "%"),
-    TEMP('T', "CPU-Temperatur", "°C");
+enum class GlyphMetric(val marker: Char, @StringRes val labelRes: Int, val unit: String) {
+    CPU('C', R.string.misc_glyph_metric_cpu, "%"),
+    RAM('R', R.string.misc_glyph_metric_ram, "%"),
+    BATTERY('B', R.string.misc_glyph_metric_battery, "%"),
+    TEMP('T', R.string.misc_glyph_metric_temp, "°C");
 
     fun next(): GlyphMetric = entries[(ordinal + 1) % entries.size]
 
