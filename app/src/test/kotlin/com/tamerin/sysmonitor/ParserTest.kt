@@ -125,3 +125,20 @@ class AppOpsParserTest {
         assertEquals(null, state.runAnyInBackground)
     }
 }
+
+class AppOpsGetTest {
+
+    @Test
+    fun `erlaubter Op wird erkannt`() {
+        assertTrue(ShizukuHelper.isOpAllowed("SYSTEM_ALERT_WINDOW: allow; time=+2d1h ago", "SYSTEM_ALERT_WINDOW"))
+        assertTrue(ShizukuHelper.isOpAllowed("Uid mode: RUN_ANY_IN_BACKGROUND: allow", "RUN_ANY_IN_BACKGROUND"))
+    }
+
+    @Test
+    fun `nicht erlaubter oder fehlender Op`() {
+        assertFalse(ShizukuHelper.isOpAllowed("GET_USAGE_STATS: default", "GET_USAGE_STATS"))
+        assertFalse(ShizukuHelper.isOpAllowed("GET_USAGE_STATS: ignore; rejectTime=+1m ago", "GET_USAGE_STATS"))
+        assertFalse(ShizukuHelper.isOpAllowed("No operations.", "GET_USAGE_STATS"))
+        assertFalse(ShizukuHelper.isOpAllowed("", "GET_USAGE_STATS"))
+    }
+}

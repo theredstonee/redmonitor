@@ -161,6 +161,7 @@ object ShizukuHelper {
      * Idempotent. Wenn eine Permission nicht im Manifest steht, wird sie
      * still übersprungen (pm grant failed → kategorisiert als skipped).
      */
+    @Synchronized // MainActivity startet es bis zu dreimal parallel (Shizuku/Root/ADB)
     fun autoGrantAllPermissions(context: Context): AutoGrantReport {
         if (state(context) != State.Ready) {
             return AutoGrantReport(emptyList(), emptyList(),
@@ -198,11 +199,16 @@ object ShizukuHelper {
             "ACCESS_RESTRICTED_SETTINGS",
             "SYSTEM_ALERT_WINDOW",
             "GET_USAGE_STATS",
-            "REQUEST_INSTALL_PACKAGES",
             "RUN_ANY_IN_BACKGROUND",
             "RUN_IN_BACKGROUND",
             "SCHEDULE_EXACT_ALARM"
         )
+        // Android 11 killt die App, sobald sich REQUEST_INSTALL_PACKAGES ändert
+        // (StorageManagerService remountet Android/obb, ab 12 entfernt). Beim App-Start
+        // sah das wie ein Absturz aus. Updates laufen ohnehin über `pm install`.
+        if (android.os.Build.VERSION.SDK_INT != android.os.Build.VERSION_CODES.R) {
+            appOps += "REQUEST_INSTALL_PACKAGES"
+        }
         // MIUI/HyperOS hat extra Hersteller-Ops für Autostart und Pop-up — die meisten
         // sind im Vanilla-AOSP-appops nicht definiert, aber Xiaomi hat sie hinzugefügt.
         // Wir probieren sie blind — bei Nicht-Xiaomi failed das einzelne Op silent.
@@ -227,6 +233,12 @@ object ShizukuHelper {
             }
         }
         for (op in appOps) {
+            // Nur setzen, wenn noch nicht erlaubt: jede Änderung löst beim System
+            // Op-Callbacks aus, die bei manchen Ops den App-Prozess neu starten.
+            if (isOpAllowed(runCommand(context, "appops", "get", pkg, op).stdout, op)) {
+                skipped += "op:$op (bereits erlaubt)"
+                continue
+            }
             val res = runCommand(context, "appops", "set", pkg, op, "allow")
             when {
                 res.ok -> granted += "op:$op"
@@ -263,6 +275,14 @@ object ShizukuHelper {
 
         return AutoGrantReport(granted, failed, skipped)
     }
+
+    /** true, wenn `appops get <pkg> <op>` den Op bereits als `allow` zeigt
+     *  (Paket- oder Uid-Modus). `internal` für Tests. */
+    internal fun isOpAllowed(out: String, op: String): Boolean =
+        out.lineSequence().any { line ->
+            line.substringAfter("$op:", "").trim()
+                .substringBefore(';').trim() == "allow"
+        }
 
     data class DumpsysBattery(
         val maxChargingCurrentUa: Long,
