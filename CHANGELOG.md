@@ -1,5 +1,37 @@
 # Changelog
 
+## v2.0.0 — 2026-10-28
+
+### Shizuku ist nicht mehr Pflicht
+- Privilegierte Funktionen laufen jetzt über **drei Wege**: **Root**, **Shizuku** oder einen **eigenen ADB-Zugang**. Die App nimmt automatisch den ersten verfügbaren in dieser Reihenfolge. Alle bestehenden Funktionen (Auto-Grant, App-Aktionen, Reader, Terminal …) laufen ohne Änderung über jeden der drei.
+- Neue Karte **„Privilegierter Zugriff"** in den Einstellungen: zeigt, welcher Weg gerade aktiv ist, schaltet Root ein, startet das Pairing und trennt ADB.
+
+### Root
+- Auf gerooteten Geräten (Magisk, KernelSU …) reicht Root allein, **Shizuku wird nicht gebraucht**.
+- Opt-in in den Einstellungen: `su` wird erst nach dem Einschalten aufgerufen, damit der Root-Manager nicht ungefragt beim Start fragt. Danach verbindet sich die App bei jedem Start selbst.
+- Ein kleiner Pool dauerhafter Root-Shells statt eines neuen `su` pro Befehl. Das spart Zeit und verhindert, dass der Root-Manager bei jedem Messwert einen Toast oder Log-Eintrag zeigt.
+
+### Eigener ADB-Zugang mit Pairing ohne PC
+- Die App verbindet sich als **eigener ADB-Client** mit dem `adbd` des Geräts: klassisch nach `adb tcpip 5555` oder per **Wireless Debugging** (ab Android 11).
+- **Koppeln direkt auf dem Gerät, ohne PC:** Das komplette ADB-Pairing-Protokoll ist eingebaut (SPAKE2 nativ über BoringSSL, TLS 1.3, AES-GCM).
+- **Kopplungscode in der Benachrichtigung eingeben:** Der Kopplungsdialog von Android schließt sich, sobald man die App wechselt. RedMonitor erkennt deshalb per mDNS, wenn der Dialog offen ist, und bietet in der Benachrichtigung ein Eingabefeld für den Code. Danach koppelt und verbindet sie sich und vergibt die Berechtigungen.
+- Direktlinks zu Entwickleroptionen und Wireless Debugging im Setup.
+
+### Englisch
+- Die App ist jetzt **komplett auf Englisch** verfügbar (rund 1750 Texte, inklusive Datenschutz und Nutzungsbedingungen).
+- Sprache pro App wählbar: **System / Deutsch / English** in den Einstellungen. Deutsch bleibt Standard.
+
+### Fixes
+- **Absturz beim Öffnen unter Android 11 behoben**, sobald Shizuku, Root oder ADB bereit war. Die automatische Rechtevergabe setzte „Unbekannte Apps installieren“. Unter Android 11 beendet das System die App bei jeder Änderung dieses Rechts. Dort wird es jetzt ausgelassen; Updates laufen ohnehin über `pm install`.
+- Rechte werden nur noch gesetzt, wenn sie nicht schon erlaubt sind, und die automatische Vergabe läuft nicht mehr mehrfach gleichzeitig.
+- **Floating-HUD und Ladelimit** lesen Shell-Werte nicht mehr auf dem Main-Thread. Vorher konnte die App mit Root oder langsamem Shizuku hängen.
+- **Shizuku:** Befehle mit viel Fehlerausgabe konnten sich gegenseitig blockieren (stderr wird jetzt parallel gelesen). Neue ProGuard-Regel für das per Reflection aufgerufene `Shizuku.newProcess`, damit R8 es im Release-Build nicht umbenennt.
+
+### Unter der Haube
+- Neue Abstraktion `PrivilegedShell` / `PrivilegedManager`: Backends Root → Shizuku → ADB, `ShizukuHelper` delegiert nur noch dorthin.
+- Native Library `libadbpair` (NDK 27, CMake, BoringSSL als Prefab), wird nur zum Koppeln geladen.
+- 52 Unit-Tests (neu: Auswertung von `appops get`).
+
 ## v1.7.0 — 2026-08-18
 
 ### Nothing Phone (3) — Glyph Matrix
