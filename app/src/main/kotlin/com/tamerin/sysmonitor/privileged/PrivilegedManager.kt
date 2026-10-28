@@ -9,14 +9,14 @@ import com.tamerin.sysmonitor.data.ShizukuHelper.CmdResult
  * Fassade (`runCommand`/`runShell`/`readFile`/`dumpsysBattery`) delegiert hierher,
  * wodurch **alle bestehenden Call-Sites ohne Änderung** backend-agnostisch werden.
  *
- * Priorität: [ShizukuBackend] (falls bereit) → [AdbBackend] (falls verbunden).
- * Shizuku zuerst, weil es der etablierte, vom Nutzer bereits eingerichtete Weg ist;
- * ADB springt ein, sobald es verbunden ist und Shizuku fehlt.
+ * Priorität: [RootBackend] (falls aktiviert + gewährt) → [ShizukuBackend] (falls bereit)
+ * → [AdbBackend] (falls verbunden). Root zuerst, weil der Nutzer es ausdrücklich
+ * eingeschaltet hat und es keinen fremden Dienst braucht, der wegsterben kann.
  */
 object PrivilegedManager {
 
     /** Reihenfolge = Priorität. */
-    private val backends: List<PrivilegedShell> = listOf(ShizukuBackend, AdbBackend)
+    private val backends: List<PrivilegedShell> = listOf(RootBackend, ShizukuBackend, AdbBackend)
 
     /** Das aktuell nutzbare Backend, oder `null` wenn keins bereit ist. */
     fun active(context: Context): PrivilegedShell? =
@@ -31,5 +31,5 @@ object PrivilegedManager {
     /** Führt ein Kommando über das aktive Backend aus. */
     fun exec(context: Context, cmd: Array<String>): CmdResult =
         active(context)?.exec(context, cmd)
-            ?: CmdResult(-1, "", "Kein privilegiertes Backend bereit (Shizuku/ADB)")
+            ?: CmdResult(-1, "", "Kein privilegiertes Backend bereit (Root/Shizuku/ADB)")
 }

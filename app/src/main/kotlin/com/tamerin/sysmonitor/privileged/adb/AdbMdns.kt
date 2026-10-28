@@ -17,6 +17,8 @@ import java.net.InetAddress
 class AdbMdns(
     private val context: Context,
     private val serviceType: String,
+    /** Dienst verschwunden (z.B. Pairing-Dialog geschlossen). Optional. */
+    private val onLost: (() -> Unit)? = null,
     private val onFound: (host: InetAddress, port: Int) -> Unit
 ) {
     companion object {
@@ -40,7 +42,9 @@ class AdbMdns(
             runCatching { nsd.resolveService(info, resolveListener()) }
         }
 
-        override fun onServiceLost(info: NsdServiceInfo) {}
+        override fun onServiceLost(info: NsdServiceInfo) {
+            onLost?.invoke()
+        }
     }
 
     // Für jeden Fund ein frischer ResolveListener (NsdManager erlaubt kein paralleles Resolve

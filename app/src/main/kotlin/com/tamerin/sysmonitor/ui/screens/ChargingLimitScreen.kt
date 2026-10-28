@@ -26,7 +26,10 @@ import com.tamerin.sysmonitor.ui.components.StatCard
 import com.tamerin.sysmonitor.ui.theme.GaugeGreen
 import com.tamerin.sysmonitor.ui.theme.GaugeRed
 import com.tamerin.sysmonitor.ui.theme.OnSurfaceMuted
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ChargingLimitScreen() {
@@ -38,9 +41,11 @@ fun ChargingLimitScreen() {
     var pct by remember { mutableFloatStateOf(0f) }
     var charging by remember { mutableStateOf(false) }
     var lastAction by remember { mutableStateOf("—") }
+    // Alle ChargingControl-Aufrufe starten Shell-Prozesse → nie auf dem Main-Thread.
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(shizukuReady) {
-        if (shizukuReady) probe = ChargingControl.probe(context)
+        if (shizukuReady) probe = withContext(Dispatchers.IO) { ChargingControl.probe(context) }
     }
 
     LaunchedEffect(autoMode, limit) {
@@ -52,13 +57,14 @@ fun ChargingLimitScreen() {
             charging = status == BatteryManager.BATTERY_STATUS_CHARGING ||
                 status == BatteryManager.BATTERY_STATUS_FULL
 
-            if (autoMode && probe != null && charging && pct >= limit) {
-                if (ChargingControl.stopCharging(context, probe!!)) {
+            val p = probe
+            if (autoMode && p != null && charging && pct >= limit) {
+                if (withContext(Dispatchers.IO) { ChargingControl.stopCharging(context, p) }) {
                     lastAction = context.getString(R.string.pwr_chg_auto_stop, pct.toInt())
                 }
             }
-            if (autoMode && probe != null && !charging && pct < limit - 5) {
-                if (ChargingControl.resumeCharging(context, probe!!)) {
+            if (autoMode && p != null && !charging && pct < limit - 5) {
+                if (withContext(Dispatchers.IO) { ChargingControl.resumeCharging(context, p) }) {
                     lastAction = context.getString(R.string.pwr_chg_auto_resume, pct.toInt())
                 }
             }
@@ -130,16 +136,22 @@ fun ChargingLimitScreen() {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Button(
                         onClick = {
-                            if (ChargingControl.stopCharging(context, probe!!)) {
-                                lastAction = context.getString(R.string.pwr_chg_manual_stopped)
+                            val p = probe ?: return@Button
+                            scope.launch {
+                                if (withContext(Dispatchers.IO) { ChargingControl.stopCharging(context, p) }) {
+                                    lastAction = context.getString(R.string.pwr_chg_manual_stopped)
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f)
                     ) { Text("Stop NOW", fontFamily = FontFamily.Monospace, fontSize = 12.sp) }
                     OutlinedButton(
                         onClick = {
-                            if (ChargingControl.resumeCharging(context, probe!!)) {
-                                lastAction = context.getString(R.string.pwr_chg_manual_resumed)
+                            val p = probe ?: return@OutlinedButton
+                            scope.launch {
+                                if (withContext(Dispatchers.IO) { ChargingControl.resumeCharging(context, p) }) {
+                                    lastAction = context.getString(R.string.pwr_chg_manual_resumed)
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f)

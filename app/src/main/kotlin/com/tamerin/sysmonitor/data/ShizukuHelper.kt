@@ -3,6 +3,7 @@ package com.tamerin.sysmonitor.data
 import android.content.Context
 import android.content.pm.PackageManager
 import com.tamerin.sysmonitor.privileged.PrivilegedManager
+import com.tamerin.sysmonitor.privileged.RootBackend
 import com.tamerin.sysmonitor.privileged.adb.AdbConnectionManager
 import rikka.shizuku.Shizuku
 import java.io.BufferedReader
@@ -16,7 +17,7 @@ object ShizukuHelper {
 
     /**
      * Gate-Status für privilegierten Zugang, den alle Feature-Screens abfragen.
-     * Ist der eigene ADB-Dienst verbunden, gilt der Zugang als [State.Ready] —
+     * Ist Root gewährt oder der eigene ADB-Dienst verbunden, gilt der Zugang als [State.Ready] —
      * unabhängig davon, ob Shizuku installiert/gestartet ist. Sonst spiegelt er den
      * reinen Shizuku-Status ([shizukuState]).
      *
@@ -25,7 +26,8 @@ object ShizukuHelper {
      * diese Kombination hier ist nur der UI-/Feature-Gate-Status.
      */
     fun state(context: Context): State =
-        if (AdbConnectionManager.isConnected()) State.Ready else shizukuState(context)
+        if (RootBackend.isReady(context) || AdbConnectionManager.isConnected()) State.Ready
+        else shizukuState(context)
 
     /** Reiner Shizuku-Status (ohne ADB-Backend) — Grundlage für [ShizukuBackend]. */
     fun shizukuState(context: Context): State {
@@ -98,8 +100,17 @@ object ShizukuHelper {
         val process = newProcessReflected(cmd)
             ?: return CmdResult(-1, "", "newProcess failed")
         return runCatching {
+            // stderr parallel lesen: läuft dessen Pipe-Puffer (~64 KB) voll, während wir noch
+            // auf stdout-EOF warten, blockieren beide Seiten für immer. Unter Root passiert
+            // das öfter, weil viel mehr Befehle tatsächlich Ausgabe produzieren.
+            var err = ""
+            val errThread = Thread {
+                err = runCatching {
+                    BufferedReader(InputStreamReader(process.errorStream)).use { it.readText() }
+                }.getOrDefault("")
+            }.apply { isDaemon = true; start() }
             val out = BufferedReader(InputStreamReader(process.inputStream)).use { it.readText() }
-            val err = BufferedReader(InputStreamReader(process.errorStream)).use { it.readText() }
+            errThread.join()
             val exit = process.waitFor()
             CmdResult(exit, out.trim(), err.trim())
         }.getOrElse { CmdResult(-1, "", it.message ?: "unknown error") }

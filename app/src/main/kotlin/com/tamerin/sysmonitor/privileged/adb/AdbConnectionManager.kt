@@ -98,15 +98,34 @@ object AdbConnectionManager {
 
     /**
      * Erstmaliges Pairing über Wireless Debugging mit dem 6-stelligen Code (ohne PC).
-     * DEVICE-VERIFY: hängt am SPAKE2-Kern ([Spake2]) — bricht bis zu dessen Portierung
-     * mit erklärender Meldung ab.
+     * Danach ist unser Key in `adbd` vertraut; der Connect wird direkt im Anschluss
+     * versucht (best effort — scheitert er, bleibt das Pairing trotzdem gültig).
      */
     fun pairWireless(context: Context, code: String, discoverTimeoutMs: Long = 8000): Result<Unit> = runCatching {
         appContext = context.applicationContext
+        if (!Spake2.isAvailable) throw IOException(context.getString(R.string.scr2_adb_err_native))
         val (addr, port) = discover(context, AdbMdns.SERVICE_PAIRING, discoverTimeoutMs)
             ?: throw IOException(context.getString(R.string.scr2_adb_err_no_pairing_svc))
+        pairAt(context, addr.hostAddress ?: "127.0.0.1", port, code).getOrThrow()
+    }
+
+    /**
+     * Pairing gegen einen bereits per mDNS gefundenen Pairing-Port — für
+     * [AdbPairingService], der den Dienst selbst laufend beobachtet.
+     */
+    fun pairAt(context: Context, host: String, port: Int, code: String): Result<Unit> = runCatching {
+        appContext = context.applicationContext
+        if (!Spake2.isAvailable) throw IOException(context.getString(R.string.scr2_adb_err_native))
         val key = AdbKey.getOrCreate(context)
-        AdbPairingClient(addr.hostAddress ?: "127.0.0.1", port, code, key).pair().getOrThrow()
+        AdbPairingClient(host, port, code.trim(), key).pair()
+            .onFailure {
+                if (it is AdbPairingClient.WrongCodeException) {
+                    throw IOException(context.getString(R.string.scr2_adb_err_wrong_code), it)
+                }
+            }
+            .getOrThrow()
+        Log.i(TAG, "Wireless-Pairing erfolgreich")
+        connectWireless(context).onFailure { Log.w(TAG, "Connect nach Pairing fehlgeschlagen", it) }
     }
 
     /** Wartet (blockierend) bis der mDNS-Dienst gefunden ist oder das Timeout greift. */

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pairing notification (AdbPairingService) -->
+    <string name="adbpair_channel_name">Wireless debugging pairing</string>
+    <string name="adbpair_channel_desc">Code entry for pairing via wireless debugging</string>
+    <string name="adbpair_notif_search_title">Waiting for pairing dialog …</string>
+    <string name="adbpair_notif_search_text">Open Wireless debugging → tap “Pair device with pairing code”. Keep the dialog open — enter the code here in the notification.</string>
+    <string name="adbpair_notif_open_settings">Open wireless debugging</string>
+    <string name="adbpair_notif_ready_title">Pairing dialog detected</string>
+    <string name="adbpair_notif_ready_text">Pull down the notification and enter the 6-digit code.</string>
+    <string name="adbpair_notif_retry">Failed: %1$s — enter the code again.</string>
+    <string name="adbpair_notif_enter_code">Enter code</string>
+    <string name="adbpair_notif_code_hint">6-digit pairing code</string>
+    <string name="adbpair_notif_pairing_title">Pairing …</string>
+    <string name="adbpair_notif_stop">Stop</string>
+    <string name="adbpair_notif_done_title">RedMonitor paired ✓</string>
+    <string name="adbpair_notif_done_connected">Connected — privileged access is active.</string>
+    <string name="adbpair_notif_done_paired">Paired. The connection will be made on the next app start.</string>
+
+    <!-- Settings: privileged access -->
+    <string name="settings_priv_title">Privileged access</string>
+    <string name="settings_priv_desc">How RedMonitor gets elevated rights. Order: root → Shizuku → own ADB access.</string>
+    <string name="settings_priv_active">Active</string>
+    <string name="settings_priv_none">none</string>
+    <string name="settings_priv_root_label">Use root</string>
+    <string name="settings_priv_root_desc">Run commands directly via su — Shizuku is not needed then. Your root manager asks once.</string>
+    <string name="settings_priv_root_nosu">No su found — device does not appear to be rooted.</string>
+    <string name="settings_priv_root_requesting">Requesting root …</string>
+    <string name="settings_priv_root_granted">Root granted ✓</string>
+    <string name="settings_priv_root_denied">Root denied or unavailable.</string>
+    <string name="settings_priv_pair_label">Pair wireless debugging</string>
+    <string name="settings_priv_pair_desc">No PC and no root: starts a notification where you enter the pairing code while the system dialog stays open (Android 11+).</string>
+    <string name="settings_priv_pair_button">Start pairing via notification</string>
+    <string name="settings_priv_pair_unsupported">Wireless debugging requires Android 11.</string>
+    <string name="settings_priv_notif_needed">Notifications are off for RedMonitor — without them the code cannot be entered.</string>
+    <string name="settings_priv_disconnect">Disconnect ADB</string>
+</resources>

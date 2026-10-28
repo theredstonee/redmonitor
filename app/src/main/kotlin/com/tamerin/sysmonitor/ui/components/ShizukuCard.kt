@@ -70,6 +70,7 @@ fun ShizukuCard(
             ShizukuHelper.State.NeedsPermission -> stringResource(R.string.scr2_shz_state_needsperm)
             ShizukuHelper.State.Ready -> when (PrivilegedManager.activeKind(context)) {
                 PrivilegedBackend.ADB -> stringResource(R.string.scr2_shz_state_ready_adb)
+                PrivilegedBackend.ROOT -> stringResource(R.string.scr2_shz_state_ready_root)
                 else -> stringResource(R.string.scr2_shz_state_ready_shizuku)
             }
         })

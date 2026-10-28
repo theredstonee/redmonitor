@@ -215,6 +215,8 @@ fun SettingsScreen() {
             Text("Wirkt sofort · applies immediately", color = OnSurfaceMuted, fontSize = 11.sp)
         }
 
+        PrivilegedAccessCard()
+
         StatCard(stringResource(R.string.settings_cloud_title)) {
             var cbEnabled by remember { mutableStateOf(com.tamerin.sysmonitor.cloud.CloudPrefs.isEnabled(context)) }
             val lastHb = com.tamerin.sysmonitor.cloud.CloudPrefs.lastHeartbeatMs(context)
@@ -701,5 +703,115 @@ private fun ToggleRow(
                 checkedTrackColor = Accent
             )
         )
+    }
+}
+
+/**
+ * Root-Opt-in, Wireless-Pairing per Benachrichtigung und das gerade aktive Backend an
+ * einem Ort — die Shizuku-Karte in den Feature-Screens bleibt das Gate, hier wird nur
+ * eingestellt.
+ */
+@Composable
+private fun PrivilegedAccessCard() {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val suPresent = remember { com.tamerin.sysmonitor.privileged.RootBackend.isSuPresent() }
+    var rootEnabled by remember { mutableStateOf(com.tamerin.sysmonitor.privileged.RootPrefs.isEnabled(context)) }
+    var rootStatus by remember { mutableStateOf<Int?>(null) }
+    var active by remember { mutableStateOf<com.tamerin.sysmonitor.privileged.PrivilegedBackend?>(null) }
+    var adbConnected by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        while (true) {
+            active = com.tamerin.sysmonitor.privileged.PrivilegedManager.activeKind(context)
+            adbConnected = com.tamerin.sysmonitor.privileged.adb.AdbConnectionManager.isConnected()
+            kotlinx.coroutines.delay(2000)
+        }
+    }
+
+    StatCard(stringResource(R.string.settings_priv_title)) {
+        Text(stringResource(R.string.settings_priv_desc), color = OnSurfaceMuted, fontSize = 12.sp)
+        Spacer(Modifier.height(6.dp))
+        KeyValueRow(
+            stringResource(R.string.settings_priv_active),
+            when (active) {
+                com.tamerin.sysmonitor.privileged.PrivilegedBackend.ROOT -> "Root"
+                com.tamerin.sysmonitor.privileged.PrivilegedBackend.SHIZUKU -> "Shizuku"
+                com.tamerin.sysmonitor.privileged.PrivilegedBackend.ADB -> "ADB"
+                null -> stringResource(R.string.settings_priv_none)
+            }
+        )
+
+        ToggleRow(
+            label = stringResource(R.string.settings_priv_root_label),
+            description = stringResource(R.string.settings_priv_root_desc),
+            checked = rootEnabled
+        ) { on ->
+            rootEnabled = on
+            com.tamerin.sysmonitor.privileged.RootPrefs.setEnabled(context, on)
+            if (!on) {
+                com.tamerin.sysmonitor.privileged.RootBackend.stop()
+                rootStatus = null
+                return@ToggleRow
+            }
+            rootStatus = R.string.settings_priv_root_requesting
+            scope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                val ok = com.tamerin.sysmonitor.privileged.RootBackend.start(context)
+                if (ok) runCatching { com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(context) }
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                    rootStatus = if (ok) R.string.settings_priv_root_granted else R.string.settings_priv_root_denied
+                    if (!ok) {
+                        rootEnabled = false
+                        com.tamerin.sysmonitor.privileged.RootPrefs.setEnabled(context, false)
+                    }
+                }
+            }
+        }
+        val rootHint = rootStatus ?: if (!suPresent) R.string.settings_priv_root_nosu else null
+        rootHint?.let {
+            Text(
+                stringResource(it),
+                color = if (it == R.string.settings_priv_root_granted) GaugeGreen else OnSurfaceMuted,
+                fontSize = 11.sp
+            )
+        }
+
+        Spacer(Modifier.height(10.dp))
+        Text(stringResource(R.string.settings_priv_pair_label), fontSize = 14.sp)
+        Text(stringResource(R.string.settings_priv_pair_desc), color = OnSurfaceMuted, fontSize = 11.sp)
+        Spacer(Modifier.height(6.dp))
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.R) {
+            Text(stringResource(R.string.settings_priv_pair_unsupported), color = OnSurfaceMuted, fontSize = 11.sp)
+        } else {
+            val notifLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+            ) { com.tamerin.sysmonitor.privileged.adb.AdbPairingService.start(context) }
+            val notificationsOn = androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+            Button(
+                onClick = {
+                    Haptic.perform(context, HapticType.CONFIRM)
+                    if (!notificationsOn && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                        notifLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        com.tamerin.sysmonitor.privileged.adb.AdbPairingService.start(context)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(stringResource(R.string.settings_priv_pair_button)) }
+            if (!notificationsOn) {
+                Text(stringResource(R.string.settings_priv_notif_needed), color = Accent, fontSize = 11.sp)
+            }
+        }
+        if (adbConnected) {
+            Spacer(Modifier.height(4.dp))
+            OutlinedButton(
+                onClick = {
+                    Haptic.perform(context, HapticType.TAP)
+                    com.tamerin.sysmonitor.privileged.adb.AdbConnectionManager.disconnect(context)
+                    adbConnected = false
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) { Text(stringResource(R.string.settings_priv_disconnect)) }
+        }
     }
 }

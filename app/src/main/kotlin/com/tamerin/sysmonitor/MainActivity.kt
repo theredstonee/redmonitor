@@ -134,6 +134,15 @@ class MainActivity : ComponentActivity() {
                 com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(this@MainActivity)
             }
         }
+        // Root (Opt-in in den Einstellungen): Shell im Hintergrund öffnen. Root-Manager
+        // haben die Entscheidung dann schon gespeichert — kein erneuter Dialog.
+        lifecycleScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            if (com.tamerin.sysmonitor.privileged.RootPrefs.isEnabled(this@MainActivity) &&
+                com.tamerin.sysmonitor.privileged.RootBackend.start(this@MainActivity)
+            ) runCatching {
+                com.tamerin.sysmonitor.data.ShizukuHelper.autoGrantAllPermissions(this@MainActivity)
+            }
+        }
         // Eigener ADB-Zugang: wenn vom User aktiviert, im Hintergrund automatisch
         // verbinden (App als ADB-Client zu 127.0.0.1:5555). Danach nochmal Auto-Grant,
         // falls erst über ADB privilegierte Rechte verfügbar wurden.

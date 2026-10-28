@@ -4,9 +4,10 @@ import android.content.Context
 import com.tamerin.sysmonitor.data.ShizukuHelper.CmdResult
 
 /**
- * Ein privilegierter Shell-Kanal im `shell`-User-Kontext (UID 2000). Es gibt zwei
+ * Ein privilegierter Shell-Kanal im `shell`-User-Kontext (UID 2000, bei Root UID 0).
  * Implementierungen mit identischem Vertrag:
  *
+ *  - [RootBackend]    — `su` auf gerooteten Geräten (Opt-in in den Einstellungen).
  *  - [ShizukuBackend] — über die externe Shizuku-App (Binder → `newProcess`).
  *  - [AdbBackend]     — eigener eingebetteter ADB-Client über Wireless Debugging
  *                       (127.0.0.1), ohne Shizuku-App und ohne Root.
@@ -32,4 +33,4 @@ interface PrivilegedShell {
 }
 
 /** Verfügbare privilegierte Backends, in Prioritätsreihenfolge von [PrivilegedManager]. */
-enum class PrivilegedBackend { SHIZUKU, ADB }
+enum class PrivilegedBackend { ROOT, SHIZUKU, ADB }

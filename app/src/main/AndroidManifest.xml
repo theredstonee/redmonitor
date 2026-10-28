@@ -560,6 +560,17 @@
                 android:value="Benchmark run" />
         </service>
 
+        <!-- Wireless-Debugging-Pairing per Benachrichtigung (Code-Eingabe via RemoteInput,
+             waehrend der System-Kopplungsdialog offen bleibt). -->
+        <service
+            android:name=".privileged.adb.AdbPairingService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Wireless debugging pairing code entry" />
+        </service>
+
         <!-- Empfängt den Binder des app_process-Starters (PC-Weg). exported=true, weil
              der Starter als shell-User (UID 2000) sendet; Echtheit wird über die
              Dienst-UID im AdbConnectionManager geprüft. -->

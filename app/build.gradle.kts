@@ -18,6 +18,8 @@ val hasGlyphSdk = glyphAar.exists()
 android {
     namespace = "com.tamerin.sysmonitor"
     compileSdk = 35
+    // Muss zur NDK-Version passen, mit der das BoringSSL-Prefab gebaut ist (libs.versions.toml).
+    ndkVersion = "27.3.13750724"
 
     // Build outputs as redmonitor.apk (matches GitHub release naming)
     setProperty("archivesBaseName", "redmonitor")
@@ -81,6 +83,15 @@ android {
         compose = true
         buildConfig = true
         aidl = true
+        prefab = true
+    }
+
+    // Native SPAKE2-Bruecke fuers Wireless-Debugging-Pairing (BoringSSL, siehe src/main/cpp).
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     // Genau eine der beiden Glyph-Varianten kommt in den Build.
@@ -131,6 +142,7 @@ dependencies {
     implementation(libs.conscrypt.android)
     implementation(libs.bouncycastle.prov)
     implementation(libs.bouncycastle.pkix)
+    implementation(libs.boringssl)
     implementation(libs.androidx.work.runtime)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

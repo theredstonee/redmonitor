@@ -116,12 +116,46 @@ class OverlayService : Service() {
     private var downKbps = 0
     private var upKbps = 0
 
+    // Die Reader setzen je nach Rechten Shell-Kommandos ab (Shizuku/Root/ADB). Das darf nie
+    // auf dem Main-Thread passieren: hängt ein sysfs-Knoten (unter Root lesbar, als Shell
+    // sofort abgelehnt), friert sonst das HUD ein und die App läuft in einen ANR.
+    private val io = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+        Thread(r, "hud-io").apply { isDaemon = true }
+    }
+    @Volatile private var destroyed = false
+    private var lastReadings: HudReadings? = null
+
+    private class HudReadings(
+        val cpu: com.tamerin.sysmonitor.data.CpuSnapshot?,
+        val batt: com.tamerin.sysmonitor.data.BatterySnapshot?,
+        val cpuTemp: Float?
+    )
+
     private val tick = object : Runnable {
         override fun run() {
+            if (destroyed) return
             applyProfileVisibility()
             // Ist das HUD ausgeblendet, sparen wir uns die sysfs-Leserei komplett
-            if (hudVisible) updateText()
-            handler.postDelayed(this, 1500)
+            if (!hudVisible) {
+                handler.postDelayed(this, 1500)
+                return
+            }
+            val metrics = config.enabledMetrics
+            val next = this
+            val submitted = runCatching {
+                io.execute {
+                    val readings = runCatching { readSensors(metrics) }.getOrNull()
+                    handler.post {
+                        if (destroyed) return@post
+                        if (readings != null && view != null) {
+                            lastReadings = readings
+                            updateText(readings)
+                        }
+                        handler.postDelayed(next, 1500)
+                    }
+                }
+            }.isSuccess
+            if (!submitted) handler.postDelayed(this, 1500)
         }
     }
 
@@ -283,7 +317,8 @@ class OverlayService : Service() {
         shrinkSinceMs = 0L
         textView.minWidth = 0
         applyProfileVisibility()
-        updateText()
+        // Sofort mit den letzten Messwerten neu zeichnen; frische Werte bringt der nächste Tick.
+        lastReadings?.let { updateText(it) }
     }
 
     /**
@@ -330,19 +365,27 @@ class OverlayService : Service() {
         runCatching { view?.let { windowManager?.updateViewLayout(it, params) } }
     }
 
-    private fun updateText() {
-        val metrics = config.enabledMetrics
+    /** Läuft auf [io] — alles, was eine Shell anfassen kann. */
+    private fun readSensors(metrics: Set<HudMetric>): HudReadings {
         val needsCpu = HudMetric.CPU_PERCENT in metrics ||
             HudMetric.PER_CORE in metrics ||
             HudMetric.PER_CORE_DETAIL in metrics ||
             HudMetric.CPU_FREQ_AVG in metrics
         val cpu = if (needsCpu) CpuReader.read(this, "hud") else null
-        val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
         val batt = if (HudMetric.BATTERY in metrics) BatteryReader.read(this) else null
         val cpuTemp = if (HudMetric.CPU_TEMP in metrics) {
             val zones = ThermalReader.read(this)
             ThermalReader.hottestCpuZone(zones)?.tempCelsius
         } else null
+        return HudReadings(cpu, batt, cpuTemp)
+    }
+
+    private fun updateText(readings: HudReadings) {
+        val metrics = config.enabledMetrics
+        val cpu = readings.cpu
+        val batt = readings.batt
+        val cpuTemp = readings.cpuTemp
+        val ram = if (HudMetric.RAM_PERCENT in metrics) MemoryReader.readRam(this) else null
 
         if (HudMetric.NETWORK in metrics) {
             val now = SystemClock.elapsedRealtime()
@@ -485,7 +528,9 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
+        destroyed = true
         handler.removeCallbacks(tick)
+        io.shutdownNow()
         Choreographer.getInstance().removeFrameCallback(frameCallback)
         view?.let { v -> runCatching { windowManager?.removeView(v) } }
         view = null

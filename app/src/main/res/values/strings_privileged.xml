@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Pairing-Benachrichtigung (AdbPairingService) -->
+    <string name="adbpair_channel_name">Wireless-Debugging-Pairing</string>
+    <string name="adbpair_channel_desc">Code-Eingabe für das Koppeln per Wireless Debugging</string>
+    <string name="adbpair_notif_search_title">Warte auf Kopplungsdialog …</string>
+    <string name="adbpair_notif_search_text">Wireless-Debugging öffnen → „Gerät mit Kopplungscode koppeln“ tippen. Den Dialog offen lassen — der Code wird hier in der Benachrichtigung eingegeben.</string>
+    <string name="adbpair_notif_open_settings">Wireless-Debugging öffnen</string>
+    <string name="adbpair_notif_ready_title">Kopplungsdialog erkannt</string>
+    <string name="adbpair_notif_ready_text">Benachrichtigung aufziehen und den 6-stelligen Code eingeben.</string>
+    <string name="adbpair_notif_retry">Fehlgeschlagen: %1$s — Code erneut eingeben.</string>
+    <string name="adbpair_notif_enter_code">Code eingeben</string>
+    <string name="adbpair_notif_code_hint">6-stelliger Kopplungscode</string>
+    <string name="adbpair_notif_pairing_title">Kopple …</string>
+    <string name="adbpair_notif_stop">Beenden</string>
+    <string name="adbpair_notif_done_title">RedMonitor gekoppelt ✓</string>
+    <string name="adbpair_notif_done_connected">Verbunden — privilegierter Zugriff ist aktiv.</string>
+    <string name="adbpair_notif_done_paired">Gekoppelt. Verbindung wird beim nächsten App-Start hergestellt.</string>
+
+    <!-- Einstellungen: Privilegierter Zugriff -->
+    <string name="settings_priv_title">Privilegierter Zugriff</string>
+    <string name="settings_priv_desc">Wie RedMonitor erweiterte Rechte bekommt. Reihenfolge: Root → Shizuku → eigener ADB-Zugang.</string>
+    <string name="settings_priv_active">Aktiv</string>
+    <string name="settings_priv_none">keiner</string>
+    <string name="settings_priv_root_label">Root verwenden</string>
+    <string name="settings_priv_root_desc">Befehle direkt per su ausführen — Shizuku wird dann nicht gebraucht. Der Root-Manager fragt einmal nach.</string>
+    <string name="settings_priv_root_nosu">Kein su gefunden — Gerät scheint nicht gerootet.</string>
+    <string name="settings_priv_root_requesting">Root wird angefragt …</string>
+    <string name="settings_priv_root_granted">Root gewährt ✓</string>
+    <string name="settings_priv_root_denied">Root verweigert oder nicht verfügbar.</string>
+    <string name="settings_priv_pair_label">Wireless-Debugging koppeln</string>
+    <string name="settings_priv_pair_desc">Ohne PC und ohne Root: startet eine Benachrichtigung, in die du den Kopplungscode eingibst, während der System-Dialog offen bleibt (Android 11+).</string>
+    <string name="settings_priv_pair_button">Kopplung per Benachrichtigung starten</string>
+    <string name="settings_priv_pair_unsupported">Wireless Debugging gibt es erst ab Android 11.</string>
+    <string name="settings_priv_notif_needed">Benachrichtigungen sind für RedMonitor aus — ohne sie kann der Code nicht eingegeben werden.</string>
+    <string name="settings_priv_disconnect">ADB trennen</string>
+</resources>

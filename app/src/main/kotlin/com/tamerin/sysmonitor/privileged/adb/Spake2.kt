@@ -1,40 +1,55 @@
 package com.tamerin.sysmonitor.privileged.adb
 
+import android.util.Log
+import java.io.Closeable
+import java.io.IOException
+
 /**
- * SPAKE2 über Ed25519 — der Krypto-Kern des Wireless-Debugging-Pairings. `adbd` nutzt
- * exakt BoringSSLs `spake25519.c`: feste Punkte M/N auf edwards25519, Passwort = der
- * 6-stellige Pairing-Code, daraus ein gemeinsamer Schlüssel + Confirmation-MACs.
+ * SPAKE2 über Ed25519 — der Krypto-Kern des Wireless-Debugging-Pairings. Läuft nativ über
+ * BoringSSL (`libadbpair.so`, siehe `src/main/cpp/`), also exakt die Implementierung, die
+ * auch `adbd` nutzt — keine Handportierung der Kurvenarithmetik.
  *
- * ⚠️ DEVICE-VERIFY / NOCH NICHT FUNKTIONSFÄHIG:
- * Es gibt keine nicht-copyleft Java-Bibliothek für dieses exakte Verfahren. Die
- * edwards25519-Gruppenarithmetik mit den FESTEN M/N-Punkten sowie das exakte
- * Transcript-/Key-Schedule müssen 1:1 aus AOSP/BoringSSL portiert werden. Bis dahin
- * meldet [ed25519Available] = false; der Pairing-Client bricht dann sauber mit einer
- * erklärenden Meldung ab, statt falsche Kryptografie zu verwenden.
- *
- * Unabhängig davon funktionieren der tcpip-Weg und der Wireless-CONNECT mit einem
- * bereits vertrauten Key — nur das ERSTMALIGE In-App-Pairing hängt an diesem Port.
+ * Eine Instanz = ein Protokolllauf. [message] ist sofort nach dem Konstruktor verfügbar,
+ * [process] darf genau einmal aufgerufen werden; danach [close].
  */
-class Spake2(
-    private val role: Role,
-    @Suppress("unused") private val password: ByteArray
-) {
+class Spake2(role: Role, password: ByteArray) : Closeable {
     enum class Role { CLIENT, SERVER }
 
-    /** Unsere öffentliche SPAKE2-Nachricht (32-Byte edwards-Punkt). */
-    fun generateMessage(): ByteArray =
-        throw NotImplementedError("SPAKE2-ed25519-Kern: aus AOSP spake25519.c portieren (M/N, Transcript)")
+    private var handle: Long = Spake2Native.create(role == Role.CLIENT, password)
+        .also { if (it == 0L) throw IOException("SPAKE2 init failed") }
 
-    /** Peer-Nachricht verarbeiten → gemeinsames Schlüsselmaterial. */
-    fun processMessage(@Suppress("unused") peerMessage: ByteArray): ByteArray =
-        throw NotImplementedError("SPAKE2-ed25519-Kern: aus AOSP spake25519.c portieren (M/N, Transcript)")
+    /** Unsere öffentliche SPAKE2-Nachricht (32 Byte). */
+    val message: ByteArray = Spake2Native.message(handle)
+        ?: throw IOException("SPAKE2 message unavailable")
+
+    /** Peer-Nachricht verarbeiten → gemeinsames Schlüsselmaterial (64 Byte). */
+    fun process(peerMessage: ByteArray): ByteArray {
+        check(handle != 0L) { "SPAKE2 session closed" }
+        return Spake2Native.process(handle, peerMessage)
+            ?: throw IOException("SPAKE2 key exchange failed")
+    }
+
+    override fun close() {
+        if (handle != 0L) {
+            Spake2Native.destroy(handle)
+            handle = 0L
+        }
+    }
 
     companion object {
-        /** true, sobald der ed25519-Kern portiert ist. Bis dahin ist Pairing deaktiviert. */
-        const val ed25519Available: Boolean = false
-
-        // REQUIRED-FILL aus BoringSSL spake25519.c (je 32-Byte compressed edwards-Punkt):
-        //   val M = byteArrayOf( ... )
-        //   val N = byteArrayOf( ... )
+        /** true, wenn die native Bibliothek für diese ABI geladen werden konnte. */
+        val isAvailable: Boolean by lazy {
+            runCatching { System.loadLibrary("adbpair") }
+                .onFailure { Log.w("Spake2", "libadbpair not loadable", it) }
+                .isSuccess
+        }
     }
+}
+
+/** JNI-Einstiegspunkte, implementiert in `src/main/cpp/adb_spake2.cpp`. */
+internal object Spake2Native {
+    @JvmStatic external fun create(isClient: Boolean, password: ByteArray): Long
+    @JvmStatic external fun message(handle: Long): ByteArray?
+    @JvmStatic external fun process(handle: Long, theirMsg: ByteArray): ByteArray?
+    @JvmStatic external fun destroy(handle: Long)
 }
